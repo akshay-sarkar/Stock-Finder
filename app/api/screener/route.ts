@@ -4,12 +4,13 @@ import { computeIndicators } from '@/lib/indicators'
 import { buildScreenerRow, applyFilters } from '@/lib/screener'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { cacheGet, cacheSet } from '@/lib/cache'
+import { sanitizeTickers, sanitizeFilters } from '@/lib/validation'
 import type { FilterCriteria, ScreenerRow, IndicatorValues } from '@/lib/types'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-// Raw per-ticker data we cache (price/change/ind) — filters are applied at query time
+// Raw per-ticker data we cache; filters are applied at query time
 interface TickerSnapshot {
   price: number
   change: number
@@ -19,22 +20,31 @@ interface TickerSnapshot {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const filters: FilterCriteria = body.filters ?? {
-      rsi: 'any',
-      macd: 'any',
-      movingAverage: 'any',
-      volume: 'any',
+    // ── Parse + validate body ──────────────────────────────────────────────
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body', results: [] }, { status: 400 })
     }
-    const tickers: string[] = (body.tickers ?? DEFAULT_TICKERS)
-      .map((t: string) => t.trim().toUpperCase())
-      .filter(Boolean)
-      .slice(0, 50) // hard cap per batch (client sends multiple batches for large watchlists)
 
-    // Fetch all tickers in parallel — use per-ticker 10-min cache for raw snapshots
+    const obj = (body !== null && typeof body === 'object' ? body : {}) as Record<string, unknown>
+
+    // Validate + sanitize filters (unknown values silently become 'any')
+    const filters: FilterCriteria = sanitizeFilters(obj.filters)
+
+    // Validate + deduplicate tickers; fall back to DEFAULT_TICKERS if none provided
+    const rawTickers = Array.isArray(obj.tickers) ? obj.tickers : DEFAULT_TICKERS
+    const tickers = sanitizeTickers(rawTickers, 50) // hard cap: 50 per batch
+
+    if (tickers.length === 0) {
+      return NextResponse.json({ results: [], scanned: 0 })
+    }
+
+    // ── Fetch all tickers in parallel; use per-ticker 10-min cache ─────────
     const settled = await Promise.allSettled(
       tickers.map(async (ticker): Promise<ScreenerRow | null> => {
-        // Try cache first
+        // Try screener cache first
         const cached = cacheGet<TickerSnapshot>(`screener:${ticker}`)
         let snapshot: TickerSnapshot
 
@@ -57,16 +67,8 @@ export async function POST(req: NextRequest) {
           cacheSet(`screener:${ticker}`, snapshot)
         }
 
-        const row = buildScreenerRow(
-          ticker,
-          snapshot.price,
-          snapshot.change,
-          snapshot.changePercent,
-          snapshot.ind,
-        )
-        // Attach company name
+        const row = buildScreenerRow(ticker, snapshot.price, snapshot.change, snapshot.changePercent, snapshot.ind)
         row.companyName = COMPANY_NAMES[ticker] ?? ticker
-
         return applyFilters(row, filters) ? row : null
       })
     )
@@ -78,7 +80,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ results, scanned: tickers.length })
   } catch (err) {
-    console.error('[screener]', err)
+    // Log full error server-side only; return a generic message to the client
+    console.error('[screener] Unexpected error:', err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Screener failed', results: [] }, { status: 500 })
   }
 }

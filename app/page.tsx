@@ -800,14 +800,14 @@ export default function Home() {
         {/* Indicator quick-reference */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-500">
           {[
-            ['RSI',       'Relative Strength Index. &lt;30 = Oversold, &gt;70 = Overbought'],
+            ['RSI',       'Relative Strength Index. <30 = Oversold, >70 = Overbought'],
             ['MACD',      'Moving Avg Convergence Divergence. Crossovers signal trend shifts'],
             ['MA Status', 'SMA50/SMA200 relationship. Golden/Death cross + price position'],
-            ['Vol Ratio', "Today&apos;s volume vs 20-day avg. &gt;2× = significant spike"],
+            ['Vol Ratio', "Today's volume vs 20-day avg. >2× = significant spike"],
           ].map(([title, desc]) => (
             <div key={title} className="bg-white rounded-lg border border-gray-200 p-3">
               <p className="font-semibold text-gray-700 mb-0.5">{title}</p>
-              <p dangerouslySetInnerHTML={{ __html: desc }} />
+              <p>{desc}</p>
             </div>
           ))}
         </div>

@@ -18,6 +18,7 @@ import {
 } from 'recharts'
 import { ArrowLeft, TrendingUp } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
+import { isValidTicker } from '@/lib/validation'
 import type { StockDetailData, StockFundamentals } from '@/lib/types'
 
 // ─── Date range config ────────────────────────────────────────────────────────
@@ -284,6 +285,13 @@ export default function StockPage() {
   const [error, setError]     = useState<string | null>(null)
   const [range, setRange]     = useState<Range>(DATE_RANGES[3]) // default 1Y
 
+  // ── Guard: redirect to home if ticker is invalid ──────────────────────────
+  useEffect(() => {
+    if (ticker && !isValidTicker(ticker)) {
+      router.replace('/')
+    }
+  }, [ticker, router])
+
   // Sidebar price changes — populated from screener cache (no extra Yahoo calls)
   const [sidebarPrices, setSidebarPrices] =
     useState<Record<string, { price: number; changePercent: number }>>({})
@@ -300,7 +308,7 @@ export default function StockPage() {
   }, [])
 
   const fetchData = useCallback((r: Range) => {
-    if (!ticker) return
+    if (!ticker || !isValidTicker(ticker)) return
     setLoading(true)
     setError(null)
     const url =

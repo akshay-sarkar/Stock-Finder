@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getHistoricalData, getQuote, getQuoteSummary } from '@/lib/yahoo'
 import { computeIndicators, computeIndicatorHistory } from '@/lib/indicators'
 import { cacheGet, cacheSet } from '@/lib/cache'
+import { isValidTicker, parseDays, parseInterval, parseDisplay } from '@/lib/validation'
 import type { StockDetailData } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -10,15 +11,19 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { ticker: string } }
 ) {
-  const ticker = params.ticker.toUpperCase()
+  // ── Validate route param ────────────────────────────────────────────────
+  const ticker = (params.ticker ?? '').toUpperCase()
+  if (!isValidTicker(ticker)) {
+    return NextResponse.json({ error: 'Invalid ticker symbol' }, { status: 400 })
+  }
 
-  // Range params — always fetch ≥320 days so SMA(200) is accurate
-  const rawDays       = parseInt(req.nextUrl.searchParams.get('days')     ?? '380')
-  const fetchDays     = Math.max(rawDays, 320)
-  const interval      = (req.nextUrl.searchParams.get('interval') ?? '1d') as '1d' | '1wk'
-  const displayPoints = parseInt(req.nextUrl.searchParams.get('display') ?? '252')
+  // ── Validate + clamp query params ───────────────────────────────────────
+  const sp           = req.nextUrl.searchParams
+  const fetchDays    = parseDays(sp.get('days'))          // 320–1830
+  const interval     = parseInterval(sp.get('interval'))  // '1d' | '1wk' | '1mo'
+  const displayPoints = parseDisplay(sp.get('display'))   // 10–1000
 
-  // Cache key encodes all params so different ranges are cached separately
+  // Cache key uses only validated/clamped values
   const cacheKey = `stock:${ticker}:${fetchDays}:${interval}:${displayPoints}`
   const cached = cacheGet<StockDetailData>(cacheKey)
   if (cached) {
@@ -26,7 +31,6 @@ export async function GET(
   }
 
   try {
-    // All three fetches run in parallel — fundamentals failure never breaks the page
     const [data, quote, fundamentals] = await Promise.all([
       getHistoricalData(ticker, fetchDays, interval),
       getQuote(ticker),
@@ -42,23 +46,22 @@ export async function GET(
       return NextResponse.json({ error: 'Could not compute indicators' }, { status: 500 })
     }
 
-    const chartData = computeIndicatorHistory(data, displayPoints)
-
     const result: StockDetailData = {
       ticker,
-      companyName:    quote.name,
-      currentPrice:   quote.price,
-      change:         quote.change,
-      changePercent:  quote.changePercent,
-      chartData,
+      companyName:     quote.name,
+      currentPrice:    quote.price,
+      change:          quote.change,
+      changePercent:   quote.changePercent,
+      chartData:       computeIndicatorHistory(data, displayPoints),
       latestIndicators: ind,
-      fundamentals,     // null for ETFs / tickers with missing data
+      fundamentals,
     }
 
     cacheSet(cacheKey, result)
     return NextResponse.json(result)
   } catch (err) {
-    console.error(`[stock/${ticker}]`, err)
+    // Never forward raw error objects or stack traces to the client
+    console.error(`[stock/${ticker}] Error:`, err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: `Failed to load data for ${ticker}` }, { status: 500 })
   }
 }

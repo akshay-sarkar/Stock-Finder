@@ -1,7 +1,8 @@
-import { RSI, MACD, SMA, EMA } from 'technicalindicators'
+import { RSI, MACD, SMA, EMA, BollingerBands } from 'technicalindicators'
 import type { OHLCVBar, IndicatorValues, ChartPoint } from './types'
 
 type MACDResult = { MACD: number; signal: number; histogram: number }
+type BBResult   = { upper: number; middle: number; lower: number; pb: number }
 
 // ─── Latest indicator snapshot (for screener) ──────────────────────────────
 
@@ -82,6 +83,8 @@ export function computeIndicatorHistory(data: OHLCVBar[], displayDays = 120): Ch
   const ema20Arr   = EMA.calculate({ values: closes,  period: 20 })
   // Rolling 20-period average of volume — plotted as a dotted reference line on the volume chart
   const volSma20Arr = SMA.calculate({ values: volumes, period: 20 })
+  // Bollinger Bands (20, ±2σ)
+  const bbArr = (BollingerBands.calculate({ values: closes, period: 20, stdDev: 2 }) as unknown) as BBResult[]
 
   const points: ChartPoint[] = data.map((bar, i) => {
     return {
@@ -100,6 +103,9 @@ export function computeIndicatorHistory(data: OHLCVBar[], displayDays = 120): Ch
       macd:         getMacdVal(macdArr, i, n, 'MACD'),
       macdSignal:   getMacdVal(macdArr, i, n, 'signal'),
       macdHistogram: getMacdVal(macdArr, i, n, 'histogram'),
+      bbUpper:  getBBVal(bbArr, i, n, 'upper'),
+      bbMiddle: getBBVal(bbArr, i, n, 'middle'),
+      bbLower:  getBBVal(bbArr, i, n, 'lower'),
     }
   })
 
@@ -173,4 +179,16 @@ function getMacdVal(
   if (dataIdx < arrStart) return null
   const val = arr[dataIdx - arrStart]?.[key]
   return val != null ? +val.toFixed(4) : null
+}
+
+function getBBVal(
+  arr: BBResult[],
+  dataIdx: number,
+  totalLen: number,
+  key: 'upper' | 'middle' | 'lower'
+): number | null {
+  const arrStart = totalLen - arr.length
+  if (dataIdx < arrStart) return null
+  const val = arr[dataIdx - arrStart]?.[key]
+  return val != null ? r2(val) : null
 }

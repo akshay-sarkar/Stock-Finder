@@ -67,18 +67,26 @@ export async function getQuote(ticker: string): Promise<{
  * Fetches fundamental/valuation data via quoteSummary.
  * Returns null gracefully for ETFs or tickers missing certain data.
  * Modules used:
- *   summaryDetail     — P/E, beta, 52-week range, dividends, market cap
- *   defaultKeyStatistics — EPS, P/B, forward EPS
- *   financialData     — margins, growth, current ratio, debt/equity
+ *   summaryDetail              — P/E, beta, 52-week range, dividends, market cap
+ *   defaultKeyStatistics       — EPS, P/B, forward EPS, quarterly earnings growth
+ *   financialData              — margins, YoY growth, current ratio, debt/equity
+ *   incomeStatementHistoryQuarterly — QoQ revenue + earnings + gross margin
+ *     (silently omitted if unavailable — many tickers lack this since late 2024)
  */
 export async function getQuoteSummary(ticker: string): Promise<StockFundamentals | null> {
-  const result: any = await yahooFinance.quoteSummary(ticker, {
-    modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
-  })
+  // Fetch primary modules + attempt quarterly income statements (may fail)
+  const [primary, quarterly] = await Promise.all([
+    yahooFinance.quoteSummary(ticker, {
+      modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
+    }),
+    yahooFinance.quoteSummary(ticker, {
+      modules: ['incomeStatementHistoryQuarterly'],
+    }, { validateResult: false }).catch(() => null),
+  ])
 
-  const sd = result?.summaryDetail ?? {}
-  const ks = result?.defaultKeyStatistics ?? {}
-  const fd = result?.financialData ?? {}
+  const sd = primary?.summaryDetail ?? {}
+  const ks = primary?.defaultKeyStatistics ?? {}
+  const fd = primary?.financialData ?? {}
 
   // Format ex-dividend date if present
   let exDividendDate: string | null = null
@@ -88,6 +96,37 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
         month: 'short', day: 'numeric', year: 'numeric',
       })
     } catch { exDividendDate = null }
+  }
+
+  // ── QoQ metrics from quarterly income statements ────────────────────────────
+  // Quarters are ordered most-recent first: [Q_n, Q_n-1, Q_n-2, Q_n-3]
+  let revenueGrowthQoQ: number | null = null
+  let earningsGrowthQoQ: number | null = null
+  let grossMarginsQoQ: number | null = null
+
+  const qHistory: any[] =
+    quarterly?.incomeStatementHistoryQuarterly?.incomeStatementHistory ?? []
+
+  if (qHistory.length >= 2) {
+    const q0 = qHistory[0] // most recent quarter
+    const q1 = qHistory[1] // prior quarter
+
+    const rev0 = q0?.totalRevenue ?? null
+    const rev1 = q1?.totalRevenue ?? null
+    if (rev0 != null && rev1 != null && rev1 !== 0) {
+      revenueGrowthQoQ = (rev0 - rev1) / Math.abs(rev1)
+    }
+
+    const net0 = q0?.netIncome ?? null
+    const net1 = q1?.netIncome ?? null
+    if (net0 != null && net1 != null && net1 !== 0) {
+      earningsGrowthQoQ = (net0 - net1) / Math.abs(net1)
+    }
+
+    const gross0 = q0?.grossProfit ?? null
+    if (gross0 != null && rev0 != null && rev0 !== 0) {
+      grossMarginsQoQ = gross0 / rev0
+    }
   }
 
   return {
@@ -109,6 +148,9 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
     earningsGrowth:   fd.earningsGrowth   ?? null,
     profitMargins:    fd.profitMargins    ?? null,
     grossMargins:     fd.grossMargins     ?? null,
+    revenueGrowthQoQ,
+    earningsGrowthQoQ,
+    grossMarginsQoQ,
     currentRatio:     fd.currentRatio     ?? null,
     debtToEquity:     fd.debtToEquity     ?? null,
   }

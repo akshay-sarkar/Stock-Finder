@@ -54,6 +54,13 @@ const INDICATOR_HINTS: Record<string, string> = {
     'Number of shares traded. High volume on a price move confirms the strength of that move. Low-volume moves are less reliable.',
   'Vol SMA(20)':
     'Rolling 20-period average of volume. Bars exceeding this dotted line indicate above-average participation — often tied to earnings, news, or institutional activity.',
+  // Bollinger Bands
+  'BB Upper':
+    'Bollinger Upper Band (SMA20 + 2 standard deviations). Price touching or exceeding this line is statistically unusual — may signal overbought conditions or a strong breakout.',
+  'BB Middle':
+    'Bollinger Middle Band = 20-period Simple Moving Average. Acts as the mean-reversion anchor. Price tends to oscillate around this line.',
+  'BB Lower':
+    'Bollinger Lower Band (SMA20 − 2 standard deviations). Price touching or breaking below this line may indicate oversold conditions or a breakdown.',
 }
 
 // ─── Hover tooltip component ──────────────────────────────────────────────────
@@ -219,12 +226,51 @@ function FundRow({ label, value, hint, positive }: {
 
 // ─── Fundamentals section ─────────────────────────────────────────────────────
 function FundamentalsSection({ f }: { f: StockFundamentals }) {
-  const revGrowth  = fmtPctChange(f.revenueGrowth)
-  const earnGrowth = fmtPctChange(f.earningsGrowth)
+  const [growthView, setGrowthView] = useState<'yoy' | 'qoq'>('yoy')
+
+  const revGrowth  = fmtPctChange(growthView === 'yoy' ? f.revenueGrowth  : f.revenueGrowthQoQ)
+  const earnGrowth = fmtPctChange(growthView === 'yoy' ? f.earningsGrowth : f.earningsGrowthQoQ)
+  const grossMarg  = growthView === 'qoq' && f.grossMarginsQoQ != null
+    ? fmtPct(f.grossMarginsQoQ)
+    : fmtPct(f.grossMargins)
+
+  const hasQoQ = f.revenueGrowthQoQ != null || f.earningsGrowthQoQ != null
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">Key Statistics</h3>
+      <div className="flex items-center gap-3 mb-4">
+        <h3 className="text-sm font-semibold text-gray-700">Key Statistics</h3>
+        {/* YoY / QoQ toggle — only show if QoQ data is available */}
+        <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+          <button
+            onClick={() => setGrowthView('yoy')}
+            className={`px-2.5 py-1 transition-colors ${
+              growthView === 'yoy'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            YoY
+          </button>
+          <button
+            onClick={() => setGrowthView('qoq')}
+            className={`px-2.5 py-1 transition-colors border-l border-gray-200 ${
+              growthView === 'qoq'
+                ? 'bg-blue-600 text-white'
+                : hasQoQ ? 'bg-white text-gray-500 hover:bg-gray-50' : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+            }`}
+            disabled={!hasQoQ}
+            title={hasQoQ ? 'Quarter-over-Quarter (sequential quarters)' : 'QoQ data not available for this ticker'}
+          >
+            QoQ
+          </button>
+        </div>
+        <span className="text-[11px] text-gray-400 italic">
+          {growthView === 'yoy'
+            ? 'Year-over-Year (trailing annual)'
+            : 'Quarter-over-Quarter (most recent vs prior quarter)'}
+        </span>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-0">
         {/* Valuation */}
         <div>
@@ -258,10 +304,30 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
         {/* Financials */}
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Financials</p>
-          <FundRow label="Revenue Growth"  value={revGrowth.text}           positive={revGrowth.positive}  hint="Year-over-year revenue growth. Sustained positive growth indicates business expansion." />
-          <FundRow label="Earnings Growth" value={earnGrowth.text}          positive={earnGrowth.positive} hint="Year-over-year earnings growth. Accelerating EPS growth often drives share price appreciation." />
-          <FundRow label="Profit Margin"   value={fmtPct(f.profitMargins)}  hint="Net income ÷ revenue. Higher margins mean more pricing power and operational efficiency." />
-          <FundRow label="Gross Margin"    value={fmtPct(f.grossMargins)}   hint="Gross profit ÷ revenue. High gross margins leave more room for R&D, marketing, and growth." />
+          <FundRow
+            label="Revenue Growth"
+            value={revGrowth.text}
+            positive={revGrowth.positive}
+            hint={growthView === 'yoy'
+              ? 'Year-over-year revenue growth (trailing 12 months vs prior year). Sustained positive growth indicates business expansion.'
+              : 'Quarter-over-quarter revenue growth (most recent quarter vs prior quarter). Useful for spotting acceleration or deceleration in near-term momentum.'}
+          />
+          <FundRow
+            label="Earnings Growth"
+            value={earnGrowth.text}
+            positive={earnGrowth.positive}
+            hint={growthView === 'yoy'
+              ? 'Year-over-year earnings (net income) growth. Accelerating EPS growth often drives share price appreciation.'
+              : 'Quarter-over-quarter net income growth. Sequential acceleration in profitability is a strong near-term bullish signal.'}
+          />
+          <FundRow label="Profit Margin"   value={fmtPct(f.profitMargins)}  hint="Net income ÷ revenue (trailing 12 months). Higher margins mean more pricing power and operational efficiency." />
+          <FundRow
+            label={growthView === 'qoq' && f.grossMarginsQoQ != null ? 'Gross Margin (MRQ)' : 'Gross Margin'}
+            value={grossMarg}
+            hint={growthView === 'qoq' && f.grossMarginsQoQ != null
+              ? 'Gross profit ÷ revenue for the most recent quarter. Comparing to the TTM figure highlights seasonal or structural margin shifts.'
+              : 'Gross profit ÷ revenue (trailing 12 months). High gross margins leave more room for R&D, marketing, and growth.'}
+          />
           <FundRow label="Current Ratio"   value={fmtMult(f.currentRatio, '')} hint="Current assets ÷ current liabilities. Ratio > 1 means the company can cover short-term obligations." />
           <FundRow
             label="Debt / Equity"
@@ -284,6 +350,17 @@ export default function StockPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
   const [range, setRange]     = useState<Range>(DATE_RANGES[3]) // default 1Y
+
+  // ── Chart overlay toggles (persisted to localStorage) ─────────────────────
+  const [showBB, setShowBB] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('sf-chart-bb') === 'true'
+  })
+  const toggleBB = () => setShowBB(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-bb', String(next))
+    return next
+  })
 
   // ── Guard: redirect to home if ticker is invalid ──────────────────────────
   useEffect(() => {
@@ -359,15 +436,22 @@ export default function StockPage() {
                   )}
                 </span>
 
-                {/* Right: change % (from screener cache) or active dot */}
+                {/* Right: price + change% or active dot */}
                 {isActive ? (
                   <span className="w-1.5 h-1.5 rounded-full bg-white opacity-80 shrink-0" />
                 ) : priceData ? (
-                  <span className={`text-[10px] font-medium shrink-0 tabular-nums ${
-                    priceData.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'
-                  }`}>
-                    {priceData.changePercent >= 0 ? '+' : ''}
-                    {priceData.changePercent.toFixed(1)}%
+                  <span className="flex flex-col items-end shrink-0 tabular-nums">
+                    <span className="text-[10px] text-slate-300 leading-tight">
+                      ${priceData.price >= 1000
+                        ? priceData.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                        : priceData.price.toFixed(2)}
+                    </span>
+                    <span className={`text-[10px] font-medium leading-tight ${
+                      priceData.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'
+                    }`}>
+                      {priceData.changePercent >= 0 ? '+' : ''}
+                      {priceData.changePercent.toFixed(1)}%
+                    </span>
                   </span>
                 ) : null}
               </Link>
@@ -447,7 +531,7 @@ export default function StockPage() {
       <div className="flex-1 min-w-0">
         {/* Header */}
         <header className="bg-slate-900 text-white shadow-lg">
-          <div className="px-4 py-4 flex items-center gap-4">
+          <div className="px-4 py-3 flex items-center gap-4">
             <Link
               href="/"
               className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors text-sm shrink-0"
@@ -469,10 +553,33 @@ export default function StockPage() {
               </p>
             </div>
           </div>
+          {/* Quick stats row — P/E, 52W range, Dividend */}
+          {data.fundamentals && (
+            <div className="px-4 pb-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-700/60 pt-2">
+              {data.fundamentals.trailingPE != null && (
+                <span className="text-xs text-slate-400">
+                  P/E&nbsp;<span className="text-white font-semibold">{data.fundamentals.trailingPE.toFixed(1)}×</span>
+                </span>
+              )}
+              {data.fundamentals.fiftyTwoWeekHigh != null && data.fundamentals.fiftyTwoWeekLow != null && (
+                <span className="text-xs text-slate-400">
+                  52W&nbsp;
+                  <span className="text-red-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekLow)}</span>
+                  <span className="text-slate-500 mx-1">–</span>
+                  <span className="text-emerald-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekHigh)}</span>
+                </span>
+              )}
+              {data.fundamentals.dividendYield != null && data.fundamentals.dividendYield > 0 && (
+                <span className="text-xs text-slate-400">
+                  Div&nbsp;<span className="text-amber-400 font-semibold">{(data.fundamentals.dividendYield * 100).toFixed(2)}%</span>
+                </span>
+              )}
+            </div>
+          )}
         </header>
 
         <main className="px-4 py-6 space-y-6">
-          {/* Range Selector */}
+          {/* Range Selector + Chart Overlays */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1">Range:</span>
             {DATE_RANGES.map((r) => (
@@ -493,6 +600,20 @@ export default function StockPage() {
                 Weekly candles
               </span>
             )}
+            {/* ── Overlay toggles ── */}
+            <span className="text-xs text-gray-300 ml-3 mr-1 hidden sm:inline">|</span>
+            <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1 hidden sm:inline">Overlays:</span>
+            <button
+              onClick={toggleBB}
+              title="Bollinger Bands (20, ±2σ)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showBB
+                  ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-violet-400 hover:text-violet-600'
+              }`}
+            >
+              BB
+            </button>
             <span className="ml-auto text-xs text-gray-400 italic hidden md:block">
               Hover legend labels for descriptions
             </span>
@@ -553,12 +674,19 @@ export default function StockPage() {
 
           {/* Price + Moving Averages Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">
-              Price &amp; Moving Averages
-              <span className="text-gray-400 font-normal ml-2 text-xs">
-                ({data.chartData.length} {isWeekly ? 'weeks' : 'days'})
-              </span>
-            </h3>
+            <div className="flex items-center gap-3 mb-4">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Price &amp; Moving Averages
+                <span className="text-gray-400 font-normal ml-2 text-xs">
+                  ({data.chartData.length} {isWeekly ? 'weeks' : 'days'})
+                </span>
+              </h3>
+              {showBB && (
+                <span className="text-[11px] text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded font-medium">
+                  Bollinger Bands (20, ±2σ)
+                </span>
+              )}
+            </div>
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={data.chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -570,6 +698,12 @@ export default function StockPage() {
                 <Line type="monotone" dataKey="ema20"  stroke="#10b981" dot={false} name="EMA20"  strokeWidth={1.2} connectNulls={false} strokeDasharray="4 3" />
                 <Line type="monotone" dataKey="sma50"  stroke="#f59e0b" dot={false} name="SMA50"  strokeWidth={1.5} connectNulls={false} />
                 <Line type="monotone" dataKey="sma200" stroke="#ef4444" dot={false} name="SMA200" strokeWidth={1.5} connectNulls={false} />
+                {/* Bollinger Bands — shown only when toggled on */}
+                {showBB && <>
+                  <Line type="monotone" dataKey="bbUpper"  stroke="#7c3aed" dot={false} name="BB Upper"  strokeWidth={1}   connectNulls={false} strokeDasharray="5 3" />
+                  <Line type="monotone" dataKey="bbMiddle" stroke="#a78bfa" dot={false} name="BB Middle" strokeWidth={1}   connectNulls={false} strokeDasharray="2 2" />
+                  <Line type="monotone" dataKey="bbLower"  stroke="#7c3aed" dot={false} name="BB Lower"  strokeWidth={1}   connectNulls={false} strokeDasharray="5 3" />
+                </>}
               </ComposedChart>
             </ResponsiveContainer>
           </div>

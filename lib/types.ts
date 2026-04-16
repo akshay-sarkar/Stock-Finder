@@ -39,6 +39,10 @@ export interface ChartPoint {
   macd: number | null
   macdSignal: number | null
   macdHistogram: number | null
+  // Bollinger Bands (period=20, stdDev=2)
+  bbUpper: number | null
+  bbMiddle: number | null   // same as sma20 but included for clarity
+  bbLower: number | null
 }
 
 export interface ScreenerRow {
@@ -85,11 +89,15 @@ export interface StockFundamentals {
   beta: number | null
   fiftyTwoWeekHigh: number | null
   fiftyTwoWeekLow: number | null
-  // Financials
+  // Financials — YoY (annual/trailing)
   revenueGrowth: number | null   // YoY, decimal
   earningsGrowth: number | null  // YoY, decimal
-  profitMargins: number | null   // decimal
-  grossMargins: number | null    // decimal
+  profitMargins: number | null   // TTM, decimal
+  grossMargins: number | null    // TTM, decimal
+  // Financials — QoQ (most-recent quarter vs prior quarter)
+  revenueGrowthQoQ: number | null
+  earningsGrowthQoQ: number | null
+  grossMarginsQoQ: number | null
   // Balance Sheet
   currentRatio: number | null
   debtToEquity: number | null    // as reported (may be >100)

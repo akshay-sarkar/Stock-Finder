@@ -16,7 +16,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts'
-import { ArrowLeft, TrendingUp } from 'lucide-react'
+import { ArrowLeft, TrendingUp, ExternalLink } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
 import type { StockDetailData, StockFundamentals } from '@/lib/types'
@@ -541,7 +541,19 @@ export default function StockPage() {
             <div className="flex items-center gap-3">
               <TrendingUp size={22} className="text-emerald-400 shrink-0" />
               <div>
-                <h1 className="text-lg font-bold leading-tight">{ticker}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold leading-tight">{ticker}</h1>
+                  <a
+                    href={`https://www.google.com/finance/quote/${ticker}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="View on Google Finance"
+                    className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-white border border-blue-700 hover:border-blue-400 hover:bg-blue-700/40 rounded px-1.5 py-0.5 transition-colors"
+                  >
+                    <ExternalLink size={10} />
+                    Google
+                  </a>
+                </div>
                 <p className="text-slate-400 text-xs">{data.companyName ?? COMPANY_NAMES[ticker]}</p>
               </div>
             </div>

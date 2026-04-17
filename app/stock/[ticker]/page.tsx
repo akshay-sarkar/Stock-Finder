@@ -544,7 +544,7 @@ export default function StockPage() {
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold leading-tight">{ticker}</h1>
                   <a
-                    href={`https://www.google.com/finance/quote/${ticker}`}
+                    href={`https://www.google.com/finance/quote/${ticker}:${data.exchange}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="View on Google Finance"

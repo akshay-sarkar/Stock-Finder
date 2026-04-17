@@ -48,11 +48,22 @@ export async function getHistoricalData(
 /**
  * Fetches the current quote (price, change, name).
  */
+/** Maps Yahoo Finance exchange name to Google Finance exchange code. */
+function toGoogleExchange(fullName: string | undefined): string {
+  if (!fullName) return 'NASDAQ'
+  const n = fullName.toLowerCase()
+  if (n.includes('nasdaq'))  return 'NASDAQ'
+  if (n.includes('nysearca') || n.includes('arca')) return 'NYSEARCA'
+  if (n.includes('nyse'))    return 'NYSE'
+  return fullName.toUpperCase()
+}
+
 export async function getQuote(ticker: string): Promise<{
   price: number
   change: number
   changePercent: number
   name: string
+  exchange: string
 }> {
   const result: any = await yahooFinance.quote(ticker)
   return {
@@ -60,6 +71,7 @@ export async function getQuote(ticker: string): Promise<{
     change: result.regularMarketChange ?? 0,
     changePercent: result.regularMarketChangePercent ?? 0,
     name: result.longName ?? result.shortName ?? ticker,
+    exchange: toGoogleExchange(result.fullExchangeName ?? result.exchange),
   }
 }
 

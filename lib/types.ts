@@ -106,6 +106,7 @@ export interface StockFundamentals {
 export interface StockDetailData {
   ticker: string
   companyName: string
+  exchange: string
   currentPrice: number
   change: number
   changePercent: number

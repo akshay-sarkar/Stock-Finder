@@ -49,6 +49,7 @@ export async function GET(
     const result: StockDetailData = {
       ticker,
       companyName:     quote.name,
+      exchange:        quote.exchange,
       currentPrice:    quote.price,
       change:          quote.change,
       changePercent:   quote.changePercent,

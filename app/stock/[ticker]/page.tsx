@@ -565,6 +565,11 @@ export default function StockPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold leading-tight">{ticker}</h1>
+                  <span className="text-xl font-bold">${fmtPrice(data.currentPrice)}</span>
+                  <span className={`text-sm ${changeUp ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {changeUp ? '+' : ''}{data.change.toFixed(2)}&nbsp;
+                    ({changeUp ? '+' : ''}{data.changePercent.toFixed(2)}%)
+                  </span>
                   <a
                     href={`https://www.google.com/finance/quote/${ticker}:${data.exchange}`}
                     target="_blank"
@@ -589,16 +594,9 @@ export default function StockPage() {
                 <p className="text-slate-400 text-xs">{data.companyName ?? COMPANY_NAMES[ticker]}</p>
               </div>
             </div>
-            <Link href="/congress" className="text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors shrink-0">
+            <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors shrink-0">
               Congress Trades
             </Link>
-            <div className="ml-auto text-right">
-              <p className="text-xl font-bold">${fmtPrice(data.currentPrice)}</p>
-              <p className={`text-sm ${changeUp ? 'text-emerald-400' : 'text-red-400'}`}>
-                {changeUp ? '+' : ''}{data.change.toFixed(2)}&nbsp;
-                ({changeUp ? '+' : ''}{data.changePercent.toFixed(2)}%)
-              </p>
-            </div>
           </div>
           {/* Quick stats row — P/E, 52W range, Dividend */}
           {data.fundamentals && (

@@ -6,93 +6,110 @@ import type { CongressionalTrade } from '@/lib/types'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-const CT_TRADES_URL = 'https://www.capitoltrades.com/trades?pageSize=96&page=1'
+// Free community-maintained S3 dumps — no API key required
+const HOUSE_URL  = 'https://house-stock-watcher-data.s3-us-west-2.amazonaws.com/data/all_transactions.json'
+const SENATE_URL = 'https://senate-stock-watcher-data.s3-us-west-2.amazonaws.com/aggregate/all_transactions.json'
 
+// Return at most this many recent trades (data sets are large — ~10K+ rows)
+const MAX_TRADES = 300
+
+// ─── Normalizers ──────────────────────────────────────────────────────────────
 function normalizeParty(raw: string): string {
   const l = (raw ?? '').toLowerCase()
-  if (l.includes('democrat')) return 'D'
-  if (l.includes('republican')) return 'R'
+  if (l.includes('democrat'))    return 'D'
+  if (l.includes('republican'))  return 'R'
   if (l.includes('independent')) return 'I'
-  return (raw ?? '').toUpperCase().slice(0, 1) || '?'
-}
-
-function normalizeChamber(raw: string): string {
-  const l = (raw ?? '').toLowerCase()
-  if (l.includes('senate')) return 'Senate'
-  if (l.includes('house') || l.includes('representative')) return 'House'
-  return raw ?? ''
+  return '?'
 }
 
 function normalizeType(raw: string): string {
   const l = (raw ?? '').toLowerCase()
   if (l.includes('purchase') || l === 'buy') return 'buy'
-  if (l.includes('partial_sale') || l.includes('sale_partial') || l.includes('partial')) return 'sell_partial'
+  if (l.includes('partial'))                  return 'sell_partial'
   if (l.includes('sale') || l.includes('sell')) return 'sell'
-  if (l.includes('exchange')) return 'exchange'
+  if (l.includes('exchange'))                 return 'exchange'
   return l
 }
 
+// ─── House mapper ─────────────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapTrade(t: any, i: number): CongressionalTrade | null {
-  const ticker = (t.ticker ?? t.symbol ?? t.asset?.ticker ?? '').toString().toUpperCase().trim()
-  if (!ticker) return null
+function mapHouse(t: any, i: number): CongressionalTrade | null {
+  const ticker = (t.ticker ?? '').toString().toUpperCase().trim()
+  if (!ticker || ticker === '--' || ticker === 'N/A') return null
   return {
-    id:               t._id ?? t.id ?? `trade-${i}`,
-    politician:       t.politician ?? t.politicianName ?? t.name ?? 'Unknown',
-    politicianId:     t.politicianId ?? t.politician_id ?? '',
-    party:            normalizeParty(t.party ?? t.politicianParty ?? ''),
-    chamber:          normalizeChamber(t.chamber ?? t.politicianChamber ?? ''),
+    id:              `house-${t.disclosure_date ?? ''}-${ticker}-${i}`,
+    politician:      t.representative ?? 'Unknown',
+    politicianId:    '',
+    party:           '?',   // House data doesn't include party
+    chamber:         'House',
     ticker,
-    companyName:      t.description ?? t.issuerName ?? t.issuer?.name ?? t.company ?? '',
-    tradeType:        normalizeType(t.tradeType ?? t.type ?? t.transaction ?? ''),
-    amountRange:      t.size ?? t.amount ?? t.range ?? '',
-    transactionDate:  t.txDate ?? t.transactionDate ?? t.tx_date ?? '',
-    filedDate:        t.reportDate ?? t.publishedDate ?? t.filedDate ?? t.filed_date ?? '',
+    companyName:     t.asset_description ?? '',
+    tradeType:       normalizeType(t.type ?? ''),
+    amountRange:     t.amount ?? '',
+    transactionDate: t.transaction_date ?? '',
+    filedDate:       t.disclosure_date ?? '',
   }
 }
 
-async function fetchTrades(): Promise<CongressionalTrade[]> {
-  const res = await fetch(CT_TRADES_URL, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      Accept: 'text/html,application/xhtml+xml',
-    },
-    signal: AbortSignal.timeout(12000),
-  })
-
-  if (!res.ok) throw new Error(`Capitol Trades HTTP ${res.status}`)
-
-  const html = await res.text()
-
-  // Extract Next.js SSR data embedded in every page
-  const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/)
-  if (!match) throw new Error('__NEXT_DATA__ not found — Capitol Trades may have changed structure')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nextData: any = JSON.parse(match[1])
-  const pp = nextData?.props?.pageProps ?? {}
-
-  // Try common data keys Capitol Trades may use
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawTrades: any[] =
-    pp.trades ??
-    pp.data?.trades ??
-    pp.data ??
-    pp.tradeData ??
-    pp.items ??
-    []
-
-  if (!Array.isArray(rawTrades) || rawTrades.length === 0) {
-    // Dump available keys to help debug structure changes
-    console.warn('[congress] pageProps keys:', Object.keys(pp))
-    throw new Error('No trades found in Capitol Trades page data — structure may have changed')
+// ─── Senate mapper ────────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapSenate(t: any, i: number): CongressionalTrade | null {
+  const ticker = (t.ticker ?? '').toString().toUpperCase().trim()
+  if (!ticker || ticker === '--' || ticker === 'N/A') return null
+  return {
+    id:              `senate-${t.disclosure_date ?? ''}-${ticker}-${i}`,
+    politician:      t.senator ?? 'Unknown',
+    politicianId:    '',
+    party:           normalizeParty(t.party ?? ''),
+    chamber:         'Senate',
+    ticker,
+    companyName:     t.asset_description ?? '',
+    tradeType:       normalizeType(t.type ?? ''),
+    amountRange:     t.amount ?? '',
+    transactionDate: t.transaction_date ?? '',
+    filedDate:       t.disclosure_date ?? '',
   }
-
-  const mapped = rawTrades.map(mapTrade)
-  return mapped.filter((t): t is CongressionalTrade => t !== null)
 }
 
+// ─── Fetch both sources in parallel ──────────────────────────────────────────
+async function fetchAllTrades(): Promise<CongressionalTrade[]> {
+  const [houseRes, senateRes] = await Promise.allSettled([
+    fetch(HOUSE_URL,  { signal: AbortSignal.timeout(15000) }),
+    fetch(SENATE_URL, { signal: AbortSignal.timeout(15000) }),
+  ])
+
+  const trades: CongressionalTrade[] = []
+
+  if (houseRes.status === 'fulfilled' && houseRes.value.ok) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json: any[] = await houseRes.value.json()
+    json.forEach((t, i) => {
+      const mapped = mapHouse(t, i)
+      if (mapped) trades.push(mapped)
+    })
+  } else {
+    console.error('[congress] House fetch failed:', houseRes.status === 'rejected' ? houseRes.reason : houseRes.value.status)
+  }
+
+  if (senateRes.status === 'fulfilled' && senateRes.value.ok) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const json: any[] = await senateRes.value.json()
+    json.forEach((t, i) => {
+      const mapped = mapSenate(t, i)
+      if (mapped) trades.push(mapped)
+    })
+  } else {
+    console.error('[congress] Senate fetch failed:', senateRes.status === 'rejected' ? senateRes.reason : senateRes.value.status)
+  }
+
+  if (trades.length === 0) throw new Error('No trades returned from House or Senate data sources')
+
+  // Sort newest first by filed date, then take most recent MAX_TRADES
+  trades.sort((a, b) => (b.filedDate > a.filedDate ? 1 : b.filedDate < a.filedDate ? -1 : 0))
+  return trades.slice(0, MAX_TRADES)
+}
+
+// ─── Enrich with live Yahoo Finance prices ────────────────────────────────────
 async function enrichWithPrices(trades: CongressionalTrade[]): Promise<CongressionalTrade[]> {
   const uniqueTickers = [...new Set(trades.map(t => t.ticker).filter(Boolean))]
   if (uniqueTickers.length === 0) return trades
@@ -125,6 +142,7 @@ async function enrichWithPrices(trades: CongressionalTrade[]): Promise<Congressi
   }))
 }
 
+// ─── Route handler ────────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   if (!checkRateLimit(ip, 20, 60_000)) {
@@ -135,8 +153,7 @@ export async function GET(req: NextRequest) {
   }
 
   const cacheKey = 'congressional:trades'
-  const refresh = req.nextUrl.searchParams.get('refresh') === '1'
-
+  const refresh  = req.nextUrl.searchParams.get('refresh') === '1'
   if (refresh) cacheDel(cacheKey)
 
   const cached = cacheGet<{ trades: CongressionalTrade[]; fetchedAt: number }>(cacheKey)
@@ -145,8 +162,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const raw     = await fetchTrades()
-    const trades  = await enrichWithPrices(raw)
+    const raw    = await fetchAllTrades()
+    const trades = await enrichWithPrices(raw)
     const payload = { trades, fetchedAt: Date.now(), cached: false }
     cacheSet(cacheKey, payload, 5 * 60_000)
     return NextResponse.json(payload)

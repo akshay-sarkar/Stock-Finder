@@ -576,14 +576,14 @@ export default function StockPage() {
                     Google
                   </a>
                   <a
-                    href={`https://www.capitoltrades.com/issuers/${ticker}`}
+                    href={`https://www.quiverquant.com/stock/${ticker}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title="View congressional trades on Capitol Trades"
-                    className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-white border border-amber-700 hover:border-amber-400 hover:bg-amber-700/40 rounded px-1.5 py-0.5 transition-colors"
+                    title="View on Quiver Quantitative"
+                    className="flex items-center gap-1 text-[11px] text-violet-400 hover:text-white border border-violet-700 hover:border-violet-400 hover:bg-violet-700/40 rounded px-1.5 py-0.5 transition-colors"
                   >
                     <ExternalLink size={10} />
-                    Capitol Trades
+                    Quiver
                   </a>
                 </div>
                 <p className="text-slate-400 text-xs">{data.companyName ?? COMPANY_NAMES[ticker]}</p>

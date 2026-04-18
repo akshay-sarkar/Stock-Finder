@@ -406,8 +406,9 @@ export default function CongressPage() {
           <p className="font-semibold mb-0.5">About this data</p>
           <p>
             Congressional trades are publicly disclosed under the STOCK Act within 45 days of the transaction.
-            Data is sourced from <a href="https://www.capitoltrades.com" target="_blank" rel="noopener noreferrer"
-              className="underline">Capitol Trades</a>, which aggregates official House and Senate disclosures.
+            Data is sourced from the <a href="https://github.com/jbesomi/house-stock-watcher" target="_blank" rel="noopener noreferrer"
+              className="underline">House Stock Watcher</a> and <a href="https://github.com/DandelionEater/senate-stock-watcher" target="_blank" rel="noopener noreferrer"
+              className="underline">Senate Stock Watcher</a> community projects, which aggregate official congressional disclosures.
             Prices shown are current market prices — not the price at time of the trade.
             Not financial advice.
           </p>

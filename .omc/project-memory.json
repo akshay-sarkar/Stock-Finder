@@ -108,8 +108,14 @@
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
+      "accessCount": 16,
+      "lastAccessed": 1776545366806,
+      "type": "file"
+    },
+    {
+      "path": "app/api/congressional-trades/route.ts",
       "accessCount": 10,
-      "lastAccessed": 1776543606611,
+      "lastAccessed": 1776546058773,
       "type": "file"
     },
     {
@@ -123,12 +129,6 @@
       "accessCount": 5,
       "lastAccessed": 1776543475653,
       "type": "directory"
-    },
-    {
-      "path": "app/api/congressional-trades/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776543874086,
-      "type": "file"
     },
     {
       "path": "next.config.js",
@@ -146,6 +146,18 @@
       "path": "lib/cache.ts",
       "accessCount": 3,
       "lastAccessed": 1776543871205,
+      "type": "file"
+    },
+    {
+      "path": "lib/rateLimit.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776545350907,
+      "type": "file"
+    },
+    {
+      "path": "app/congress/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1776546066633,
       "type": "file"
     },
     {
@@ -167,9 +179,9 @@
       "type": "file"
     },
     {
-      "path": "app/congress/page.tsx",
+      "path": ".env.local",
       "accessCount": 2,
-      "lastAccessed": 1776543879145,
+      "lastAccessed": 1776546064094,
       "type": "file"
     },
     {
@@ -236,12 +248,6 @@
       "path": "app/globals.css",
       "accessCount": 1,
       "lastAccessed": 1776543478002,
-      "type": "file"
-    },
-    {
-      "path": "lib/rateLimit.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776543807489,
       "type": "file"
     }
   ],

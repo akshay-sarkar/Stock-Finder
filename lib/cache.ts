@@ -29,9 +29,9 @@ export function cacheGet<T>(key: string): T | null {
   return entry.value as T
 }
 
-/** Stores a value under the given key for TTL_MS milliseconds. */
-export function cacheSet<T>(key: string, value: T): void {
-  store.set(key, { value, expires: Date.now() + TTL_MS })
+/** Stores a value under the given key. Uses TTL_MS by default; pass ttlMs to override. */
+export function cacheSet<T>(key: string, value: T, ttlMs = TTL_MS): void {
+  store.set(key, { value, expires: Date.now() + ttlMs })
 }
 
 /** Removes a specific key (useful for forced refresh). */

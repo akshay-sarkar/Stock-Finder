@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, cacheDel } from '@/lib/cache'
+import { checkRateLimit } from '@/lib/rateLimit'
 import type { CongressionalTrade } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -125,6 +126,14 @@ async function enrichWithPrices(trades: CongressionalTrade[]): Promise<Congressi
 }
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!checkRateLimit(ip, 20, 60_000)) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded — max 20 requests per minute' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    )
+  }
+
   const cacheKey = 'congressional:trades'
   const refresh = req.nextUrl.searchParams.get('refresh') === '1'
 
@@ -139,7 +148,7 @@ export async function GET(req: NextRequest) {
     const raw     = await fetchTrades()
     const trades  = await enrichWithPrices(raw)
     const payload = { trades, fetchedAt: Date.now(), cached: false }
-    cacheSet(cacheKey, payload)
+    cacheSet(cacheKey, payload, 5 * 60_000)
     return NextResponse.json(payload)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Failed to fetch congressional trades'

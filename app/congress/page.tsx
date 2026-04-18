@@ -225,7 +225,7 @@ export default function CongressPage() {
             <div className="ml-auto flex items-center gap-3">
               {fetchedAt && (
                 <span className="text-xs text-gray-400">
-                  Updated {minutesSince(fetchedAt)} · 10-min cache
+                  Updated {minutesSince(fetchedAt)} · 5-min cache
                 </span>
               )}
               <button

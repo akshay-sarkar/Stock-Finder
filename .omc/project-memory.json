@@ -125,6 +125,12 @@
       "type": "directory"
     },
     {
+      "path": "app/api/congressional-trades/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1776543874086,
+      "type": "file"
+    },
+    {
       "path": "next.config.js",
       "accessCount": 3,
       "lastAccessed": 1776543470263,
@@ -134,6 +140,12 @@
       "path": "lib/types.ts",
       "accessCount": 3,
       "lastAccessed": 1776543486323,
+      "type": "file"
+    },
+    {
+      "path": "lib/cache.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776543871205,
       "type": "file"
     },
     {
@@ -155,9 +167,9 @@
       "type": "file"
     },
     {
-      "path": "lib/cache.ts",
+      "path": "app/congress/page.tsx",
       "accessCount": 2,
-      "lastAccessed": 1776543335960,
+      "lastAccessed": 1776543879145,
       "type": "file"
     },
     {
@@ -227,15 +239,9 @@
       "type": "file"
     },
     {
-      "path": "app/api/congressional-trades/route.ts",
+      "path": "lib/rateLimit.ts",
       "accessCount": 1,
-      "lastAccessed": 1776543516107,
-      "type": "file"
-    },
-    {
-      "path": "app/congress/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1776543575980,
+      "lastAccessed": 1776543807489,
       "type": "file"
     }
   ],

@@ -531,14 +531,21 @@ export default function Home() {
             <p className="text-slate-400 text-sm">Free technical analysis screener · Powered by Yahoo Finance</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-              <ExternalLink size={13} /> Capitol Trades
-            </a>
-            <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-              <ExternalLink size={13} /> Quiver Congress
-            </a>
+            <div className="relative group">
+              <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                Congress Trades <ChevronDown size={13} />
+              </button>
+              <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">
+                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                  <ExternalLink size={12} /> Capitol Trades
+                </a>
+                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                  <ExternalLink size={12} /> Quiver Congress
+                </a>
+              </div>
+            </div>
             <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
               <ExternalLink size={13} /> Insider Trading

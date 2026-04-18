@@ -108,20 +108,20 @@
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 18,
-      "lastAccessed": 1776546474027,
+      "accessCount": 26,
+      "lastAccessed": 1776547127512,
+      "type": "file"
+    },
+    {
+      "path": "app/page.tsx",
+      "accessCount": 12,
+      "lastAccessed": 1776547106780,
       "type": "file"
     },
     {
       "path": "app/api/congressional-trades/route.ts",
       "accessCount": 10,
       "lastAccessed": 1776546058773,
-      "type": "file"
-    },
-    {
-      "path": "app/page.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1776543580162,
       "type": "file"
     },
     {
@@ -186,8 +186,8 @@
     },
     {
       "path": "app",
-      "accessCount": 1,
-      "lastAccessed": 1776189210722,
+      "accessCount": 2,
+      "lastAccessed": 1776546981347,
       "type": "directory"
     },
     {

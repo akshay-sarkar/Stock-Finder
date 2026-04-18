@@ -16,7 +16,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts'
-import { ArrowLeft, TrendingUp, ExternalLink } from 'lucide-react'
+import { ArrowLeft, TrendingUp, ExternalLink, ChevronDown } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
 import type { StockDetailData, StockFundamentals } from '@/lib/types'
@@ -489,9 +489,35 @@ export default function StockPage() {
                 <ArrowLeft size={15} /> Screener
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
-              <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                Congress Trades
-              </Link>
+              <div className="ml-auto flex items-center gap-2">
+                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Capitol Trades
+                </a>
+                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Quiver Congress
+                </a>
+                <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Insider Trading
+                </a>
+                <div className="relative group">
+                  <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                    News <ChevronDown size={13} />
+                  </button>
+                  <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[160px]">
+                    <a href="https://www.capitoltrades.com/buzz" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Buzz
+                    </a>
+                    <a href="https://www.capitoltrades.com/articles" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Articles
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </header>
           <div className="flex-1 flex items-center justify-center">
@@ -522,9 +548,35 @@ export default function StockPage() {
                 <ArrowLeft size={15} /> Screener
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
-              <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                Congress Trades
-              </Link>
+              <div className="ml-auto flex items-center gap-2">
+                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Capitol Trades
+                </a>
+                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Quiver Congress
+                </a>
+                <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  <ExternalLink size={13} /> Insider Trading
+                </a>
+                <div className="relative group">
+                  <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                    News <ChevronDown size={13} />
+                  </button>
+                  <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[160px]">
+                    <a href="https://www.capitoltrades.com/buzz" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Buzz
+                    </a>
+                    <a href="https://www.capitoltrades.com/articles" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Articles
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </header>
           <div className="flex-1 flex items-center justify-center">
@@ -594,9 +646,35 @@ export default function StockPage() {
                 <p className="text-slate-400 text-xs">{data.companyName ?? COMPANY_NAMES[ticker]}</p>
               </div>
             </div>
-            <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors shrink-0">
-              Congress Trades
-            </Link>
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                <ExternalLink size={13} /> Capitol Trades
+              </a>
+              <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                <ExternalLink size={13} /> Quiver Congress
+              </a>
+              <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                <ExternalLink size={13} /> Insider Trading
+              </a>
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  News <ChevronDown size={13} />
+                </button>
+                <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[160px]">
+                  <a href="https://www.capitoltrades.com/buzz" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                    <ExternalLink size={12} /> Capitol Buzz
+                  </a>
+                  <a href="https://www.capitoltrades.com/articles" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                    <ExternalLink size={12} /> Capitol Articles
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
           {/* Quick stats row — P/E, 52W range, Dividend */}
           {data.fundamentals && (

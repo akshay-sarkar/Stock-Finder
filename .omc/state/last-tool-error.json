@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"find /Users/akshaysarkar/Documents/Claude/Projects/\\\"Stock Finder\\\" -maxdepth 1 -name \\\".env*\\\" -o -name \\\"next.config*\\\" | xargs ls -la 2>/dev/null\"}",
+  "error": "Exit code 1",
+  "timestamp": "2026-04-18T20:08:40.110Z",
+  "retry_count": 1
+}

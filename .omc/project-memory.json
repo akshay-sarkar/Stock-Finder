@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776179173629,
+  "lastScanned": 1776542229987,
   "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder",
   "techStack": {
     "languages": [
@@ -77,7 +77,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 3,
-      "lastAccessed": 1776179173595,
+      "lastAccessed": 1776542229954,
       "keyFiles": [
         "globals.css",
         "layout.tsx",
@@ -87,8 +87,8 @@
     "lib": {
       "path": "lib",
       "purpose": "Library code",
-      "fileCount": 6,
-      "lastAccessed": 1776179173595,
+      "fileCount": 7,
+      "lastAccessed": 1776542229955,
       "keyFiles": [
         "cache.ts",
         "indicators.ts",
@@ -101,15 +101,63 @@
       "path": "app/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1776179173613,
+      "lastAccessed": 1776542229959,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
+      "path": "app/stock/[ticker]/page.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1776543606611,
+      "type": "file"
+    },
+    {
+      "path": "app/page.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1776543580162,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 5,
+      "lastAccessed": 1776543475653,
+      "type": "directory"
+    },
+    {
+      "path": "next.config.js",
+      "accessCount": 3,
+      "lastAccessed": 1776543470263,
+      "type": "file"
+    },
+    {
+      "path": "lib/types.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776543486323,
+      "type": "file"
+    },
+    {
       "path": "tsconfig.json",
       "accessCount": 2,
       "lastAccessed": 1776179217469,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1776542894056,
+      "type": "file"
+    },
+    {
+      "path": "app/api/prices/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776543335747,
+      "type": "file"
+    },
+    {
+      "path": "lib/cache.ts",
+      "accessCount": 2,
+      "lastAccessed": 1776543335960,
       "type": "file"
     },
     {
@@ -125,21 +173,69 @@
       "type": "file"
     },
     {
-      "path": "",
+      "path": "app/api/stock/[ticker]/route.ts",
       "accessCount": 1,
-      "lastAccessed": 1776189213960,
-      "type": "directory"
-    },
-    {
-      "path": "next.config.js",
-      "accessCount": 1,
-      "lastAccessed": 1776189216339,
+      "lastAccessed": 1776542899150,
       "type": "file"
     },
     {
-      "path": "package.json",
+      "path": "app/api/screener/route.ts",
       "accessCount": 1,
-      "lastAccessed": 1776189216730,
+      "lastAccessed": 1776542899220,
+      "type": "file"
+    },
+    {
+      "path": "lib/yahoo.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542902296,
+      "type": "file"
+    },
+    {
+      "path": "lib/validation.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542902653,
+      "type": "file"
+    },
+    {
+      "path": "lib/indicators.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542902885,
+      "type": "file"
+    },
+    {
+      "path": "lib/screener.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542905162,
+      "type": "file"
+    },
+    {
+      "path": "lib/stockList.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542905297,
+      "type": "file"
+    },
+    {
+      "path": "app/api/watchlist-prices/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776542905769,
+      "type": "file"
+    },
+    {
+      "path": "app/globals.css",
+      "accessCount": 1,
+      "lastAccessed": 1776543478002,
+      "type": "file"
+    },
+    {
+      "path": "app/api/congressional-trades/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1776543516107,
+      "type": "file"
+    },
+    {
+      "path": "app/congress/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1776543575980,
       "type": "file"
     }
   ],

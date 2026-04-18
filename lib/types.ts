@@ -103,6 +103,22 @@ export interface StockFundamentals {
   debtToEquity: number | null    // as reported (may be >100)
 }
 
+export interface CongressionalTrade {
+  id: string
+  politician: string
+  politicianId?: string
+  party: string          // 'D' | 'R' | 'I'
+  chamber: string        // 'House' | 'Senate'
+  ticker: string
+  companyName: string
+  tradeType: string      // 'buy' | 'sell' | 'sell_partial'
+  amountRange: string    // e.g. "$15K–$50K"
+  transactionDate: string
+  filedDate: string
+  currentPrice?: number
+  changePercent?: number
+}
+
 export interface StockDetailData {
   ticker: string
   companyName: string

@@ -351,6 +351,13 @@ export default function StockPage() {
   const [error, setError]     = useState<string | null>(null)
   const [range, setRange]     = useState<Range>(DATE_RANGES[3]) // default 1Y
 
+  const [sidebarSearch, setSidebarSearch] = useState('')
+  const filteredSidebarTickers = sidebarSearch
+    ? DEFAULT_TICKERS.filter(t =>
+        t.includes(sidebarSearch.toUpperCase()) ||
+        (COMPANY_NAMES[t] ?? '').toLowerCase().includes(sidebarSearch.toLowerCase()))
+    : DEFAULT_TICKERS
+
   // ── Chart overlay toggles (persisted to localStorage) ─────────────────────
   const [showBB, setShowBB] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
@@ -407,11 +414,20 @@ export default function StockPage() {
   const Sidebar = (
     <aside className="w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 sticky top-0 h-screen overflow-y-auto z-10">
       <div className="px-3 py-4">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3 px-1">
+        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">
           Watchlist
         </p>
+        <div className="mb-2">
+          <input
+            type="text"
+            placeholder="Search…"
+            value={sidebarSearch}
+            onChange={e => setSidebarSearch(e.target.value)}
+            className="w-full bg-slate-800 text-white placeholder-slate-500 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
         <nav className="space-y-0.5">
-          {DEFAULT_TICKERS.map((t) => {
+          {filteredSidebarTickers.map((t) => {
             const priceData = sidebarPrices[t]
             const isActive  = t === ticker
             return (
@@ -473,6 +489,9 @@ export default function StockPage() {
                 <ArrowLeft size={15} /> Screener
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
+              <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                Congress Trades
+              </Link>
             </div>
           </header>
           <div className="flex-1 flex items-center justify-center">
@@ -503,6 +522,9 @@ export default function StockPage() {
                 <ArrowLeft size={15} /> Screener
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
+              <Link href="/congress" className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                Congress Trades
+              </Link>
             </div>
           </header>
           <div className="flex-1 flex items-center justify-center">
@@ -553,10 +575,23 @@ export default function StockPage() {
                     <ExternalLink size={10} />
                     Google
                   </a>
+                  <a
+                    href={`https://www.capitoltrades.com/issuers/${ticker}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="View congressional trades on Capitol Trades"
+                    className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-white border border-amber-700 hover:border-amber-400 hover:bg-amber-700/40 rounded px-1.5 py-0.5 transition-colors"
+                  >
+                    <ExternalLink size={10} />
+                    Capitol Trades
+                  </a>
                 </div>
                 <p className="text-slate-400 text-xs">{data.companyName ?? COMPANY_NAMES[ticker]}</p>
               </div>
             </div>
+            <Link href="/congress" className="text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors shrink-0">
+              Congress Trades
+            </Link>
             <div className="ml-auto text-right">
               <p className="text-xl font-bold">${fmtPrice(data.currentPrice)}</p>
               <p className={`text-sm ${changeUp ? 'text-emerald-400' : 'text-red-400'}`}>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Search, TrendingUp, RotateCcw, ChevronUp, ChevronDown,
   Settings, ChevronRight, Plus, Download, Upload, X, Check, ListFilter,
@@ -354,6 +355,18 @@ function Pagination({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const router = useRouter()
+  const [tickerSearch, setTickerSearch] = useState('')
+
+  function handleTickerSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const t = tickerSearch.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '')
+    if (t.length >= 1 && t.length <= 8) {
+      router.push(`/stock/${t}`)
+      setTickerSearch('')
+    }
+  }
+
   // Filters & results
   const [filters,    setFilters]    = useState<FilterCriteria>(DEFAULT_FILTERS)
   const [results,    setResults]    = useState<ScreenerRow[]>([])
@@ -517,6 +530,24 @@ export default function Home() {
             <h1 className="text-xl font-bold tracking-tight">Stock Finder</h1>
             <p className="text-slate-400 text-sm">Free technical analysis screener · Powered by Yahoo Finance</p>
           </div>
+          <Link
+            href="/congress"
+            className="ml-auto text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Congress Trades
+          </Link>
+          <form onSubmit={handleTickerSearch} className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Go to ticker…"
+              value={tickerSearch}
+              onChange={e => setTickerSearch(e.target.value.toUpperCase())}
+              className="bg-slate-800 text-white placeholder-slate-400 border border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-36"
+            />
+            <button type="submit" className="text-slate-300 hover:text-white transition-colors">
+              <Search size={16} />
+            </button>
+          </form>
         </div>
       </header>
 

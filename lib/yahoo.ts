@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry } from './types'
+import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, AnalystData } from './types'
 
 // yahoo-finance2 v3 uses class instantiation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -110,6 +110,28 @@ export async function getEarnings(ticker: string): Promise<EarningsData> {
     epsEstimateLow:  cal?.earnings?.earningsLow    ?? null,
     epsEstimateHigh: cal?.earnings?.earningsHigh   ?? null,
     history,
+  }
+}
+
+/**
+ * Fetches analyst price targets and consensus recommendation.
+ * Module: financialData — targetMeanPrice, targetLowPrice, targetHighPrice,
+ *   recommendationMean (1=Strong Buy…5=Sell), recommendationKey, numberOfAnalystOpinions
+ */
+export async function getAnalystData(ticker: string): Promise<AnalystData> {
+  const result = await yahooFinance.quoteSummary(ticker, {
+    modules: ['financialData'],
+  }, { validateResult: false }).catch(() => null)
+
+  const fd = result?.financialData ?? {}
+
+  return {
+    targetMeanPrice:          fd.targetMeanPrice          ?? null,
+    targetLowPrice:           fd.targetLowPrice           ?? null,
+    targetHighPrice:          fd.targetHighPrice          ?? null,
+    recommendationMean:       fd.recommendationMean       ?? null,
+    recommendationKey:        fd.recommendationKey        ?? null,
+    numberOfAnalystOpinions:  fd.numberOfAnalystOpinions  ?? null,
   }
 }
 

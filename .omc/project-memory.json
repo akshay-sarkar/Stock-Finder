@@ -108,8 +108,8 @@
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 34,
-      "lastAccessed": 1776571942119,
+      "accessCount": 45,
+      "lastAccessed": 1776573615618,
       "type": "file"
     },
     {
@@ -132,14 +132,14 @@
     },
     {
       "path": "lib/types.ts",
-      "accessCount": 5,
-      "lastAccessed": 1776571873551,
+      "accessCount": 7,
+      "lastAccessed": 1776572687649,
       "type": "file"
     },
     {
       "path": "lib/yahoo.ts",
-      "accessCount": 4,
-      "lastAccessed": 1776571885818,
+      "accessCount": 7,
+      "lastAccessed": 1776572697211,
       "type": "file"
     },
     {
@@ -173,6 +173,12 @@
       "type": "file"
     },
     {
+      "path": "app/api/stock/[ticker]/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776572476171,
+      "type": "file"
+    },
+    {
       "path": "tsconfig.json",
       "accessCount": 2,
       "lastAccessed": 1776179217469,
@@ -203,9 +209,9 @@
       "type": "file"
     },
     {
-      "path": "app/api/stock/[ticker]/route.ts",
+      "path": "app/api/earnings/[ticker]/route.ts",
       "accessCount": 2,
-      "lastAccessed": 1776571841561,
+      "lastAccessed": 1776572497937,
       "type": "file"
     },
     {
@@ -281,9 +287,9 @@
       "type": "file"
     },
     {
-      "path": "app/api/earnings/[ticker]/route.ts",
+      "path": "app/api/analyst/[ticker]/route.ts",
       "accessCount": 1,
-      "lastAccessed": 1776571902630,
+      "lastAccessed": 1776572710958,
       "type": "file"
     }
   ],

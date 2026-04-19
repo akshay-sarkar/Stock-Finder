@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"curl -s -A \\\"Mozilla/5.0\\\" \\\"https://www.reddit.com/r/stocks/search.json?q=stock+screener+features&sort=top&t=year&limit=5\\\" 2>/dev/null | python3 -c \\\"import sys,json; d=json.load(sys.std...",
-  "error": "Exit code 1\nTraceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/__init__.py\", line 293, in load\n    return loads(fp.read(),\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n  File \"/Library/Developer/CommandLineTools/Library/Frame...",
-  "timestamp": "2026-04-19T04:03:18.828Z",
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder/app/api/earnings\"}",
+  "error": "EISDIR: illegal operation on a directory, read '/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder/app/api/earnings'",
+  "timestamp": "2026-04-19T04:21:31.873Z",
   "retry_count": 1
 }

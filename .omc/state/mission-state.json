@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-19T04:09:03.932Z",
+  "updatedAt": "2026-04-19T04:29:10.109Z",
   "missions": [
     {
       "id": "session:22598c38-65f0-4db2-a584-1d9ac2a4f7d1:none",
@@ -7,15 +7,15 @@
       "name": "none",
       "objective": "Session mission",
       "createdAt": "2026-04-18T20:08:09.193Z",
-      "updatedAt": "2026-04-19T04:09:03.932Z",
+      "updatedAt": "2026-04-19T04:29:10.109Z",
       "status": "done",
-      "workerCount": 3,
+      "workerCount": 4,
       "taskCounts": {
-        "total": 3,
+        "total": 4,
         "pending": 0,
         "blocked": 0,
         "inProgress": 0,
-        "completed": 3,
+        "completed": 4,
         "failed": 0
       },
       "agents": [
@@ -27,7 +27,7 @@
           "currentStep": null,
           "latestUpdate": "completed",
           "completedSummary": null,
-          "updatedAt": "2026-04-19T03:59:40.061Z"
+          "updatedAt": "2026-04-19T04:29:10.109Z"
         },
         {
           "name": "scientist:aac983d",
@@ -48,25 +48,19 @@
           "latestUpdate": "completed",
           "completedSummary": null,
           "updatedAt": "2026-04-19T04:09:03.932Z"
+        },
+        {
+          "name": "Explore:a8b7787",
+          "role": "Explore",
+          "ownership": "a8b7787b2964466d1",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-04-19T04:21:56.524Z"
         }
       ],
       "timeline": [
-        {
-          "id": "session-start:aac983db9143838b4:2026-04-19T04:02:58.215Z",
-          "at": "2026-04-19T04:02:58.215Z",
-          "kind": "update",
-          "agent": "scientist:aac983d",
-          "detail": "started scientist:aac983d",
-          "sourceKey": "session-start:aac983db9143838b4"
-        },
-        {
-          "id": "session-stop:aac983db9143838b4:2026-04-19T04:06:51.347Z",
-          "at": "2026-04-19T04:06:51.347Z",
-          "kind": "completion",
-          "agent": "scientist:aac983d",
-          "detail": "completed",
-          "sourceKey": "session-stop:aac983db9143838b4"
-        },
         {
           "id": "session-start:ac5653b02974a455f:2026-04-19T04:07:08.558Z",
           "at": "2026-04-19T04:07:08.558Z",
@@ -82,6 +76,30 @@
           "agent": "executor:ac5653b",
           "detail": "completed",
           "sourceKey": "session-stop:ac5653b02974a455f"
+        },
+        {
+          "id": "session-start:a8b7787b2964466d1:2026-04-19T04:21:13.544Z",
+          "at": "2026-04-19T04:21:13.544Z",
+          "kind": "update",
+          "agent": "Explore:a8b7787",
+          "detail": "started Explore:a8b7787",
+          "sourceKey": "session-start:a8b7787b2964466d1"
+        },
+        {
+          "id": "session-stop:a8b7787b2964466d1:2026-04-19T04:21:56.524Z",
+          "at": "2026-04-19T04:21:56.524Z",
+          "kind": "completion",
+          "agent": "Explore:a8b7787",
+          "detail": "completed",
+          "sourceKey": "session-stop:a8b7787b2964466d1"
+        },
+        {
+          "id": "session-stop:a30ddca16899c2897:2026-04-19T04:29:10.109Z",
+          "at": "2026-04-19T04:29:10.109Z",
+          "kind": "completion",
+          "agent": "Explore:ad80fc8",
+          "detail": "completed",
+          "sourceKey": "session-stop:a30ddca16899c2897"
         }
       ]
     }

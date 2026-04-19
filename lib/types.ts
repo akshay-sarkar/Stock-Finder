@@ -134,6 +134,15 @@ export interface EarningsData {
   history: EarningsHistoryEntry[]
 }
 
+export interface AnalystData {
+  targetMeanPrice: number | null
+  targetLowPrice: number | null
+  targetHighPrice: number | null
+  recommendationMean: number | null
+  recommendationKey: string | null
+  numberOfAnalystOpinions: number | null
+}
+
 export interface StockDetailData {
   ticker: string
   companyName: string

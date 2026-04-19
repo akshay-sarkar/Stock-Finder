@@ -19,7 +19,7 @@ import {
 import { ArrowLeft, TrendingUp, ExternalLink, ChevronDown } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
-import type { StockDetailData, StockFundamentals } from '@/lib/types'
+import type { StockDetailData, StockFundamentals, EarningsData } from '@/lib/types'
 
 // ─── Date range config ────────────────────────────────────────────────────────
 const DATE_RANGES = [
@@ -224,6 +224,107 @@ function FundRow({ label, value, hint, positive }: {
   )
 }
 
+// ─── Earnings Widget ──────────────────────────────────────────────────────────
+function EarningsWidget({ data }: { data: EarningsData }) {
+  const now = new Date()
+
+  let daysUntil: number | null = null
+  let nextDateLabel = 'N/A'
+  if (data.nextEarningsDate) {
+    const next = new Date(data.nextEarningsDate)
+    daysUntil = Math.ceil((next.getTime() - now.getTime()) / 86400000)
+    nextDateLabel = next.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const soon = daysUntil != null && daysUntil >= 0 && daysUntil <= 30
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <h3 className="text-sm font-semibold text-gray-700 mb-4">Earnings</h3>
+
+      {/* Next earnings date + estimate */}
+      <div className="flex flex-wrap gap-4 mb-5">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Next Report</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-800">{nextDateLabel}</span>
+            {soon && daysUntil === 0 && (
+              <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">Today</span>
+            )}
+            {soon && daysUntil != null && daysUntil > 0 && (
+              <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 rounded px-1.5 py-0.5 font-medium">
+                in {daysUntil}d
+              </span>
+            )}
+          </div>
+        </div>
+        {data.epsEstimateNext != null && (
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Est. EPS</span>
+            <span className="text-sm font-semibold text-gray-800">
+              ${data.epsEstimateNext.toFixed(2)}
+              {data.epsEstimateLow != null && data.epsEstimateHigh != null && (
+                <span className="text-xs text-gray-400 font-normal ml-1">
+                  (${data.epsEstimateLow.toFixed(2)}–${data.epsEstimateHigh.toFixed(2)})
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Historical earnings table */}
+      {data.history.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left text-gray-400 font-medium pb-1.5 pr-4">Quarter</th>
+                <th className="text-right text-gray-400 font-medium pb-1.5 pr-4">Est. EPS</th>
+                <th className="text-right text-gray-400 font-medium pb-1.5 pr-4">Actual EPS</th>
+                <th className="text-right text-gray-400 font-medium pb-1.5">Surprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.history.map((row) => {
+                const beat = row.surprisePercent != null && row.surprisePercent > 0
+                const miss = row.surprisePercent != null && row.surprisePercent < 0
+                const qLabel = row.date
+                  ? new Date(row.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                  : '—'
+                return (
+                  <tr key={row.date} className="border-b border-gray-50 last:border-0">
+                    <td className="py-1.5 pr-4 text-gray-600 font-medium">{qLabel}</td>
+                    <td className="py-1.5 pr-4 text-right text-gray-500">
+                      {row.epsEstimate != null ? `$${row.epsEstimate.toFixed(2)}` : '—'}
+                    </td>
+                    <td className="py-1.5 pr-4 text-right font-semibold text-gray-800">
+                      {row.epsActual != null ? `$${row.epsActual.toFixed(2)}` : '—'}
+                    </td>
+                    <td className="py-1.5 text-right">
+                      {row.surprisePercent != null ? (
+                        <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                          beat ? 'bg-emerald-50 text-emerald-700' : miss ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-500'
+                        }`}>
+                          {beat ? '▲' : miss ? '▼' : '='} {Math.abs(row.surprisePercent).toFixed(1)}%
+                        </span>
+                      ) : '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {data.history.length === 0 && data.nextEarningsDate == null && (
+        <p className="text-xs text-gray-400">Earnings data not available for this ticker.</p>
+      )}
+    </div>
+  )
+}
+
 // ─── Fundamentals section ─────────────────────────────────────────────────────
 function FundamentalsSection({ f }: { f: StockFundamentals }) {
   const [growthView, setGrowthView] = useState<'yoy' | 'qoq'>('yoy')
@@ -351,6 +452,8 @@ export default function StockPage() {
   const [error, setError]     = useState<string | null>(null)
   const [range, setRange]     = useState<Range>(DATE_RANGES[3]) // default 1Y
 
+  const [earnings, setEarnings] = useState<EarningsData | null>(null)
+
   const [sidebarSearch, setSidebarSearch] = useState('')
   const filteredSidebarTickers = sidebarSearch
     ? DEFAULT_TICKERS.filter(t =>
@@ -388,8 +491,16 @@ export default function StockPage() {
     })
       .then(r => r.json())
       .then(d => setSidebarPrices(d.prices ?? {}))
-      .catch(() => {}) // non-critical — sidebar still works without prices
+      .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!ticker || !isValidTicker(ticker)) return
+    fetch(`/api/earnings/${ticker}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setEarnings(d) })
+      .catch(() => {})
+  }, [ticker])
 
   const fetchData = useCallback((r: Range) => {
     if (!ticker || !isValidTicker(ticker)) return
@@ -490,14 +601,21 @@ export default function StockPage() {
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
               <div className="ml-auto flex items-center gap-2">
-                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                  <ExternalLink size={13} /> Capitol Trades
-                </a>
-                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                  <ExternalLink size={13} /> Quiver Congress
-                </a>
+                <div className="relative group">
+                  <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                    Congress Trades <ChevronDown size={13} />
+                  </button>
+                  <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">
+                    <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Trades
+                    </a>
+                    <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Quiver Congress
+                    </a>
+                  </div>
+                </div>
                 <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
                   <ExternalLink size={13} /> Insider Trading
@@ -549,14 +667,21 @@ export default function StockPage() {
               </Link>
               <span className="text-slate-300 font-semibold">{ticker}</span>
               <div className="ml-auto flex items-center gap-2">
-                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                  <ExternalLink size={13} /> Capitol Trades
-                </a>
-                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                  <ExternalLink size={13} /> Quiver Congress
-                </a>
+                <div className="relative group">
+                  <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                    Congress Trades <ChevronDown size={13} />
+                  </button>
+                  <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">
+                    <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Capitol Trades
+                    </a>
+                    <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                      <ExternalLink size={12} /> Quiver Congress
+                    </a>
+                  </div>
+                </div>
                 <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
                   <ExternalLink size={13} /> Insider Trading
@@ -647,14 +772,21 @@ export default function StockPage() {
               </div>
             </div>
             <div className="ml-auto flex items-center gap-2 shrink-0">
-              <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                <ExternalLink size={13} /> Capitol Trades
-              </a>
-              <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                <ExternalLink size={13} /> Quiver Congress
-              </a>
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+                  Congress Trades <ChevronDown size={13} />
+                </button>
+                <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">
+                  <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                    <ExternalLink size={12} /> Capitol Trades
+                  </a>
+                  <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                    <ExternalLink size={12} /> Quiver Congress
+                  </a>
+                </div>
+              </div>
               <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
                 <ExternalLink size={13} /> Insider Trading
@@ -772,6 +904,9 @@ export default function StockPage() {
               color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
             />
           </div>
+
+          {/* Earnings Widget */}
+          {earnings && <EarningsWidget data={earnings} />}
 
           {/* Volume Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">

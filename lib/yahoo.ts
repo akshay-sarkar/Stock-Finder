@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { OHLCVBar, StockFundamentals } from './types'
+import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry } from './types'
 
 // yahoo-finance2 v3 uses class instantiation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -72,6 +72,44 @@ export async function getQuote(ticker: string): Promise<{
     changePercent: result.regularMarketChangePercent ?? 0,
     name: result.longName ?? result.shortName ?? ticker,
     exchange: toGoogleExchange(result.fullExchangeName ?? result.exchange),
+  }
+}
+
+/**
+ * Fetches upcoming earnings date + EPS estimates + last 4 quarters history.
+ * Modules: calendarEvents (next date + estimate), earningsHistory (actuals)
+ * Returns gracefully if modules unavailable (ETFs, indices).
+ */
+export async function getEarnings(ticker: string): Promise<EarningsData> {
+  const result = await yahooFinance.quoteSummary(ticker, {
+    modules: ['calendarEvents', 'earningsHistory'],
+  }, { validateResult: false }).catch(() => null)
+
+  const cal = result?.calendarEvents ?? {}
+  const earningsDates: any[] = cal?.earnings?.earningsDate ?? []
+
+  let nextEarningsDate: string | null = null
+  if (earningsDates.length > 0) {
+    const d = earningsDates[0]
+    nextEarningsDate = d instanceof Date ? d.toISOString().slice(0, 10) : null
+  }
+
+  const history: EarningsHistoryEntry[] = (result?.earningsHistory?.history ?? [])
+    .slice(0, 4)
+    .map((h: any) => ({
+      date: h.quarter instanceof Date ? h.quarter.toISOString().slice(0, 10) : null,
+      epsActual: h.epsActual ?? null,
+      epsEstimate: h.epsEstimate ?? null,
+      surprisePercent: h.surprisePercent != null ? h.surprisePercent * 100 : null,
+    }))
+    .filter((h: EarningsHistoryEntry) => h.date !== null)
+
+  return {
+    nextEarningsDate,
+    epsEstimateNext: cal?.earnings?.earningsAverage ?? null,
+    epsEstimateLow:  cal?.earnings?.earningsLow    ?? null,
+    epsEstimateHigh: cal?.earnings?.earningsHigh   ?? null,
+    history,
   }
 }
 

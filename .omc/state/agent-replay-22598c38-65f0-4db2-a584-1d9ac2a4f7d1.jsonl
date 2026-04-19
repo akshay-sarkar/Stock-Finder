@@ -3,3 +3,10 @@
 {"t":0,"agent":"aa9bd90","agent_type":"unknown","event":"agent_stop","success":true}
 {"t":0,"agent":"aac2ac6","agent_type":"unknown","event":"agent_stop","success":true}
 {"t":0,"agent":"a07d370","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a7bdb86","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a6c018b","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"a772e0f","agent_type":"unknown","event":"agent_stop","success":true}
+{"t":0,"agent":"aac983d","agent_type":"scientist","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"aac983d","agent_type":"scientist","event":"agent_stop","success":true,"duration_ms":233132}
+{"t":0,"agent":"ac5653b","agent_type":"executor","event":"agent_start","parent_mode":"none"}
+{"t":0,"agent":"ac5653b","agent_type":"executor","event":"agent_stop","success":true,"duration_ms":115374}

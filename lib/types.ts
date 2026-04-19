@@ -119,6 +119,21 @@ export interface CongressionalTrade {
   changePercent?: number
 }
 
+export interface EarningsHistoryEntry {
+  date: string
+  epsActual: number | null
+  epsEstimate: number | null
+  surprisePercent: number | null
+}
+
+export interface EarningsData {
+  nextEarningsDate: string | null
+  epsEstimateNext: number | null
+  epsEstimateLow: number | null
+  epsEstimateHigh: number | null
+  history: EarningsHistoryEntry[]
+}
+
 export interface StockDetailData {
   ticker: string
   companyName: string

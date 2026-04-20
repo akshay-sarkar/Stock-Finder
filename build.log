@@ -1,0 +1,40 @@
+
+> stock-finder@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/9) ...
+   Generating static pages (2/9) 
+   Generating static pages (4/9) 
+   Generating static pages (6/9) 
+ ✓ Generating static pages (9/9)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    10.8 kB         108 kB
+├ ○ /_not-found                          876 B          88.4 kB
+├ ƒ /api/analyst/[ticker]                0 B                0 B
+├ ƒ /api/congressional-trades            0 B                0 B
+├ ƒ /api/earnings/[ticker]               0 B                0 B
+├ ƒ /api/prices                          0 B                0 B
+├ ƒ /api/screener                        0 B                0 B
+├ ƒ /api/stock/[ticker]                  0 B                0 B
+├ ○ /api/watchlist-prices                0 B                0 B
+├ ○ /congress                            4.36 kB         101 kB
+└ ƒ /stock/[ticker]                      117 kB          214 kB
++ First Load JS shared by all            87.5 kB
+  ├ chunks/117-99ddb2cd1124ad82.js       31.9 kB
+  ├ chunks/fd9d1056-c97be0bb877e6d8d.js  53.6 kB
+  └ other shared chunks (total)          2 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

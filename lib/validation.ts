@@ -43,11 +43,19 @@ const VALID_RSI        = ['any', 'oversold', 'overbought', 'neutral'] as const
 const VALID_MACD       = ['any', 'bullish_crossover', 'bearish_crossover', 'above_signal', 'below_signal'] as const
 const VALID_MA         = ['any', 'above_sma50', 'below_sma50', 'golden_cross', 'death_cross', 'price_above_sma200', 'price_below_sma200'] as const
 const VALID_VOLUME     = ['any', 'spike', 'low', 'normal'] as const
+const VALID_PE         = ['any', 'under_15', 'under_25', 'under_40', 'over_40', 'negative'] as const
+const VALID_MARKET_CAP = ['any', 'mega', 'large', 'mid', 'small'] as const
+const VALID_DIV_YIELD  = ['any', 'none', 'over_1', 'over_2', 'over_4'] as const
+const VALID_REV_GROWTH = ['any', 'positive', 'over_10', 'over_20', 'negative'] as const
 
 type RSIFilter    = typeof VALID_RSI[number]
 type MACDFilter   = typeof VALID_MACD[number]
 type MAFilter     = typeof VALID_MA[number]
 type VolumeFilter = typeof VALID_VOLUME[number]
+type PEFilter     = typeof VALID_PE[number]
+type MarketCapFilter = typeof VALID_MARKET_CAP[number]
+type DivYieldFilter = typeof VALID_DIV_YIELD[number]
+type RevGrowthFilter = typeof VALID_REV_GROWTH[number]
 
 import type { FilterCriteria } from './types'
 
@@ -63,8 +71,12 @@ export function sanitizeFilters(raw: unknown): FilterCriteria {
   const macd   = VALID_MACD.includes(obj.macd  as MACDFilter)   ? (obj.macd   as MACDFilter)   : 'any'
   const movingAverage = VALID_MA.includes(obj.movingAverage as MAFilter) ? (obj.movingAverage as MAFilter) : 'any'
   const volume = VALID_VOLUME.includes(obj.volume as VolumeFilter) ? (obj.volume as VolumeFilter) : 'any'
+  const pe = VALID_PE.includes(obj.pe as PEFilter) ? (obj.pe as PEFilter) : 'any'
+  const marketCap = VALID_MARKET_CAP.includes(obj.marketCap as MarketCapFilter) ? (obj.marketCap as MarketCapFilter) : 'any'
+  const dividendYield = VALID_DIV_YIELD.includes(obj.dividendYield as DivYieldFilter) ? (obj.dividendYield as DivYieldFilter) : 'any'
+  const revenueGrowth = VALID_REV_GROWTH.includes(obj.revenueGrowth as RevGrowthFilter) ? (obj.revenueGrowth as RevGrowthFilter) : 'any'
 
-  return { rsi, macd, movingAverage, volume }
+  return { rsi, macd, movingAverage, volume, pe, marketCap, dividendYield, revenueGrowth }
 }
 
 // ─── Query params ─────────────────────────────────────────────────────────────

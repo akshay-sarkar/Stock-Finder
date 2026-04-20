@@ -15,10 +15,14 @@ const ITEMS_PER_PAGE  = 20
 const SCAN_BATCH      = 50
 const LS_WATCHLIST    = 'sf-watchlist-v2'
 const LS_SHOWCOL      = 'sf-show-company'
+const LS_COL_PE       = 'sf-col-pe'
+const LS_COL_MKTCAP   = 'sf-col-mktcap'
+const LS_COL_DIV      = 'sf-col-dividend'
 const SS_STATE        = 'sf-screener-state'
 
 const DEFAULT_FILTERS: FilterCriteria = {
   rsi: 'any', macd: 'any', movingAverage: 'any', volume: 'any',
+  pe: 'any', marketCap: 'any', dividendYield: 'any', revenueGrowth: 'any',
 }
 
 // ─── Signal glossary ──────────────────────────────────────────────────────────
@@ -66,6 +70,13 @@ function formatPrice(n: number) {
 function formatVol(ratio: number) {
   const cls = ratio >= 2 ? 'badge-green' : ratio < 0.5 ? 'badge-red' : 'badge-gray'
   return <span className={cls}>{ratio.toFixed(2)}x</span>
+}
+
+function fmtCap(n: number): string {
+  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`
+  if (n >= 1e9)  return `$${(n / 1e9).toFixed(2)}B`
+  if (n >= 1e6)  return `$${(n / 1e6).toFixed(1)}M`
+  return `$${n.toLocaleString()}`
 }
 
 function SignalBadge({ label }: { label: string }) {
@@ -381,6 +392,9 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1)
   // Column visibility
   const [showCompany, setShowCompany] = useState(true)
+  const [showPE, setShowPE]               = useState(true)
+  const [showMarketCap, setShowMarketCap] = useState(true)
+  const [showDividend, setShowDividend]   = useState(false)
   const [showColMenu, setShowColMenu] = useState(false)
   // UI toggles
   const [showGlossary,    setShowGlossary]    = useState(false)
@@ -402,6 +416,9 @@ export default function Home() {
       const col = localStorage.getItem(LS_SHOWCOL)
       if (col !== null) setShowCompany(col === 'true')
     } catch {}
+    if (localStorage.getItem(LS_COL_PE)     === 'false') setShowPE(false)
+    if (localStorage.getItem(LS_COL_MKTCAP) === 'false') setShowMarketCap(false)
+    if (localStorage.getItem(LS_COL_DIV)    === 'true')  setShowDividend(true)
     setWatchlistReady(true)
   }, [])
 
@@ -413,6 +430,12 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem(LS_SHOWCOL, String(showCompany))
   }, [showCompany])
+
+  useEffect(() => {
+    localStorage.setItem(LS_COL_PE,     String(showPE))
+    localStorage.setItem(LS_COL_MKTCAP, String(showMarketCap))
+    localStorage.setItem(LS_COL_DIV,    String(showDividend))
+  }, [showPE, showMarketCap, showDividend])
 
   // ── Restore screener state from sessionStorage (coming back from stock page)
   useEffect(() => {
@@ -494,11 +517,10 @@ export default function Home() {
   }
 
   const sorted = [...results].sort((a, b) => {
-    const av = a[sortKey] as number
-    const bv = b[sortKey] as number
-    if (av == null) return 1
-    if (bv == null) return -1
-    return sortAsc ? av - bv : bv - av
+    const av = a[sortKey] ?? (sortAsc ? Infinity : -Infinity)
+    const bv = b[sortKey] ?? (sortAsc ? Infinity : -Infinity)
+    if (typeof av === 'string' || typeof bv === 'string') return 0
+    return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number)
   })
 
   // ── Pagination ─────────────────────────────────────────────────────────────
@@ -655,6 +677,77 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Fundamentals Row */}
+          <div className="mb-4 pb-4 border-t border-gray-100 pt-4">
+            <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-3">Fundamentals</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* P/E Ratio */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">P/E Ratio</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  value={filters.pe}
+                  onChange={e => setFilters({ ...filters, pe: e.target.value as FilterCriteria['pe'] })}
+                >
+                  <option value="any">Any</option>
+                  <option value="under_15">Under 15</option>
+                  <option value="under_25">Under 25</option>
+                  <option value="under_40">Under 40</option>
+                  <option value="over_40">Over 40</option>
+                  <option value="negative">Negative</option>
+                </select>
+              </div>
+
+              {/* Market Cap */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Market Cap</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  value={filters.marketCap}
+                  onChange={e => setFilters({ ...filters, marketCap: e.target.value as FilterCriteria['marketCap'] })}
+                >
+                  <option value="any">Any</option>
+                  <option value="mega">Mega (&gt;= $200B)</option>
+                  <option value="large">Large ($10B–$200B)</option>
+                  <option value="mid">Mid ($2B–$10B)</option>
+                  <option value="small">Small (&lt; $2B)</option>
+                </select>
+              </div>
+
+              {/* Dividend Yield */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Dividend Yield</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  value={filters.dividendYield}
+                  onChange={e => setFilters({ ...filters, dividendYield: e.target.value as FilterCriteria['dividendYield'] })}
+                >
+                  <option value="any">Any</option>
+                  <option value="none">None (0%)</option>
+                  <option value="over_1">&gt; 1%</option>
+                  <option value="over_2">&gt; 2%</option>
+                  <option value="over_4">&gt; 4%</option>
+                </select>
+              </div>
+
+              {/* Revenue Growth */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Revenue Growth (YoY)</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  value={filters.revenueGrowth}
+                  onChange={e => setFilters({ ...filters, revenueGrowth: e.target.value as FilterCriteria['revenueGrowth'] })}
+                >
+                  <option value="any">Any</option>
+                  <option value="positive">Positive (&gt; 0%)</option>
+                  <option value="over_10">&gt; 10%</option>
+                  <option value="over_20">&gt; 20%</option>
+                  <option value="negative">Negative (&lt; 0%)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           {/* Watchlist bar */}
           <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -760,6 +853,18 @@ export default function Home() {
                         />
                         <span className="text-sm text-gray-700">Company Name</span>
                       </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
+                        <input type="checkbox" checked={showPE} onChange={e => setShowPE(e.target.checked)} className="rounded" />
+                        <span className="text-sm text-gray-700">P/E Ratio</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
+                        <input type="checkbox" checked={showMarketCap} onChange={e => setShowMarketCap(e.target.checked)} className="rounded" />
+                        <span className="text-sm text-gray-700">Market Cap</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
+                        <input type="checkbox" checked={showDividend} onChange={e => setShowDividend(e.target.checked)} className="rounded" />
+                        <span className="text-sm text-gray-700">Dividend Yield</span>
+                      </label>
                     </div>
                   )}
                 </div>
@@ -782,6 +887,24 @@ export default function Home() {
                         <th className="text-left px-4 py-3 font-semibold text-gray-600">Ticker</th>
                         {showCompany && (
                           <th className="text-left px-4 py-3 font-semibold text-gray-600">Company</th>
+                        )}
+                        {showPE && (
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                            onClick={() => toggleSort('trailingPE')}>
+                            P/E <SortIcon col="trailingPE" />
+                          </th>
+                        )}
+                        {showMarketCap && (
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                            onClick={() => toggleSort('marketCap')}>
+                            Mkt Cap <SortIcon col="marketCap" />
+                          </th>
+                        )}
+                        {showDividend && (
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                            onClick={() => toggleSort('dividendYield')}>
+                            Div Yield <SortIcon col="dividendYield" />
+                          </th>
                         )}
                         <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                           onClick={() => toggleSort('price')}>
@@ -820,6 +943,23 @@ export default function Home() {
                           </td>
                           {showCompany && (
                             <td className="px-4 py-3 text-gray-500 text-xs">{row.companyName ?? '—'}</td>
+                          )}
+                          {showPE && (
+                            <td className="px-4 py-3 text-xs text-gray-700">
+                              {row.trailingPE != null ? `${row.trailingPE.toFixed(1)}×` : '—'}
+                            </td>
+                          )}
+                          {showMarketCap && (
+                            <td className="px-4 py-3 text-xs text-gray-700">
+                              {row.marketCap != null ? fmtCap(row.marketCap) : '—'}
+                            </td>
+                          )}
+                          {showDividend && (
+                            <td className="px-4 py-3 text-xs text-gray-700">
+                              {row.dividendYield != null && row.dividendYield > 0
+                                ? `${(row.dividendYield * 100).toFixed(2)}%`
+                                : '—'}
+                            </td>
                           )}
                           <td className="px-4 py-3 text-right font-mono">${formatPrice(row.price)}</td>
                           <td className={`px-4 py-3 text-right font-mono ${changeColor(row.changePercent)}`}>

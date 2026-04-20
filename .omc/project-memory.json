@@ -108,14 +108,20 @@
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 45,
-      "lastAccessed": 1776573615618,
+      "accessCount": 79,
+      "lastAccessed": 1776708175248,
       "type": "file"
     },
     {
       "path": "app/page.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1776547562520,
+      "accessCount": 32,
+      "lastAccessed": 1776709299331,
+      "type": "file"
+    },
+    {
+      "path": "lib/types.ts",
+      "accessCount": 14,
+      "lastAccessed": 1776708116043,
       "type": "file"
     },
     {
@@ -126,20 +132,26 @@
     },
     {
       "path": "",
-      "accessCount": 9,
-      "lastAccessed": 1776571838602,
+      "accessCount": 10,
+      "lastAccessed": 1776707856350,
       "type": "directory"
     },
     {
-      "path": "lib/types.ts",
-      "accessCount": 7,
-      "lastAccessed": 1776572687649,
+      "path": "lib/yahoo.ts",
+      "accessCount": 9,
+      "lastAccessed": 1776708128496,
       "type": "file"
     },
     {
-      "path": "lib/yahoo.ts",
+      "path": "app/api/screener/route.ts",
       "accessCount": 7,
-      "lastAccessed": 1776572697211,
+      "lastAccessed": 1776708188951,
+      "type": "file"
+    },
+    {
+      "path": "lib/screener.ts",
+      "accessCount": 4,
+      "lastAccessed": 1776708166303,
       "type": "file"
     },
     {
@@ -179,6 +191,24 @@
       "type": "file"
     },
     {
+      "path": "reports/pm-features-2026-04-18.md",
+      "accessCount": 3,
+      "lastAccessed": 1776707203291,
+      "type": "file"
+    },
+    {
+      "path": ".claude/commands/agent.md",
+      "accessCount": 3,
+      "lastAccessed": 1776707783240,
+      "type": "file"
+    },
+    {
+      "path": "lib/validation.ts",
+      "accessCount": 3,
+      "lastAccessed": 1776708140004,
+      "type": "file"
+    },
+    {
       "path": "tsconfig.json",
       "accessCount": 2,
       "lastAccessed": 1776179217469,
@@ -203,12 +233,6 @@
       "type": "directory"
     },
     {
-      "path": "reports/pm-features-2026-04-18.md",
-      "accessCount": 2,
-      "lastAccessed": 1776571823900,
-      "type": "file"
-    },
-    {
       "path": "app/api/earnings/[ticker]/route.ts",
       "accessCount": 2,
       "lastAccessed": 1776572497937,
@@ -221,27 +245,9 @@
       "type": "file"
     },
     {
-      "path": "app/api/screener/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542899220,
-      "type": "file"
-    },
-    {
-      "path": "lib/validation.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542902653,
-      "type": "file"
-    },
-    {
       "path": "lib/indicators.ts",
       "accessCount": 1,
       "lastAccessed": 1776542902885,
-      "type": "file"
-    },
-    {
-      "path": "lib/screener.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542905162,
       "type": "file"
     },
     {
@@ -281,15 +287,21 @@
       "type": "file"
     },
     {
-      "path": ".claude/commands/agent.md",
-      "accessCount": 1,
-      "lastAccessed": 1776571235055,
-      "type": "file"
-    },
-    {
       "path": "app/api/analyst/[ticker]/route.ts",
       "accessCount": 1,
       "lastAccessed": 1776572710958,
+      "type": "file"
+    },
+    {
+      "path": ".claude/agent/Code Writer/AGENT.md",
+      "accessCount": 1,
+      "lastAccessed": 1776707406229,
+      "type": "file"
+    },
+    {
+      "path": ".claude/agent/Code Reviewer/AGENT.md",
+      "accessCount": 1,
+      "lastAccessed": 1776707778376,
       "type": "file"
     }
   ],

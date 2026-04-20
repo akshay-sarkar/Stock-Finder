@@ -1,7 +1,7 @@
 {
   "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder/app/api/earnings\"}",
-  "error": "EISDIR: illegal operation on a directory, read '/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder/app/api/earnings'",
-  "timestamp": "2026-04-19T04:21:31.873Z",
+  "tool_input_preview": "{\"file_path\":\"/Users/akshaysarkar/Documents/Claude/Projects/Stock\\\\ Finder/app/page.tsx\"}",
+  "error": "File does not exist. Note: your current working directory is /Users/akshaysarkar/Documents/Claude/Projects/Stock Finder.",
+  "timestamp": "2026-04-20T18:20:09.927Z",
   "retry_count": 1
 }

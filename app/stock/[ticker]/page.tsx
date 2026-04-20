@@ -127,9 +127,7 @@ function ChartLegend({ payload }: { payload?: LegendPayloadItem[] }) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmtPrice(n: number) {
-  return n >= 1000
-    ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : n.toFixed(2)
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 function fmtVol(n: number) {
   if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B'
@@ -251,7 +249,7 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-700">Analyst Ratings</h3>
+        <h2 className="text-sm font-semibold text-gray-700">Analyst Ratings</h2>
         {data.numberOfAnalystOpinions != null && (
           <span className="text-xs text-gray-400">{data.numberOfAnalystOpinions} analysts</span>
         )}
@@ -322,6 +320,57 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
   )
 }
 
+// ─── Short Interest Widget ───────────────────────────────────────────────────────
+function ShortInterestWidget({ fundamentals }: { fundamentals: StockFundamentals }) {
+  const { shortPercentOfFloat, shortRatio, sharesShort } = fundamentals
+
+  // Return null if all fields are null
+  if (shortPercentOfFloat == null && shortRatio == null && sharesShort == null) {
+    return null
+  }
+
+  const isHighShort = shortPercentOfFloat != null && shortPercentOfFloat > 0.20
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <h2 className="text-sm font-semibold text-gray-700 mb-4">Short Interest</h2>
+
+      <div className="flex gap-6 mb-4">
+        {/* Short Float */}
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Short Float</span>
+          <span className="text-sm font-semibold text-gray-800">
+            {shortPercentOfFloat != null ? `${(shortPercentOfFloat * 100).toFixed(2)}%` : 'N/A'}
+          </span>
+        </div>
+
+        {/* Short Ratio */}
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Short Ratio</span>
+          <span className="text-sm font-semibold text-gray-800">
+            {shortRatio != null ? `${shortRatio.toFixed(1)}×` : 'N/A'}
+          </span>
+        </div>
+
+        {/* Shares Short */}
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Shares Short</span>
+          <span className="text-sm font-semibold text-gray-800">
+            {sharesShort != null ? fmtVol(sharesShort) : 'N/A'}
+          </span>
+        </div>
+      </div>
+
+      {/* High Short Interest Badge */}
+      {isHighShort && (
+        <div className="text-xs bg-red-50 text-red-600 border border-red-200 rounded px-2 py-0.5 font-semibold inline-block">
+          ⚠ High Short Interest
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Earnings Widget ──────────────────────────────────────────────────────────
 function EarningsWidget({ data }: { data: EarningsData }) {
   const now = new Date()
@@ -338,7 +387,7 @@ function EarningsWidget({ data }: { data: EarningsData }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4">Earnings</h3>
+      <h2 className="text-sm font-semibold text-gray-700 mb-4">Earnings</h2>
 
       {/* Next earnings date + estimate */}
       <div className="flex flex-wrap gap-4 mb-5">
@@ -438,7 +487,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
       <div className="flex items-center gap-3 mb-4">
-        <h3 className="text-sm font-semibold text-gray-700">Key Statistics</h3>
+        <h2 className="text-sm font-semibold text-gray-700">Key Statistics</h2>
         {/* YoY / QoQ toggle — only show if QoQ data is available */}
         <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
           <button
@@ -478,7 +527,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
           <FundRow label="P/E (TTM)"     value={fmtMult(f.trailingPE)}   hint="Trailing P/E: share price ÷ earnings per share (past 12 months). Lower = cheaper relative to earnings." />
           <FundRow label="Forward P/E"   value={fmtMult(f.forwardPE)}    hint="Forward P/E: share price ÷ next 12 months' expected earnings. Reflects analyst growth expectations." />
           <FundRow label="Price / Book"  value={fmtMult(f.priceToBook)}  hint="Share price ÷ book value per share. P/B < 1 may indicate the stock is trading below its net asset value." />
-          <FundRow label="Price / Sales" value={fmtMult(f.priceToSales)} hint="Market cap ÷ annual revenue. Useful for evaluating unprofitable or high-growth companies." />
+          <FundRow label="Price / Sales" value={fmtMult(f.priceToSales)} hint="Market cap ÷ annual revenue. Useful for evaluating unprofitable or high-growth companies. May be unavailable for some sectors or recently-listed companies." />
         </div>
 
         {/* Earnings & Dividends */}
@@ -549,6 +598,7 @@ export default function StockPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
   const [range, setRange]     = useState<Range>(DATE_RANGES[3]) // default 1Y
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const [earnings, setEarnings] = useState<EarningsData | null>(null)
   const [analyst, setAnalyst]   = useState<AnalystData | null>(null)
@@ -565,9 +615,37 @@ export default function StockPage() {
     if (typeof window === 'undefined') return false
     return localStorage.getItem('sf-chart-bb') === 'true'
   })
+  const [showEMA20, setShowEMA20] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('sf-chart-ema20') !== 'false'
+  })
+  const [showSMA50, setShowSMA50] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('sf-chart-sma50') !== 'false'
+  })
+  const [showSMA200, setShowSMA200] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('sf-chart-sma200') !== 'false'
+  })
+
   const toggleBB = () => setShowBB(prev => {
     const next = !prev
     localStorage.setItem('sf-chart-bb', String(next))
+    return next
+  })
+  const toggleEMA20 = () => setShowEMA20(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-ema20', String(next))
+    return next
+  })
+  const toggleSMA50 = () => setShowSMA50(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-sma50', String(next))
+    return next
+  })
+  const toggleSMA200 = () => setShowSMA200(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-sma200', String(next))
     return next
   })
 
@@ -621,6 +699,7 @@ export default function StockPage() {
       .then((d) => {
         if (d.error) throw new Error(d.error)
         setData(d)
+        setLastUpdated(new Date())
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
@@ -670,10 +749,8 @@ export default function StockPage() {
                   )}
                 </span>
 
-                {/* Right: price + change% or active dot */}
-                {isActive ? (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white opacity-80 shrink-0" />
-                ) : priceData ? (
+                {/* Right: price + change% (shown for all items, not just inactive) */}
+                {priceData ? (
                   <span className="flex flex-col items-end shrink-0 tabular-nums">
                     <span className="text-[10px] text-slate-300 leading-tight">
                       ${priceData.price >= 1000
@@ -915,25 +992,32 @@ export default function StockPage() {
               </div>
             </div>
           </div>
-          {/* Quick stats row — P/E, 52W range, Dividend */}
+          {/* Quick stats row — P/E, 52W range, Dividend, Last Updated */}
           {data.fundamentals && (
-            <div className="px-4 pb-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-700/60 pt-2">
-              {data.fundamentals.trailingPE != null && (
-                <span className="text-xs text-slate-400">
-                  P/E&nbsp;<span className="text-white font-semibold">{data.fundamentals.trailingPE.toFixed(1)}×</span>
-                </span>
-              )}
-              {data.fundamentals.fiftyTwoWeekHigh != null && data.fundamentals.fiftyTwoWeekLow != null && (
-                <span className="text-xs text-slate-400">
-                  52W&nbsp;
-                  <span className="text-red-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekLow)}</span>
-                  <span className="text-slate-500 mx-1">–</span>
-                  <span className="text-emerald-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekHigh)}</span>
-                </span>
-              )}
-              {data.fundamentals.dividendYield != null && data.fundamentals.dividendYield > 0 && (
-                <span className="text-xs text-slate-400">
-                  Div&nbsp;<span className="text-amber-400 font-semibold">{(data.fundamentals.dividendYield * 100).toFixed(2)}%</span>
+            <div className="px-4 pb-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-700/60 pt-2 justify-between">
+              <div className="flex flex-wrap gap-x-5 gap-y-1">
+                {data.fundamentals.trailingPE != null && (
+                  <span className="text-xs text-slate-400">
+                    P/E&nbsp;<span className="text-white font-semibold">{data.fundamentals.trailingPE.toFixed(1)}×</span>
+                  </span>
+                )}
+                {data.fundamentals.fiftyTwoWeekHigh != null && data.fundamentals.fiftyTwoWeekLow != null && (
+                  <span className="text-xs text-slate-400">
+                    52W&nbsp;
+                    <span className="text-red-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekLow)}</span>
+                    <span className="text-slate-500 mx-1">–</span>
+                    <span className="text-emerald-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekHigh)}</span>
+                  </span>
+                )}
+                {data.fundamentals.dividendYield != null && data.fundamentals.dividendYield > 0 && (
+                  <span className="text-xs text-slate-400">
+                    Div&nbsp;<span className="text-amber-400 font-semibold">{(data.fundamentals.dividendYield * 100).toFixed(2)}%</span>
+                  </span>
+                )}
+              </div>
+              {lastUpdated && (
+                <span className="text-xs text-slate-500 italic">
+                  Updated {lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
             </div>
@@ -966,6 +1050,39 @@ export default function StockPage() {
             <span className="text-xs text-gray-300 ml-3 mr-1 hidden sm:inline">|</span>
             <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1 hidden sm:inline">Overlays:</span>
             <button
+              onClick={toggleEMA20}
+              title="Exponential Moving Average (20 periods)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showEMA20
+                  ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-green-400 hover:text-green-600'
+              }`}
+            >
+              EMA20
+            </button>
+            <button
+              onClick={toggleSMA50}
+              title="Simple Moving Average (50 periods)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showSMA50
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-amber-400 hover:text-amber-600'
+              }`}
+            >
+              SMA50
+            </button>
+            <button
+              onClick={toggleSMA200}
+              title="Simple Moving Average (200 periods)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showSMA200
+                  ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-600'
+              }`}
+            >
+              SMA200
+            </button>
+            <button
               onClick={toggleBB}
               title="Bollinger Bands (20, ±2σ)"
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
@@ -981,47 +1098,57 @@ export default function StockPage() {
             </span>
           </div>
 
-          {/* Indicator Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="RSI (14)"
-              value={ind.rsi.toString()}
-              sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
-              color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
-            />
-            <StatCard
-              label="MACD Histogram"
-              value={ind.macdHistogram.toFixed(3)}
-              sub={
-                ind.macdCrossover !== 'none'
-                  ? `${ind.macdCrossover === 'bullish' ? '▲ Bullish' : '▼ Bearish'} crossover!`
-                  : ind.macdHistogram > 0 ? 'Above signal' : 'Below signal'
-              }
-              color={ind.macdHistogram > 0 ? 'text-emerald-600' : 'text-red-500'}
-            />
-            <StatCard
-              label="SMA 50 / 200"
-              value={`${ind.sma50.toFixed(0)} / ${ind.sma200?.toFixed(0) ?? 'N/A'}`}
-              sub={ind.sma200 ? (ind.sma50 > ind.sma200 ? '🟢 Golden Cross' : '🔴 Death Cross') : 'Not enough data'}
-            />
-            <StatCard
-              label="Volume Ratio"
-              value={`${ind.volumeRatio.toFixed(2)}×`}
-              sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
-              color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
-            />
-          </div>
+{/* Indicator Summary Cards */}
+<div className="grid grid-cols-3 gap-4" style={{ gridTemplateRows: 'auto auto' }}>
 
-          {/* Analyst Widget */}
-          {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} />}
+  {/* Row 1, Col 1 */}
+  <StatCard
+    label="RSI (14)"
+    value={ind.rsi.toString()}
+    sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
+    color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
+  />
 
-          {/* Earnings Widget */}
-          {earnings && <EarningsWidget data={earnings} />}
+  {/* Row 1, Col 2 */}
+  <StatCard
+    label="MACD Histogram"
+    value={ind.macdHistogram.toFixed(3)}
+    sub={
+      ind.macdCrossover !== 'none'
+        ? `${ind.macdCrossover === 'bullish' ? '▲ Bullish' : '▼ Bearish'} crossover!`
+        : ind.macdHistogram > 0 ? 'Above signal' : 'Below signal'
+    }
+    color={ind.macdHistogram > 0 ? 'text-emerald-600' : 'text-red-500'}
+  />
+
+  {/* Col 3, Rows 1–2 — Analyst spans both rows */}
+  {analyst && (
+    <div className="row-span-2">
+      <AnalystWidget data={analyst} currentPrice={data.currentPrice} />
+    </div>
+  )}
+
+  {/* Row 2, Col 1 */}
+  <StatCard
+    label="SMA 50 / 200"
+    value={`${ind.sma50.toFixed(0)} / ${ind.sma200?.toFixed(0) ?? 'N/A'}`}
+    sub={ind.sma200 ? (ind.sma50 > ind.sma200 ? '🟢 Golden Cross' : '🔴 Death Cross') : 'Not enough data'}
+  />
+
+  {/* Row 2, Col 2 */}
+  <StatCard
+    label="Volume Ratio"
+    value={`${ind.volumeRatio.toFixed(2)}×`}
+    sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
+    color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
+  />
+
+</div>
 
           {/* Volume Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center gap-4 mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">Volume</h3>
+              <h2 className="text-sm font-semibold text-gray-700">Volume</h2>
               <span className="flex items-center gap-1.5 text-xs text-gray-400">
                 <span className="inline-block w-5 border-t-2 border-dashed border-red-400" />
                 Vol SMA(20) — 20-period avg
@@ -1043,12 +1170,12 @@ export default function StockPage() {
           {/* Price + Moving Averages Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-sm font-semibold text-gray-700">
+              <h2 className="text-sm font-semibold text-gray-700">
                 Price &amp; Moving Averages
                 <span className="text-gray-400 font-normal ml-2 text-xs">
                   ({data.chartData.length} {isWeekly ? 'weeks' : 'days'})
                 </span>
-              </h3>
+              </h2>
               {showBB && (
                 <span className="text-[11px] text-violet-600 bg-violet-50 border border-violet-200 px-2 py-0.5 rounded font-medium">
                   Bollinger Bands (20, ±2σ)
@@ -1063,9 +1190,9 @@ export default function StockPage() {
                 <Tooltip formatter={priceFormatter} labelFormatter={(l) => `📅 ${l}`} {...tooltipStyle} />
                 <Legend content={<ChartLegend />} />
                 <Line type="monotone" dataKey="close"  stroke="#2563eb" dot={false} name="Close"  strokeWidth={2}   connectNulls={false} />
-                <Line type="monotone" dataKey="ema20"  stroke="#10b981" dot={false} name="EMA20"  strokeWidth={1.2} connectNulls={false} strokeDasharray="4 3" />
-                <Line type="monotone" dataKey="sma50"  stroke="#f59e0b" dot={false} name="SMA50"  strokeWidth={1.5} connectNulls={false} />
-                <Line type="monotone" dataKey="sma200" stroke="#ef4444" dot={false} name="SMA200" strokeWidth={1.5} connectNulls={false} />
+                {showEMA20 && <Line type="monotone" dataKey="ema20"  stroke="#10b981" dot={false} name="EMA20"  strokeWidth={1.2} connectNulls={false} strokeDasharray="4 3" />}
+                {showSMA50 && <Line type="monotone" dataKey="sma50"  stroke="#f59e0b" dot={false} name="SMA50"  strokeWidth={1.5} connectNulls={false} />}
+                {showSMA200 && <Line type="monotone" dataKey="sma200" stroke="#ef4444" dot={false} name="SMA200" strokeWidth={1.5} connectNulls={false} />}
                 {/* Bollinger Bands — shown only when toggled on */}
                 {showBB && <>
                   <Line type="monotone" dataKey="bbUpper"  stroke="#7c3aed" dot={false} name="BB Upper"  strokeWidth={1}   connectNulls={false} strokeDasharray="5 3" />
@@ -1078,7 +1205,7 @@ export default function StockPage() {
 
           {/* RSI Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">RSI (14)</h3>
+            <h2 className="text-sm font-semibold text-gray-700 mb-4">RSI (14)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1099,7 +1226,7 @@ export default function StockPage() {
 
           {/* MACD Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-4">MACD (12, 26, 9)</h3>
+            <h2 className="text-sm font-semibold text-gray-700 mb-4">MACD (12, 26, 9)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1124,9 +1251,15 @@ export default function StockPage() {
             </div>
           )}
 
+          {/* Short Interest Widget */}
+          {data.fundamentals && <ShortInterestWidget fundamentals={data.fundamentals} />}
+
+          {/* Earnings Widget */}
+          {earnings && <EarningsWidget data={earnings} />}
+
           {/* Latest Indicator Values */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Latest Indicator Values</h3>
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">Latest Indicator Values</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-0 text-sm">
               {(
                 [

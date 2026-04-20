@@ -225,5 +225,8 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
     grossMarginsQoQ,
     currentRatio:     fd.currentRatio     ?? null,
     debtToEquity:     fd.debtToEquity     ?? null,
+    shortPercentOfFloat: ks.shortPercentOfFloat ?? null,
+    shortRatio:         ks.shortRatio          ?? null,
+    sharesShort:        ks.sharesShort         ?? null,
   }
 }

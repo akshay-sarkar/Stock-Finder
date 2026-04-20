@@ -35,10 +35,73 @@
       "status": "completed",
       "completed_at": "2026-04-19T04:21:56.524Z",
       "duration_ms": 42980
+    },
+    {
+      "agent_id": "a0b6dd055f31cbaf0",
+      "agent_type": "oh-my-claudecode:scientist",
+      "started_at": "2026-04-20T17:33:22.952Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T17:49:21.644Z",
+      "duration_ms": 958692
+    },
+    {
+      "agent_id": "a33bca462a9562f29",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T17:58:02.529Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T17:59:20.095Z",
+      "duration_ms": 77566
+    },
+    {
+      "agent_id": "ab1fe1892aba6c3b6",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T17:59:29.594Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T18:04:10.593Z",
+      "duration_ms": 280999
+    },
+    {
+      "agent_id": "a3ab22d612adf600a",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T17:59:43.624Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T18:03:24.330Z",
+      "duration_ms": 220706
+    },
+    {
+      "agent_id": "a37059bb98ed2e797",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T18:09:51.250Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T18:13:26.624Z",
+      "duration_ms": 215374
+    },
+    {
+      "agent_id": "adbcb34e15f1f473a",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T18:13:41.461Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T18:17:04.968Z",
+      "duration_ms": 203507
+    },
+    {
+      "agent_id": "ac150ff1a47aed1da",
+      "agent_type": "oh-my-claudecode:executor",
+      "started_at": "2026-04-20T18:20:08.184Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-04-20T18:21:53.934Z",
+      "duration_ms": 105750
     }
   ],
-  "total_spawned": 4,
-  "total_completed": 4,
+  "total_spawned": 11,
+  "total_completed": 11,
   "total_failed": 0,
-  "last_updated": "2026-04-19T04:29:10.212Z"
+  "last_updated": "2026-04-20T18:21:54.036Z"
 }

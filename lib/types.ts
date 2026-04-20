@@ -59,6 +59,10 @@ export interface ScreenerRow {
   maStatus: string
   volumeRatio: number
   signals: string[]
+  trailingPE?: number | null
+  marketCap?: number | null
+  dividendYield?: number | null
+  revenueGrowth?: number | null
   error?: string
 }
 
@@ -67,6 +71,10 @@ export interface FilterCriteria {
   macd: 'any' | 'bullish_crossover' | 'bearish_crossover' | 'above_signal' | 'below_signal'
   movingAverage: 'any' | 'above_sma50' | 'below_sma50' | 'golden_cross' | 'death_cross' | 'price_above_sma200' | 'price_below_sma200'
   volume: 'any' | 'spike' | 'low' | 'normal'
+  pe: 'any' | 'under_15' | 'under_25' | 'under_40' | 'over_40' | 'negative'
+  marketCap: 'any' | 'mega' | 'large' | 'mid' | 'small'
+  dividendYield: 'any' | 'none' | 'over_1' | 'over_2' | 'over_4'
+  revenueGrowth: 'any' | 'positive' | 'over_10' | 'over_20' | 'negative'
 }
 
 // ─── Company fundamentals from Yahoo Finance quoteSummary ──────────────────
@@ -101,6 +109,10 @@ export interface StockFundamentals {
   // Balance Sheet
   currentRatio: number | null
   debtToEquity: number | null    // as reported (may be >100)
+  // Short Interest
+  shortPercentOfFloat: number | null  // decimal, e.g. 0.032 = 3.2%
+  shortRatio: number | null           // days to cover
+  sharesShort: number | null          // absolute shares short
 }
 
 export interface CongressionalTrade {

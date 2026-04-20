@@ -8,6 +8,8 @@ Lists available agents and runs the one you specify.
 |------|--------|---------|
 | `announcements` | `.claude/agent/Announcement Research Agent/` | Audit npm deps, check GitHub releases for breaking changes, scan HN + Reddit for ecosystem news. Writes to `./reports/announcements-YYYY-MM-DD.md` |
 | `pm` | `.claude/agent/PM/` | Research competing stock screeners, extract feature gaps, score by user value + effort + differentiation. Writes to `./reports/pm-features-YYYY-MM-DD.md` |
+| `code-writer` | `.claude/agent/Code Writer/` | Implement features, write components, refactor code. Fast execution using Haiku. Requires clear implementation specs with acceptance criteria. |
+| `code-reviewer` | `.claude/agent/Code Reviewer/` | Review code for readability, maintainability, security, and consistency. Outputs prioritized improvement list with severity ratings. Read-only. |
 
 ## Usage
 

@@ -6,7 +6,8 @@ export function buildScreenerRow(
   price: number,
   change: number,
   changePercent: number,
-  ind: IndicatorValues
+  ind: IndicatorValues,
+  fundamentals?: { trailingPE?: number | null; marketCap?: number | null; dividendYield?: number | null; revenueGrowth?: number | null }
 ): ScreenerRow {
   return {
     ticker,
@@ -21,6 +22,10 @@ export function buildScreenerRow(
     maStatus: getMaStatus(price, ind.sma50, ind.sma200),
     volumeRatio: ind.volumeRatio,
     signals: generateSignals(ind, price),
+    trailingPE: fundamentals?.trailingPE,
+    marketCap: fundamentals?.marketCap,
+    dividendYield: fundamentals?.dividendYield,
+    revenueGrowth: fundamentals?.revenueGrowth,
   }
 }
 
@@ -63,6 +68,46 @@ export function applyFilters(row: ScreenerRow, filters: FilterCriteria): boolean
     if (filters.volume === 'spike' && row.volumeRatio < 2) return false
     if (filters.volume === 'low' && row.volumeRatio >= 0.5) return false
     if (filters.volume === 'normal' && (row.volumeRatio < 0.5 || row.volumeRatio >= 2)) return false
+  }
+
+  // P/E Ratio filter
+  if (filters.pe !== 'any') {
+    if (row.trailingPE === null || row.trailingPE === undefined) return false
+    if (filters.pe === 'under_15' && row.trailingPE >= 15) return false
+    if (filters.pe === 'under_25' && row.trailingPE >= 25) return false
+    if (filters.pe === 'under_40' && row.trailingPE >= 40) return false
+    if (filters.pe === 'over_40' && row.trailingPE < 40) return false
+    if (filters.pe === 'negative' && row.trailingPE >= 0) return false
+  }
+
+  // Market Cap filter
+  if (filters.marketCap !== 'any') {
+    if (row.marketCap === null || row.marketCap === undefined) return false
+    const cap = row.marketCap
+    if (filters.marketCap === 'mega' && cap < 200_000_000_000) return false
+    if (filters.marketCap === 'large' && (cap < 10_000_000_000 || cap >= 200_000_000_000)) return false
+    if (filters.marketCap === 'mid' && (cap < 2_000_000_000 || cap >= 10_000_000_000)) return false
+    if (filters.marketCap === 'small' && cap >= 2_000_000_000) return false
+  }
+
+  // Dividend Yield filter
+  if (filters.dividendYield !== 'any') {
+    if (row.dividendYield === null || row.dividendYield === undefined) return false
+    const yield_pct = row.dividendYield * 100 // convert decimal to percentage
+    if (filters.dividendYield === 'none' && yield_pct > 0) return false
+    if (filters.dividendYield === 'over_1' && yield_pct <= 1) return false
+    if (filters.dividendYield === 'over_2' && yield_pct <= 2) return false
+    if (filters.dividendYield === 'over_4' && yield_pct <= 4) return false
+  }
+
+  // Revenue Growth filter (YoY)
+  if (filters.revenueGrowth !== 'any') {
+    if (row.revenueGrowth === null || row.revenueGrowth === undefined) return false
+    const growth_pct = row.revenueGrowth * 100 // convert decimal to percentage
+    if (filters.revenueGrowth === 'positive' && growth_pct <= 0) return false
+    if (filters.revenueGrowth === 'over_10' && growth_pct <= 10) return false
+    if (filters.revenueGrowth === 'over_20' && growth_pct <= 20) return false
+    if (filters.revenueGrowth === 'negative' && growth_pct >= 0) return false
   }
 
   return true

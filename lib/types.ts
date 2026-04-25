@@ -155,6 +155,30 @@ export interface AnalystData {
   numberOfAnalystOpinions: number | null
 }
 
+export interface NewsItem {
+  title: string
+  link: string
+  publisher: string
+  publishedAt: number  // unix timestamp (seconds)
+}
+
+export interface FinancialsRow {
+  period: string           // "FY2024" or "Q3 2024"
+  revenue: number | null
+  grossProfit: number | null
+  operatingIncome: number | null
+  netIncome: number | null
+  revenueGrowth: number | null       // fractional: 0.12 = +12%
+  grossProfitGrowth: number | null
+  operatingIncomeGrowth: number | null
+  netIncomeGrowth: number | null
+}
+
+export interface FinancialsData {
+  annual: FinancialsRow[]    // up to 4 fiscal years, newest first
+  quarterly: FinancialsRow[] // up to 8 quarters, newest first
+}
+
 export interface StockDetailData {
   ticker: string
   companyName: string

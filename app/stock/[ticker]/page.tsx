@@ -19,7 +19,7 @@ import {
 import { ArrowLeft, TrendingUp, ExternalLink, ChevronDown } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
-import type { StockDetailData, StockFundamentals, EarningsData, AnalystData } from '@/lib/types'
+import type { StockDetailData, StockFundamentals, EarningsData, AnalystData, NewsItem } from '@/lib/types'
 
 // ─── Date range config ────────────────────────────────────────────────────────
 const DATE_RANGES = [
@@ -491,6 +491,47 @@ function EarningsWidget({ data }: { data: EarningsData }) {
   )
 }
 
+// ─── News Widget ──────────────────────────────────────────────────────────────
+function NewsWidget({ items }: { items: NewsItem[] }) {
+  if (!items.length) return null
+
+  function timeAgo(ts: number): string {
+    const diff = Math.floor(Date.now() / 1000) - ts
+    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+    return `${Math.floor(diff / 86400)}d ago`
+  }
+
+  return (
+    <div className="divide-y divide-gray-50">
+      {items.map((item, i) => (
+        <a
+          key={i}
+          href={item.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-start gap-3 py-2.5 hover:bg-gray-50 rounded transition-colors px-1 -mx-1"
+        >
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-800 leading-snug line-clamp-2">{item.title}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              {item.publisher && (
+                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
+                  {item.publisher}
+                </span>
+              )}
+              {item.publishedAt > 0 && (
+                <span className="text-[10px] text-gray-400">{timeAgo(item.publishedAt)}</span>
+              )}
+            </div>
+          </div>
+          <ExternalLink size={12} className="text-gray-300 shrink-0 mt-1" />
+        </a>
+      ))}
+    </div>
+  )
+}
+
 // ─── Fundamentals section ─────────────────────────────────────────────────────
 function FundamentalsSection({ f }: { f: StockFundamentals }) {
   const [growthView, setGrowthView] = useState<'yoy' | 'qoq'>('yoy')
@@ -621,6 +662,8 @@ export default function StockPage() {
 
   const [earnings, setEarnings] = useState<EarningsData | null>(null)
   const [analyst, setAnalyst]   = useState<AnalystData | null>(null)
+  const [news, setNews] = useState<NewsItem[] | null>(null)
+  const [showNews, setShowNews] = useState(false)
 
   const [sidebarSearch, setSidebarSearch] = useState('')
   const filteredSidebarTickers = sidebarSearch
@@ -703,6 +746,14 @@ export default function StockPage() {
     fetch(`/api/analyst/${ticker}`)
       .then(r => r.json())
       .then(d => { if (!d.error) setAnalyst(d) })
+      .catch(() => {})
+  }, [ticker])
+
+  useEffect(() => {
+    if (!ticker || !isValidTicker(ticker)) return
+    fetch(`/api/news/${ticker}`)
+      .then(r => r.json())
+      .then(d => { if (!d.error) setNews(d.items) })
       .catch(() => {})
   }, [ticker])
 
@@ -1274,6 +1325,24 @@ export default function StockPage() {
 
           {/* Earnings Widget */}
           {earnings && <EarningsWidget data={earnings} />}
+
+          {/* News Feed — collapsed by default */}
+          {news && news.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <button
+                onClick={() => setShowNews(v => !v)}
+                className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
+              >
+                <span>Recent News</span>
+                <span className="text-gray-400 text-xs font-normal">{showNews ? '▲ collapse' : '▶ expand'}</span>
+              </button>
+              {showNews && (
+                <div className="mt-3">
+                  <NewsWidget items={news} />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Latest Indicator Values */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">

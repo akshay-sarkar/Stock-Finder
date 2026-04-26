@@ -502,6 +502,10 @@ function NewsWidget({ items }: { items: NewsItem[] }) {
     return `${Math.floor(diff / 86400)}d ago`
   }
 
+  function fmtNewsDate(ts: number): string {
+    return new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+
   return (
     <div className="divide-y divide-gray-50">
       {items.map((item, i) => (
@@ -521,7 +525,9 @@ function NewsWidget({ items }: { items: NewsItem[] }) {
                 </span>
               )}
               {item.publishedAt > 0 && (
-                <span className="text-[10px] text-gray-400">{timeAgo(item.publishedAt)}</span>
+                <span className="text-[10px] text-gray-400">
+                  {timeAgo(item.publishedAt)} · {fmtNewsDate(item.publishedAt)}
+                </span>
               )}
             </div>
           </div>

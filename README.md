@@ -22,12 +22,13 @@ A free, open-source technical analysis screener built with **Next.js 14**, **Yah
 
 ### Screener (Home Page)
 - **150-ticker default watchlist** across 15+ sectors — Tech, Finance, Healthcare, Energy, ETFs, International ADRs and more
-- **4 technical filters** — RSI (oversold/overbought/neutral), MACD crossovers, Moving Average position, Volume spikes
+- **Technical filters** — RSI (oversold/overbought/neutral), MACD crossovers, Moving Average position, Volume spikes
 - **6 Moving Average sub-filters** — Price vs SMA50, Price vs SMA200, Golden Cross, Death Cross
+- **Fundamental filters** — P/E range, Market Cap tier, Dividend Yield range, Revenue Growth range
 - **Batched scanning** — splits large watchlists into batches of 50, results trickle in with a live progress bar
-- **Sortable results table** — click any column header (Price, Chg%, RSI, Vol Ratio)
+- **Sortable results table** — click any column header (Price, Chg%, RSI, Vol Ratio, P/E, Market Cap, Dividend Yield)
+- **Hideable columns** — Company Name, P/E, Market Cap, Dividend Yield toggles persisted in `localStorage`
 - **Pagination** — 20 results per page with compact page navigation
-- **Company Name column** with show/hide toggle (persisted in `localStorage`)
 - **Signal Glossary** — collapsible section explaining every signal badge in plain English
 - **Session state** — filters, results, sort, and page are restored when navigating back from a stock page
 
@@ -39,20 +40,26 @@ A free, open-source technical analysis screener built with **Next.js 14**, **Yah
 - Watchlist persisted in `localStorage` across sessions
 
 ### Stock Detail Page (`/stock/[TICKER]`)
-- **Fixed sidebar watchlist** — jump between any ticker without going back to the screener; shows company name + today's price change % (populated from screener cache)
+- **Fixed sidebar watchlist** — jump between any ticker without going back to the screener; shows company name + live price change % for all items
 - **6 date ranges** — 1M, 3M, 6M, 1Y, 2Y, 5Y (5Y auto-switches to weekly candles)
 - **4 full-width charts:**
   - Volume with SMA(20) dotted reference line
-  - Price + EMA(20), SMA(50), SMA(200)
+  - Price + configurable overlays: EMA(20), SMA(50), SMA(200), Bollinger Bands (20, ±2σ)
   - RSI(14) with overbought/oversold reference lines
   - MACD (12, 26, 9) with histogram
-- **Hover tooltips on legend labels** — hover any legend item for a plain-English description of the indicator
+- **Chart overlay toggles** — EMA20, SMA50, SMA200, BB can be individually shown/hidden (persisted in `localStorage`)
+- **Hover tooltips on legend labels** — hover any legend item for a plain-English description
 - **Summary cards** — RSI, MACD Histogram, SMA50/200, Volume Ratio at a glance
-- **Key Statistics panel** — Valuation, Earnings & Dividends, Risk & Range, Financials (P/E, Forward P/E, EPS, Dividend Yield, Beta, 52W High/Low, Gross Margin, Debt/Equity, and more)
-- **Back to Screener** button in the header — returns to previous results without re-scanning
+- **Analyst Ratings widget** — consensus recommendation gauge (Strong Buy → Sell), 12-month price targets (low/mean/high), upside % to mean target, analyst count
+- **Key Statistics panel** — Valuation, Earnings & Dividends, Risk & Range, Financials with **YoY / QoQ toggle** for growth metrics
+- **Short Interest widget** — Short Float %, Short Ratio, Shares Short; ⚠ badge for >20% float
+- **Earnings Calendar widget** — next report date with countdown, EPS estimate range, 4-quarter beat/miss history table
+- **Quick stats in header** — P/E, 52W range, Dividend Yield, Last Updated time
+- **External links** — Google Finance, Quiver Quant, Congress Trades dropdown, Insider Trading, News dropdown
 
 ### Performance
 - **10-minute server-side cache** — per-ticker data cached in memory; repeat scans are near-instant
+- **Analyst and earnings data cached separately** — 4h and 6h TTL respectively (data changes infrequently)
 - **Zero external API cost** — uses `yahoo-finance2` with no API key or rate-limit tier
 
 ---
@@ -111,23 +118,28 @@ npm start
 ```
 stock-finder/
 ├── app/
-│   ├── page.tsx                   # Screener (home) — filters, results table, watchlist modal
-│   ├── layout.tsx                 # Root layout + global styles
-│   ├── globals.css                # Tailwind base + badge utility classes
-│   └── stock/
-│       └── [ticker]/
-│           └── page.tsx           # Stock detail — charts, fundamentals, sidebar
+│   ├── page.tsx                        # Screener (home) — filters, results table, watchlist modal
+│   ├── layout.tsx                      # Root layout + global styles
+│   ├── globals.css                     # Tailwind base + badge utility classes
+│   ├── stock/
+│   │   └── [ticker]/
+│   │       └── page.tsx                # Stock detail — charts, widgets, sidebar watchlist
 │   └── api/
-│       ├── screener/route.ts      # POST /api/screener — batch scan with cache
-│       ├── stock/[ticker]/route.ts # GET /api/stock/:ticker — chart data + fundamentals
-│       └── prices/route.ts        # POST /api/prices — sidebar price change (cache-only)
+│       ├── screener/route.ts           # POST /api/screener — batch scan with fundamentals
+│       ├── stock/[ticker]/route.ts     # GET /api/stock/:ticker — chart data + indicators + fundamentals
+│       ├── prices/route.ts             # POST /api/prices — sidebar price change (cache-only)
+│       ├── earnings/[ticker]/route.ts  # GET /api/earnings/:ticker — next date, EPS, history (6h)
+│       └── analyst/[ticker]/route.ts   # GET /api/analyst/:ticker — targets, recommendation (4h)
 ├── lib/
-│   ├── cache.ts                   # In-memory TTL cache (10 min)
-│   ├── indicators.ts              # RSI, MACD, SMA, EMA, signal generation
-│   ├── screener.ts                # buildScreenerRow(), applyFilters()
-│   ├── stockList.ts               # DEFAULT_TICKERS (150), COMPANY_NAMES, SECTOR_MAP
-│   ├── types.ts                   # Shared TypeScript interfaces
-│   └── yahoo.ts                   # yahoo-finance2 wrapper (historical, quote, fundamentals)
+│   ├── cache.ts                        # In-memory TTL cache (default 10 min)
+│   ├── indicators.ts                   # RSI, MACD, SMA, EMA, BB signal generation
+│   ├── rateLimit.ts                    # Sliding-window rate limiter (20 req/min per IP)
+│   ├── screener.ts                     # buildScreenerRow(), applyFilters(), FilterCriteria
+│   ├── stockList.ts                    # DEFAULT_TICKERS (150), COMPANY_NAMES, SECTOR_MAP
+│   ├── types.ts                        # Shared TypeScript interfaces
+│   ├── validation.ts                   # isValidTicker() — server-side input guard
+│   └── yahoo.ts                        # yahoo-finance2 wrapper — historical, quote, fundamentals,
+│                                       #   getEarnings(), getAnalystData()
 ├── next.config.js
 ├── tailwind.config.ts
 └── package.json
@@ -143,6 +155,7 @@ stock-finder/
 | **MACD** | 12 / 26 / 9 | Trend momentum — crossovers signal direction shifts |
 | **EMA** | 20 periods | Short-term trend, reacts faster than SMA |
 | **SMA** | 20 / 50 / 200 periods | Medium and long-term trend |
+| **Bollinger Bands** | 20 periods, ±2σ | Volatility envelope — price at band edges signals breakout or reversal |
 | **Vol SMA** | 20 periods | Average volume baseline for spike detection |
 
 ### Signal Badges
@@ -244,13 +257,15 @@ const SCAN_BATCH = 50 // tickers per API call — keep ≤ 50 for Vercel free ti
 
 Contributions are welcome! Here are some ideas for improvements:
 
-- [ ] Add candlestick / OHLC chart view
-- [ ] Bollinger Bands indicator
+- [ ] Candlestick / OHLC chart view
+- [ ] 52-week high/low visual range bar
+- [ ] Historical Financials table (quarterly revenue/earnings trend)
+- [ ] Insider Transactions feed
 - [ ] Export screener results to CSV
 - [ ] Dark mode
-- [ ] Earnings date display
 - [ ] Price alerts (browser notifications)
 - [ ] Mobile-optimised sidebar
+- [ ] News feed integration
 
 ### Development Workflow
 

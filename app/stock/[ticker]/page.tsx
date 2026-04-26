@@ -1429,26 +1429,32 @@ export default function StockPage() {
             </div>
           )}
 
-          {/* Historical Financials — collapsed by default */}
-          {financials && (financials.annual.length > 0 || financials.quarterly.length > 0) && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <button
-                onClick={() => setShowFinancials(v => !v)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
-              >
-                <span>Historical Financials</span>
-                <span className="text-gray-400 text-xs font-normal">{showFinancials ? '▲ collapse' : '▶ expand'}</span>
-              </button>
-              {showFinancials && (
-                <div className="mt-3">
-                  <FinancialsWidget data={financials} />
-                </div>
-              )}
-            </div>
-          )}
+          {/* Financials + Earnings — 2-column grid when both present; Earnings full-width fallback */}
+          {financials && (financials.annual.length > 0 || financials.quarterly.length > 0) ? (
+            <div className="grid grid-cols-2 gap-4">
+              {/* Historical Financials */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <button
+                  onClick={() => setShowFinancials(v => !v)}
+                  className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
+                >
+                  <span>Historical Financials</span>
+                  <span className="text-gray-400 text-xs font-normal">{showFinancials ? '▲ collapse' : '▶ expand'}</span>
+                </button>
+                {showFinancials && (
+                  <div className="mt-3">
+                    <FinancialsWidget data={financials} />
+                  </div>
+                )}
+              </div>
 
-          {/* Earnings Widget */}
-          {earnings && <EarningsWidget data={earnings} />}
+              {/* Earnings */}
+              {earnings && <EarningsWidget data={earnings} />}
+            </div>
+          ) : (
+            /* Fallback: no financials data (ETF) — Earnings full width */
+            earnings && <EarningsWidget data={earnings} />
+          )}
 
           {/* News Feed — collapsed by default */}
           {news && news.length > 0 && (

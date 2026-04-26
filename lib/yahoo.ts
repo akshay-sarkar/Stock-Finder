@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, AnalystData, NewsItem } from './types'
+import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, AnalystData, NewsItem, FinancialsRow, FinancialsData } from './types'
 
 // yahoo-finance2 v3 uses class instantiation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -246,4 +246,55 @@ export async function getNews(ticker: string): Promise<NewsItem[]> {
       publisher: n.publisher ?? '',
       publishedAt: n.providerPublishTime ?? 0,
     }))
+}
+
+/**
+ * Fetches annual (4 years) and quarterly (8 quarters) income statement data.
+ * Returns { annual: [], quarterly: [] } gracefully if modules unavailable.
+ */
+export async function getFinancials(ticker: string): Promise<FinancialsData> {
+  const result = await yahooFinance.quoteSummary(ticker, {
+    modules: ['incomeStatementHistory', 'incomeStatementHistoryQuarterly'],
+  }, { validateResult: false }).catch(() => null)
+
+  function toLabel(date: any, type: 'annual' | 'quarterly'): string {
+    const d = date instanceof Date ? date : new Date(date)
+    if (type === 'annual') return `FY${d.getFullYear()}`
+    const q = Math.ceil((d.getMonth() + 1) / 3)
+    return `Q${q} ${d.getFullYear()}`
+  }
+
+  function growth(current: number | null, prior: number | null): number | null {
+    if (current == null || prior == null || prior === 0) return null
+    return (current - prior) / Math.abs(prior)
+  }
+
+  function mapRows(entries: any[], type: 'annual' | 'quarterly'): FinancialsRow[] {
+    return entries.map((e: any, i: number): FinancialsRow => {
+      const prev = entries[i + 1] ?? null
+      const rev  = e.totalRevenue    ?? null
+      const gp   = e.grossProfit     ?? null
+      const oi   = e.operatingIncome ?? null
+      const ni   = e.netIncome       ?? null
+      return {
+        period:                toLabel(e.endDate, type),
+        revenue:               rev,
+        grossProfit:           gp,
+        operatingIncome:       oi,
+        netIncome:             ni,
+        revenueGrowth:         growth(rev, prev?.totalRevenue    ?? null),
+        grossProfitGrowth:     growth(gp,  prev?.grossProfit     ?? null),
+        operatingIncomeGrowth: growth(oi,  prev?.operatingIncome ?? null),
+        netIncomeGrowth:       growth(ni,  prev?.netIncome       ?? null),
+      }
+    })
+  }
+
+  const annualEntries: any[]    = result?.incomeStatementHistory?.incomeStatementHistory ?? []
+  const quarterlyEntries: any[] = result?.incomeStatementHistoryQuarterly?.incomeStatementHistory ?? []
+
+  return {
+    annual:    mapRows(annualEntries.slice(0, 4),    'annual'),
+    quarterly: mapRows(quarterlyEntries.slice(0, 8), 'quarterly'),
+  }
 }

@@ -1184,6 +1184,14 @@ export default function StockPage() {
                     Div&nbsp;<span className="text-amber-400 font-semibold">{(data.fundamentals.dividendYield * 100).toFixed(2)}%</span>
                   </span>
                 )}
+                {data.fundamentals.shortPercentOfFloat != null && (
+                  <span className="text-xs text-slate-400">
+                    Short&nbsp;
+                    <span className={`font-semibold ${data.fundamentals.shortPercentOfFloat > 0.20 ? 'text-red-400' : 'text-white'}`}>
+                      {(data.fundamentals.shortPercentOfFloat * 100).toFixed(1)}%
+                    </span>
+                  </span>
+                )}
               </div>
               {lastUpdated && (
                 <span className="text-xs text-slate-500 italic">
@@ -1438,9 +1446,6 @@ export default function StockPage() {
               )}
             </div>
           )}
-
-          {/* Short Interest Widget */}
-          {data.fundamentals && <ShortInterestWidget fundamentals={data.fundamentals} />}
 
           {/* Earnings Widget */}
           {earnings && <EarningsWidget data={earnings} />}

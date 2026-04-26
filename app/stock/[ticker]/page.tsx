@@ -222,6 +222,25 @@ function FundRow({ label, value, hint, positive }: {
   )
 }
 
+// ─── 52-Week Range Bar ────────────────────────────────────────────────────────
+function RangeBar({ low, high, current }: { low: number; high: number; current: number }) {
+  const pct = Math.max(0, Math.min(100, ((current - low) / (high - low)) * 100))
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-slate-400">
+      <span className="text-red-400 font-semibold">${fmtPrice(low)}</span>
+      <span className="relative w-20 h-1.5 rounded-full overflow-visible shrink-0"
+        style={{ background: 'linear-gradient(to right, #ef4444, #10b981)' }}>
+        <span
+          className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-slate-600 shadow"
+          style={{ left: `calc(${pct}% - 5px)` }}
+        />
+      </span>
+      <span className="text-emerald-400 font-semibold">${fmtPrice(high)}</span>
+      <span className="text-slate-500">({pct.toFixed(0)}%)</span>
+    </span>
+  )
+}
+
 // ─── Analyst Widget ───────────────────────────────────────────────────────────
 function recLabel(mean: number): { label: string; color: string } {
   if (mean <= 1.5) return { label: 'Strong Buy',   color: 'text-emerald-600' }
@@ -247,8 +266,8 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
     : null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-700">Analyst Ratings</h2>
         {data.numberOfAnalystOpinions != null && (
           <span className="text-xs text-gray-400">{data.numberOfAnalystOpinions} analysts</span>
@@ -257,7 +276,7 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
 
       {/* Gauge */}
       {hasMean && rec && gaugePos != null && (
-        <div className="mb-5">
+        <div className="mb-3">
           <div className="flex justify-between text-[10px] text-gray-400 mb-1">
             <span>Strong Sell</span>
             <span>Sell</span>
@@ -332,10 +351,10 @@ function ShortInterestWidget({ fundamentals }: { fundamentals: StockFundamentals
   const isHighShort = shortPercentOfFloat != null && shortPercentOfFloat > 0.20
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <h2 className="text-sm font-semibold text-gray-700 mb-4">Short Interest</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">Short Interest</h2>
 
-      <div className="flex gap-6 mb-4">
+      <div className="flex gap-4 mb-3">
         {/* Short Float */}
         <div className="flex flex-col">
           <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Short Float</span>
@@ -386,11 +405,11 @@ function EarningsWidget({ data }: { data: EarningsData }) {
   const soon = daysUntil != null && daysUntil >= 0 && daysUntil <= 30
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <h2 className="text-sm font-semibold text-gray-700 mb-4">Earnings</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">Earnings</h2>
 
       {/* Next earnings date + estimate */}
-      <div className="flex flex-wrap gap-4 mb-5">
+      <div className="flex flex-wrap gap-3 mb-3">
         <div className="flex flex-col">
           <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Next Report</span>
           <div className="flex items-center gap-2">
@@ -485,8 +504,8 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
   const hasQoQ = f.revenueGrowthQoQ != null || f.earningsGrowthQoQ != null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="flex items-center gap-3 mb-3">
         <h2 className="text-sm font-semibold text-gray-700">Key Statistics</h2>
         {/* YoY / QoQ toggle — only show if QoQ data is available */}
         <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
@@ -1002,12 +1021,11 @@ export default function StockPage() {
                   </span>
                 )}
                 {data.fundamentals.fiftyTwoWeekHigh != null && data.fundamentals.fiftyTwoWeekLow != null && (
-                  <span className="text-xs text-slate-400">
-                    52W&nbsp;
-                    <span className="text-red-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekLow)}</span>
-                    <span className="text-slate-500 mx-1">–</span>
-                    <span className="text-emerald-400 font-semibold">${fmtPrice(data.fundamentals.fiftyTwoWeekHigh)}</span>
-                  </span>
+                  <RangeBar
+                    low={data.fundamentals.fiftyTwoWeekLow}
+                    high={data.fundamentals.fiftyTwoWeekHigh}
+                    current={data.currentPrice}
+                  />
                 )}
                 {data.fundamentals.dividendYield != null && data.fundamentals.dividendYield > 0 && (
                   <span className="text-xs text-slate-400">
@@ -1024,7 +1042,7 @@ export default function StockPage() {
           )}
         </header>
 
-        <main className="px-4 py-6 space-y-6">
+        <main className="px-4 py-4 space-y-4">
           {/* Range Selector + Chart Overlays */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1">Range:</span>
@@ -1099,7 +1117,7 @@ export default function StockPage() {
           </div>
 
 {/* Indicator Summary Cards */}
-<div className="grid grid-cols-3 gap-4" style={{ gridTemplateRows: 'auto auto' }}>
+<div className="grid grid-cols-3 gap-3" style={{ gridTemplateRows: 'auto auto' }}>
 
   {/* Row 1, Col 1 */}
   <StatCard
@@ -1146,8 +1164,8 @@ export default function StockPage() {
 </div>
 
           {/* Volume Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center gap-4 mb-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-4 mb-3">
               <h2 className="text-sm font-semibold text-gray-700">Volume</h2>
               <span className="flex items-center gap-1.5 text-xs text-gray-400">
                 <span className="inline-block w-5 border-t-2 border-dashed border-red-400" />
@@ -1168,8 +1186,8 @@ export default function StockPage() {
           </div>
 
           {/* Price + Moving Averages Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center gap-3 mb-3">
               <h2 className="text-sm font-semibold text-gray-700">
                 Price &amp; Moving Averages
                 <span className="text-gray-400 font-normal ml-2 text-xs">
@@ -1204,8 +1222,8 @@ export default function StockPage() {
           </div>
 
           {/* RSI Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">RSI (14)</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">RSI (14)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1225,8 +1243,8 @@ export default function StockPage() {
           </div>
 
           {/* MACD Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-4">MACD (12, 26, 9)</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 mb-3">MACD (12, 26, 9)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1246,7 +1264,7 @@ export default function StockPage() {
           {data.fundamentals ? (
             <FundamentalsSection f={data.fundamentals} />
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 text-center text-sm text-gray-400">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center text-sm text-gray-400">
               Key statistics not available for this ticker (e.g. ETFs may not have P/E or dividend data).
             </div>
           )}
@@ -1258,8 +1276,8 @@ export default function StockPage() {
           {earnings && <EarningsWidget data={earnings} />}
 
           {/* Latest Indicator Values */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">Latest Indicator Values</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 mb-2">Latest Indicator Values</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-0 text-sm">
               {(
                 [
@@ -1282,7 +1300,7 @@ export default function StockPage() {
           </div>
         </main>
 
-        <footer className="text-center text-xs text-gray-400 py-6 border-t mt-4">
+        <footer className="text-center text-xs text-gray-400 py-3 border-t mt-2">
           Data via Yahoo Finance · Not financial advice · For educational use only
         </footer>
       </div>

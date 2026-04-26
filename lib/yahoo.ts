@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, AnalystData } from './types'
+import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, AnalystData, NewsItem } from './types'
 
 // yahoo-finance2 v3 uses class instantiation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -229,4 +229,21 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
     shortRatio:         ks.shortRatio          ?? null,
     sharesShort:        ks.sharesShort         ?? null,
   }
+}
+
+/**
+ * Fetches recent news headlines for a ticker via yahoo-finance2 search.
+ * Returns up to 8 items. Gracefully returns [] if unavailable.
+ */
+export async function getNews(ticker: string): Promise<NewsItem[]> {
+  const result: any = await (yahooFinance as any).search(ticker, { newsCount: 8 }).catch(() => null)
+  if (!result?.news?.length) return []
+  return result.news
+    .filter((n: any) => n.title && n.link)
+    .map((n: any): NewsItem => ({
+      title: n.title,
+      link: n.link,
+      publisher: n.publisher ?? '',
+      publishedAt: n.providerPublishTime ?? 0,
+    }))
 }

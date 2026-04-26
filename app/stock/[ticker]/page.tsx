@@ -756,7 +756,6 @@ export default function StockPage() {
   const [showNews, setShowNews] = useState(false)
 
   const [financials, setFinancials] = useState<FinancialsData | null>(null)
-  const [showFinancials, setShowFinancials] = useState(false)
 
   const [sidebarSearch, setSidebarSearch] = useState('')
   const filteredSidebarTickers = sidebarSearch
@@ -1434,18 +1433,8 @@ export default function StockPage() {
             <div className="grid grid-cols-2 gap-4">
               {/* Historical Financials */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <button
-                  onClick={() => setShowFinancials(v => !v)}
-                  className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
-                >
-                  <span>Historical Financials</span>
-                  <span className="text-gray-400 text-xs font-normal">{showFinancials ? '▲ collapse' : '▶ expand'}</span>
-                </button>
-                {showFinancials && (
-                  <div className="mt-3">
-                    <FinancialsWidget data={financials} />
-                  </div>
-                )}
+                <div className="text-sm font-semibold text-gray-700 mb-3">Historical Financials</div>
+                <FinancialsWidget data={financials} />
               </div>
 
               {/* Earnings */}

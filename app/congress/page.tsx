@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { TrendingUp, ArrowLeft, RefreshCw, ExternalLink, Search, ChevronUp, ChevronDown } from 'lucide-react'
+import { TrendingUp, ArrowLeft, RefreshCw, ExternalLink, Search, ChevronUp, ChevronDown, Sun, Moon } from 'lucide-react'
 import type { CongressionalTrade } from '@/lib/types'
+import { useDarkMode } from '@/lib/useDarkMode'
 
 const ITEMS_PER_PAGE = 25
 
@@ -46,23 +47,23 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
     else if (items[items.length - 1] !== '…') items.push('…')
   }
   return (
-    <div className="flex items-center gap-1 justify-center py-4 border-t border-gray-100">
+    <div className="flex items-center gap-1 justify-center py-4 border-t border-gray-100 dark:border-gray-700">
       <button disabled={page === 1} onClick={() => onChange(page - 1)}
-        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded">
+        className="px-2 py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded">
         ‹ Prev
       </button>
       {items.map((p, i) => p === '…' ? (
-        <span key={`e${i}`} className="px-1 text-gray-400 text-sm select-none">…</span>
+        <span key={`e${i}`} className="px-1 text-gray-400 dark:text-gray-500 text-sm select-none">…</span>
       ) : (
         <button key={p} onClick={() => onChange(p as number)}
           className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-            p === page ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+            p === page ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
           }`}>
           {p}
         </button>
       ))}
       <button disabled={page === total} onClick={() => onChange(page + 1)}
-        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded">
+        className="px-2 py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded">
         Next ›
       </button>
     </div>
@@ -72,6 +73,7 @@ function Pagination({ page, total, onChange }: { page: number; total: number; on
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CongressPage() {
   const router = useRouter()
+  const { dark, toggle } = useDarkMode()
 
   const [trades,    setTrades]    = useState<CongressionalTrade[]>([])
   const [loading,   setLoading]   = useState(true)
@@ -153,9 +155,9 @@ export default function CongressPage() {
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-slate-900 text-white shadow-lg">
+      <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-5 flex items-center gap-4">
           <Link href="/"
             className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors text-sm shrink-0">
@@ -180,24 +182,31 @@ export default function CongressPage() {
               <Search size={16} />
             </button>
           </form>
+          <button
+            onClick={toggle}
+            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-4">
 
         {/* Filter bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-wrap items-center gap-4">
             {/* Party */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Party:</span>
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Party:</span>
               {(['all', 'D', 'R'] as const).map(v => (
                 <button key={v}
                   onClick={() => { setPartyFilter(v); setPage(1) }}
                   className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors border ${
                     partyFilter === v
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600'
                   }`}
                 >
                   {v === 'all' ? 'All' : v === 'D' ? '🔵 Dem' : '🔴 Rep'}
@@ -207,14 +216,14 @@ export default function CongressPage() {
 
             {/* Type */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Type:</span>
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Type:</span>
               {(['all', 'buy', 'sell'] as const).map(v => (
                 <button key={v}
                   onClick={() => { setTypeFilter(v); setPage(1) }}
                   className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors border ${
                     typeFilter === v
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600'
                   }`}
                 >
                   {v === 'all' ? 'All' : v === 'buy' ? 'Buy' : 'Sell'}
@@ -224,14 +233,14 @@ export default function CongressPage() {
 
             <div className="ml-auto flex items-center gap-3">
               {fetchedAt && (
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   Updated {minutesSince(fetchedAt)} · 5-min cache
                 </span>
               )}
               <button
                 onClick={() => loadTrades(true)}
                 disabled={loading}
-                className="flex items-center gap-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
                 <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
                 Refresh
@@ -253,7 +262,7 @@ export default function CongressPage() {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           {loading && trades.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
@@ -261,22 +270,22 @@ export default function CongressPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
-                <p className="text-gray-500 text-sm">Fetching congressional trades…</p>
-                <p className="text-gray-400 text-xs mt-1">Enriching with live prices via Yahoo Finance</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Fetching congressional trades…</p>
+                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Enriching with live prices via Yahoo Finance</p>
               </div>
             </div>
           ) : (
             <>
               {/* Table header */}
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 flex-wrap">
-                <h2 className="font-semibold text-gray-800">
+              <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3 flex-wrap">
+                <h2 className="font-semibold text-gray-800 dark:text-gray-200">
                   {filtered.length} trade{filtered.length !== 1 ? 's' : ''}
                   {trades.length !== filtered.length && (
-                    <span className="text-gray-400 font-normal text-sm ml-2">of {trades.length} loaded</span>
+                    <span className="text-gray-400 dark:text-gray-500 font-normal text-sm ml-2">of {trades.length} loaded</span>
                   )}
                 </h2>
                 {filtered.length > 0 && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     Page {page}/{totalPages} · {ITEMS_PER_PAGE} per page
                   </span>
                 )}
@@ -292,39 +301,39 @@ export default function CongressPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
                     <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
                         onClick={() => toggleSort('politician')}>
                         Member <SortIcon col="politician" />
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Party</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Chamber</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Party</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Chamber</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
                         onClick={() => toggleSort('ticker')}>
                         Ticker <SortIcon col="ticker" />
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Company</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Type</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600">Amount</th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Company</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Type</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Amount</th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
                         onClick={() => toggleSort('transactionDate')}>
                         Txn Date <SortIcon col="transactionDate" />
                       </th>
-                      <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
+                      <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
                         onClick={() => toggleSort('filedDate')}>
                         Filed <SortIcon col="filedDate" />
                       </th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-600">Price</th>
-                      <th className="text-right px-4 py-3 font-semibold text-gray-600">Chg%</th>
+                      <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Price</th>
+                      <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Chg%</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {paginated.map((trade, i) => (
                       <tr
                         key={trade.id}
-                        className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${
-                          i % 2 === 0 ? '' : 'bg-gray-50/40'
+                        className={`hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors ${
+                          i % 2 === 0 ? '' : 'bg-gray-50/40 dark:bg-gray-700/20'
                         }`}
                       >
                         <td className="px-4 py-3">
@@ -333,16 +342,16 @@ export default function CongressPage() {
                               href={`https://www.capitoltrades.com/politicians/${trade.politicianId}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-gray-800 hover:text-blue-600 font-medium text-xs hover:underline"
+                              className="text-gray-800 dark:text-gray-200 hover:text-blue-600 font-medium text-xs hover:underline"
                             >
                               {trade.politician}
                             </a>
                           ) : (
-                            <span className="text-gray-800 font-medium text-xs">{trade.politician}</span>
+                            <span className="text-gray-800 dark:text-gray-200 font-medium text-xs">{trade.politician}</span>
                           )}
                         </td>
                         <td className="px-4 py-3">{partyBadge(trade.party)}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500">{trade.chamber}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{trade.chamber}</td>
                         <td className="px-4 py-3">
                           {trade.ticker ? (
                             <Link
@@ -352,28 +361,28 @@ export default function CongressPage() {
                               {trade.ticker}
                             </Link>
                           ) : (
-                            <span className="text-gray-400 text-xs">—</span>
+                            <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 max-w-[140px] truncate">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 max-w-[140px] truncate">
                           {trade.companyName || '—'}
                         </td>
                         <td className="px-4 py-3">{typeBadge(trade.tradeType)}</td>
-                        <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
+                        <td className="px-4 py-3 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                           {trade.amountRange || '—'}
                         </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                           {trade.transactionDate || '—'}
                         </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                           {trade.filedDate || '—'}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-xs">
+                        <td className="px-4 py-3 text-right font-mono text-xs text-gray-700 dark:text-gray-300">
                           {trade.currentPrice != null ? `$${fmtPrice(trade.currentPrice)}` : '—'}
                         </td>
                         <td className={`px-4 py-3 text-right font-mono text-xs ${
                           trade.changePercent == null
-                            ? 'text-gray-400'
+                            ? 'text-gray-400 dark:text-gray-500'
                             : trade.changePercent >= 0 ? 'text-emerald-600' : 'text-red-500'
                         }`}>
                           {trade.changePercent != null
@@ -387,7 +396,7 @@ export default function CongressPage() {
               </div>
 
               {filtered.length === 0 && !loading && (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-gray-400 dark:text-gray-500">
                   <p className="text-sm">No trades match the current filters.</p>
                 </div>
               )}
@@ -415,7 +424,7 @@ export default function CongressPage() {
         </div>
       </main>
 
-      <footer className="text-center text-xs text-gray-400 py-6 border-t mt-4">
+      <footer className="text-center text-xs text-gray-400 dark:text-gray-500 py-6 border-t border-gray-200 dark:border-gray-700 mt-4">
         Data via Capitol Trades · STOCK Act disclosures are public record · Not financial advice
       </footer>
     </div>

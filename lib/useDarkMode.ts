@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 
 export function useDarkMode() {
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('sf-dark-mode') === 'true'
+  })
 
   useEffect(() => {
-    const enabled = localStorage.getItem('sf-dark-mode') === 'true'
-    setDark(enabled)
-    document.documentElement.classList.toggle('dark', enabled)
-  }, [])
+    document.documentElement.classList.toggle('dark', dark)
+  }, [dark])
 
   function toggle() {
     setDark(prev => {

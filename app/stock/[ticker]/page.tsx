@@ -16,9 +16,10 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts'
-import { ArrowLeft, TrendingUp, ExternalLink, ChevronDown } from 'lucide-react'
+import { ArrowLeft, TrendingUp, ExternalLink, ChevronDown, Sun, Moon } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
+import { useDarkMode } from '@/lib/useDarkMode'
 import type { StockDetailData, StockFundamentals, EarningsData, AnalystData, NewsItem, FinancialsData, FinancialsRow } from '@/lib/types'
 
 // ─── Date range config ────────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ function ChartLegend({ payload }: { payload?: LegendPayloadItem[] }) {
                 opacity: 0.9,
               }}
             />
-            <span className="text-xs text-gray-600 border-b border-dotted border-gray-400 leading-tight">
+            <span className="text-xs text-gray-600 dark:text-gray-400 border-b border-dotted border-gray-400 dark:border-gray-600 leading-tight">
               {item.value}
             </span>
           </span>
@@ -195,10 +196,10 @@ function StatCard({ label, value, sub, color }: {
   label: string; value: string; sub?: string; color?: string
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${color ?? 'text-gray-800'}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-500 mt-0.5">{sub}</p>}
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+      <p className={`text-2xl font-bold ${color ?? 'text-gray-800 dark:text-gray-200'}`}>{value}</p>
+      {sub && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{sub}</p>}
     </div>
   )
 }
@@ -207,15 +208,15 @@ function StatCard({ label, value, sub, color }: {
 function FundRow({ label, value, hint, positive }: {
   label: string; value: string; hint?: string; positive?: boolean | null
 }) {
-  const valColor = positive === true ? 'text-emerald-600' : positive === false ? 'text-red-500' : 'text-gray-800'
+  const valColor = positive === true ? 'text-emerald-600' : positive === false ? 'text-red-500' : 'text-gray-800 dark:text-gray-200'
   return (
-    <div className="flex justify-between items-center border-b border-gray-100 py-2">
+    <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 py-2">
       {hint ? (
         <HintTooltip hint={hint}>
-          <span className="text-xs text-gray-500 border-b border-dotted border-gray-300">{label}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 border-b border-dotted border-gray-300 dark:border-gray-600">{label}</span>
         </HintTooltip>
       ) : (
-        <span className="text-xs text-gray-500">{label}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
       )}
       <span className={`text-sm font-semibold ${valColor}`}>{value}</span>
     </div>
@@ -266,18 +267,18 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
     : null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-gray-700">Analyst Ratings</h2>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Analyst Ratings</h2>
         {data.numberOfAnalystOpinions != null && (
-          <span className="text-xs text-gray-400">{data.numberOfAnalystOpinions} analysts</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{data.numberOfAnalystOpinions} analysts</span>
         )}
       </div>
 
       {/* Gauge */}
       {hasMean && rec && gaugePos != null && (
         <div className="mb-3">
-          <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+          <div className="flex justify-between text-[10px] text-gray-400 dark:text-gray-500 mb-1">
             <span>Strong Sell</span>
             <span>Sell</span>
             <span>Hold</span>
@@ -295,7 +296,7 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
           <div className="mt-2 text-center">
             <span className={`text-sm font-bold ${rec.color}`}>{rec.label}</span>
             {data.recommendationMean != null && (
-              <span className="text-xs text-gray-400 ml-1.5">({data.recommendationMean.toFixed(1)} / 5.0)</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1.5">({data.recommendationMean.toFixed(1)} / 5.0)</span>
             )}
           </div>
         </div>
@@ -304,29 +305,29 @@ function AnalystWidget({ data, currentPrice }: { data: AnalystData; currentPrice
       {/* Price Targets */}
       {hasTargets && (
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">12-Month Price Target</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-2">12-Month Price Target</p>
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-400">Low</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">Low</span>
               <span className="text-sm font-semibold text-red-500">
                 {data.targetLowPrice != null ? `$${fmtPrice(data.targetLowPrice)}` : '—'}
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-400">Mean</span>
-              <span className="text-sm font-bold text-gray-800">
+              <span className="text-xs text-gray-400 dark:text-gray-500">Mean</span>
+              <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
                 ${fmtPrice(data.targetMeanPrice!)}
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-400">High</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">High</span>
               <span className="text-sm font-semibold text-emerald-600">
                 {data.targetHighPrice != null ? `$${fmtPrice(data.targetHighPrice)}` : '—'}
               </span>
             </div>
             {upside != null && (
-              <div className="flex flex-col items-center ml-2 pl-2 border-l border-gray-100">
-                <span className="text-xs text-gray-400">Upside to Mean</span>
+              <div className="flex flex-col items-center ml-2 pl-2 border-l border-gray-100 dark:border-gray-700">
+                <span className="text-xs text-gray-400 dark:text-gray-500">Upside to Mean</span>
                 <span className={`text-sm font-bold ${upside >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                   {upside >= 0 ? '+' : ''}{upside.toFixed(1)}%
                 </span>
@@ -351,30 +352,30 @@ function ShortInterestWidget({ fundamentals }: { fundamentals: StockFundamentals
   const isHighShort = shortPercentOfFloat != null && shortPercentOfFloat > 0.20
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">Short Interest</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Short Interest</h2>
 
       <div className="flex gap-4 mb-3">
         {/* Short Float */}
         <div className="flex flex-col">
-          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Short Float</span>
-          <span className="text-sm font-semibold text-gray-800">
+          <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Short Float</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
             {shortPercentOfFloat != null ? `${(shortPercentOfFloat * 100).toFixed(2)}%` : 'N/A'}
           </span>
         </div>
 
         {/* Short Ratio */}
         <div className="flex flex-col">
-          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Short Ratio</span>
-          <span className="text-sm font-semibold text-gray-800">
+          <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Short Ratio</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
             {shortRatio != null ? `${shortRatio.toFixed(1)}×` : 'N/A'}
           </span>
         </div>
 
         {/* Shares Short */}
         <div className="flex flex-col">
-          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Shares Short</span>
-          <span className="text-sm font-semibold text-gray-800">
+          <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Shares Short</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
             {sharesShort != null ? fmtVol(sharesShort) : 'N/A'}
           </span>
         </div>
@@ -405,15 +406,15 @@ function EarningsWidget({ data }: { data: EarningsData }) {
   const soon = daysUntil != null && daysUntil >= 0 && daysUntil <= 30
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">Earnings</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Earnings</h2>
 
       {/* Next earnings date + estimate */}
       <div className="flex flex-wrap gap-3 mb-3">
         <div className="flex flex-col">
-          <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Next Report</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Next Report</span>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-800">{nextDateLabel}</span>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{nextDateLabel}</span>
             {soon && daysUntil === 0 && (
               <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5 font-medium">Today</span>
             )}
@@ -426,11 +427,11 @@ function EarningsWidget({ data }: { data: EarningsData }) {
         </div>
         {data.epsEstimateNext != null && (
           <div className="flex flex-col">
-            <span className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">Est. EPS</span>
-            <span className="text-sm font-semibold text-gray-800">
+            <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Est. EPS</span>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
               ${data.epsEstimateNext.toFixed(2)}
               {data.epsEstimateLow != null && data.epsEstimateHigh != null && (
-                <span className="text-xs text-gray-400 font-normal ml-1">
+                <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-1">
                   (${data.epsEstimateLow.toFixed(2)}–${data.epsEstimateHigh.toFixed(2)})
                 </span>
               )}
@@ -444,11 +445,11 @@ function EarningsWidget({ data }: { data: EarningsData }) {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left text-gray-400 font-medium pb-1.5 pr-4">Quarter</th>
-                <th className="text-right text-gray-400 font-medium pb-1.5 pr-4">Est. EPS</th>
-                <th className="text-right text-gray-400 font-medium pb-1.5 pr-4">Actual EPS</th>
-                <th className="text-right text-gray-400 font-medium pb-1.5">Surprise</th>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <th className="text-left text-gray-400 dark:text-gray-500 font-medium pb-1.5 pr-4">Quarter</th>
+                <th className="text-right text-gray-400 dark:text-gray-500 font-medium pb-1.5 pr-4">Est. EPS</th>
+                <th className="text-right text-gray-400 dark:text-gray-500 font-medium pb-1.5 pr-4">Actual EPS</th>
+                <th className="text-right text-gray-400 dark:text-gray-500 font-medium pb-1.5">Surprise</th>
               </tr>
             </thead>
             <tbody>
@@ -459,18 +460,18 @@ function EarningsWidget({ data }: { data: EarningsData }) {
                   ? new Date(row.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
                   : '—'
                 return (
-                  <tr key={row.date} className="border-b border-gray-50 last:border-0">
-                    <td className="py-1.5 pr-4 text-gray-600 font-medium">{qLabel}</td>
-                    <td className="py-1.5 pr-4 text-right text-gray-500">
+                  <tr key={row.date} className="border-b border-gray-50 dark:border-gray-700 last:border-0">
+                    <td className="py-1.5 pr-4 text-gray-600 dark:text-gray-400 font-medium">{qLabel}</td>
+                    <td className="py-1.5 pr-4 text-right text-gray-500 dark:text-gray-400">
                       {row.epsEstimate != null ? `$${row.epsEstimate.toFixed(2)}` : '—'}
                     </td>
-                    <td className="py-1.5 pr-4 text-right font-semibold text-gray-800">
+                    <td className="py-1.5 pr-4 text-right font-semibold text-gray-800 dark:text-gray-200">
                       {row.epsActual != null ? `$${row.epsActual.toFixed(2)}` : '—'}
                     </td>
                     <td className="py-1.5 text-right">
                       {row.surprisePercent != null ? (
                         <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                          beat ? 'bg-emerald-50 text-emerald-700' : miss ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-500'
+                          beat ? 'bg-emerald-50 text-emerald-700' : miss ? 'bg-red-50 text-red-600' : 'bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                         }`}>
                           {beat ? '▲' : miss ? '▼' : '='} {Math.abs(row.surprisePercent).toFixed(1)}%
                         </span>
@@ -485,7 +486,7 @@ function EarningsWidget({ data }: { data: EarningsData }) {
       )}
 
       {data.history.length === 0 && data.nextEarningsDate == null && (
-        <p className="text-xs text-gray-400">Earnings data not available for this ticker.</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">Earnings data not available for this ticker.</p>
       )}
     </div>
   )
@@ -507,31 +508,31 @@ function NewsWidget({ items }: { items: NewsItem[] }) {
   }
 
   return (
-    <div className="divide-y divide-gray-50">
+    <div className="divide-y divide-gray-50 dark:divide-gray-700">
       {items.map((item, i) => (
         <a
           key={i}
           href={item.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-start gap-3 py-2.5 hover:bg-gray-50 rounded transition-colors px-1 -mx-1"
+          className="flex items-start gap-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded transition-colors px-1 -mx-1"
         >
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-800 leading-snug line-clamp-2">{item.title}</p>
+            <p className="text-sm text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">{item.title}</p>
             <div className="flex items-center gap-2 mt-0.5">
               {item.publisher && (
-                <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-medium">
+                <span className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded font-medium">
                   {item.publisher}
                 </span>
               )}
               {item.publishedAt > 0 && (
-                <span className="text-[10px] text-gray-400">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">
                   {timeAgo(item.publishedAt)} · {fmtNewsDate(item.publishedAt)}
                 </span>
               )}
             </div>
           </div>
-          <ExternalLink size={12} className="text-gray-300 shrink-0 mt-1" />
+          <ExternalLink size={12} className="text-gray-300 dark:text-gray-600 shrink-0 mt-1" />
         </a>
       ))}
     </div>
@@ -567,21 +568,21 @@ function FinancialsWidget({ data }: { data: FinancialsData }) {
     <div>
       {/* Tab toggle */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-medium">
           <button
             onClick={() => setView('annual')}
-            className={`px-3 py-1 transition-colors ${view === 'annual' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+            className={`px-3 py-1 transition-colors ${view === 'annual' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
           >
             Annual
           </button>
           <button
             onClick={() => setView('quarterly')}
-            className={`px-3 py-1 border-l border-gray-200 transition-colors ${view === 'quarterly' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+            className={`px-3 py-1 border-l border-gray-200 dark:border-gray-700 transition-colors ${view === 'quarterly' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}
           >
             Quarterly
           </button>
         </div>
-        <span className="text-[11px] text-gray-400 italic">
+        <span className="text-[11px] text-gray-400 dark:text-gray-500 italic">
           {view === 'annual' ? 'Last 4 fiscal years' : 'Last 8 quarters'}, newest first
         </span>
       </div>
@@ -590,10 +591,10 @@ function FinancialsWidget({ data }: { data: FinancialsData }) {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left text-gray-400 font-medium pb-1.5 pr-4 w-36">Metric</th>
+            <tr className="border-b border-gray-100 dark:border-gray-700">
+              <th className="text-left text-gray-400 dark:text-gray-500 font-medium pb-1.5 pr-4 w-36">Metric</th>
               {rows.map(r => (
-                <th key={r.period} className="text-right text-gray-400 font-medium pb-1.5 pr-3 whitespace-nowrap">
+                <th key={r.period} className="text-right text-gray-400 dark:text-gray-500 font-medium pb-1.5 pr-3 whitespace-nowrap">
                   {r.period}
                 </th>
               ))}
@@ -601,13 +602,13 @@ function FinancialsWidget({ data }: { data: FinancialsData }) {
           </thead>
           <tbody>
             {metrics.map(({ key, growthKey, label }) => (
-              <tr key={key} className="border-b border-gray-50 last:border-0">
-                <td className="py-2 pr-4 text-gray-500 font-medium">{label}</td>
+              <tr key={key} className="border-b border-gray-50 dark:border-gray-700 last:border-0">
+                <td className="py-2 pr-4 text-gray-500 dark:text-gray-400 font-medium">{label}</td>
                 {rows.map(r => {
                   const val = r[key] as number | null
                   const gval = r[growthKey] as number | null
                   return (
-                    <td key={r.period} className="py-2 pr-3 text-right text-gray-800 font-semibold whitespace-nowrap">
+                    <td key={r.period} className="py-2 pr-3 text-right text-gray-800 dark:text-gray-200 font-semibold whitespace-nowrap">
                       {val != null ? fmtCap(val) : '—'}
                       {fmtGrowth(gval)}
                     </td>
@@ -635,27 +636,27 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
   const hasQoQ = f.revenueGrowthQoQ != null || f.earningsGrowthQoQ != null
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
       <div className="flex items-center gap-3 mb-3">
-        <h2 className="text-sm font-semibold text-gray-700">Key Statistics</h2>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Key Statistics</h2>
         {/* YoY / QoQ toggle — only show if QoQ data is available */}
-        <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+        <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-medium">
           <button
             onClick={() => setGrowthView('yoy')}
             className={`px-2.5 py-1 transition-colors ${
               growthView === 'yoy'
                 ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-500 hover:bg-gray-50'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
             }`}
           >
             YoY
           </button>
           <button
             onClick={() => setGrowthView('qoq')}
-            className={`px-2.5 py-1 transition-colors border-l border-gray-200 ${
+            className={`px-2.5 py-1 transition-colors border-l border-gray-200 dark:border-gray-700 ${
               growthView === 'qoq'
                 ? 'bg-blue-600 text-white'
-                : hasQoQ ? 'bg-white text-gray-500 hover:bg-gray-50' : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+                : hasQoQ ? 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50' : 'bg-gray-50 dark:bg-gray-700 text-gray-300 dark:text-gray-600 cursor-not-allowed'
             }`}
             disabled={!hasQoQ}
             title={hasQoQ ? 'Quarter-over-Quarter (sequential quarters)' : 'QoQ data not available for this ticker'}
@@ -663,7 +664,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
             QoQ
           </button>
         </div>
-        <span className="text-[11px] text-gray-400 italic">
+        <span className="text-[11px] text-gray-400 dark:text-gray-500 italic">
           {growthView === 'yoy'
             ? 'Year-over-Year (trailing annual)'
             : 'Quarter-over-Quarter (most recent vs prior quarter)'}
@@ -672,7 +673,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-0">
         {/* Valuation */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Valuation</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Valuation</p>
           <FundRow label="Market Cap"    value={fmtCap(f.marketCap)}     hint="Total market value of all outstanding shares." />
           <FundRow label="P/E (TTM)"     value={fmtMult(f.trailingPE)}   hint="Trailing P/E: share price ÷ earnings per share (past 12 months). Lower = cheaper relative to earnings." />
           <FundRow label="Forward P/E"   value={fmtMult(f.forwardPE)}    hint="Forward P/E: share price ÷ next 12 months' expected earnings. Reflects analyst growth expectations." />
@@ -682,7 +683,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
 
         {/* Earnings & Dividends */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Earnings &amp; Dividends</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Earnings &amp; Dividends</p>
           <FundRow label="EPS (TTM)"        value={fmtDollar(f.trailingEps)}  hint="Earnings Per Share (trailing 12 months). Net income ÷ shares outstanding." />
           <FundRow label="Forward EPS"      value={fmtDollar(f.forwardEps)}   hint="Estimated EPS for the next 12 months based on analyst consensus." />
           <FundRow label="Dividend Yield"   value={fmtPct(f.dividendYield)}   hint="Annual dividend as a % of the current share price. Higher yield = more income per dollar invested." />
@@ -693,7 +694,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
 
         {/* Risk & Range */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Risk &amp; Range</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Risk &amp; Range</p>
           <FundRow label="Beta"     value={fmtMult(f.beta, '')}           hint="Volatility vs the S&P 500. Beta > 1 = moves more than the market. Beta < 1 = less volatile." />
           <FundRow label="52W High" value={fmtDollar(f.fiftyTwoWeekHigh)} hint="Highest price in the past 52 weeks. A breakout above this level is a strong bullish signal." />
           <FundRow label="52W Low"  value={fmtDollar(f.fiftyTwoWeekLow)}  hint="Lowest price in the past 52 weeks. Bouncing from this level may signal a support floor." />
@@ -701,7 +702,7 @@ function FundamentalsSection({ f }: { f: StockFundamentals }) {
 
         {/* Financials */}
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Financials</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">Financials</p>
           <FundRow
             label="Revenue Growth"
             value={revGrowth.text}
@@ -743,6 +744,8 @@ export default function StockPage() {
   const params = useParams()
   const router = useRouter()
   const ticker = (params?.ticker as string)?.toUpperCase() ?? ''
+
+  const { dark, toggle } = useDarkMode()
 
   const [data, setData]       = useState<StockDetailData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -943,12 +946,23 @@ export default function StockPage() {
     </aside>
   )
 
+  // ── Dark mode toggle button ────────────────────────────────────────────────
+  const DarkToggle = (
+    <button
+      onClick={toggle}
+      className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+      aria-label="Toggle dark mode"
+    >
+      {dark ? <Sun size={16} /> : <Moon size={16} />}
+    </button>
+  )
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
         {Sidebar}
           <div className="flex-1 flex flex-col">
-          <header className="bg-slate-900 text-white shadow-lg">
+          <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
             <div className="px-4 py-4 flex items-center gap-4">
               <Link href="/" className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors text-sm">
                 <ArrowLeft size={15} /> Screener
@@ -989,6 +1003,7 @@ export default function StockPage() {
                     </a>
                   </div>
                 </div>
+                {DarkToggle}
               </div>
             </div>
           </header>
@@ -998,9 +1013,9 @@ export default function StockPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
-              <p className="text-gray-500 text-sm">Loading {ticker} ({range.label})…</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Loading {ticker} ({range.label})…</p>
               {range.label === '5Y' && (
-                <p className="text-gray-400 text-xs mt-1">5Y weekly fetch may take a few seconds</p>
+                <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">5Y weekly fetch may take a few seconds</p>
               )}
             </div>
           </div>
@@ -1011,10 +1026,10 @@ export default function StockPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
         {Sidebar}
           <div className="flex-1 flex flex-col">
-          <header className="bg-slate-900 text-white shadow-lg">
+          <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
             <div className="px-4 py-4 flex items-center gap-4">
               <Link href="/" className="flex items-center gap-1 text-slate-300 hover:text-white transition-colors text-sm">
                 <ArrowLeft size={15} /> Screener
@@ -1055,6 +1070,7 @@ export default function StockPage() {
                     </a>
                   </div>
                 </div>
+                {DarkToggle}
               </div>
             </div>
           </header>
@@ -1076,14 +1092,14 @@ export default function StockPage() {
   const isWeekly = range.interval === '1wk'
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* ── Sidebar ── */}
       {Sidebar}
 
       {/* ── Main content ── */}
       <div className="flex-1 min-w-0">
         {/* Header */}
-        <header className="bg-slate-900 text-white shadow-lg">
+        <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
           <div className="px-4 py-3 flex items-center gap-4">
             <Link
               href="/"
@@ -1160,6 +1176,7 @@ export default function StockPage() {
                   </a>
                 </div>
               </div>
+              {DarkToggle}
             </div>
           </div>
           {/* Quick stats row — P/E, 52W range, Dividend, Last Updated */}
@@ -1201,10 +1218,10 @@ export default function StockPage() {
           )}
         </header>
 
-        <main className="px-4 py-4 space-y-4">
+        <main className="px-4 py-4 space-y-4 bg-gray-50 dark:bg-gray-900">
           {/* Range Selector + Chart Overlays */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1">Range:</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mr-1">Range:</span>
             {DATE_RANGES.map((r) => (
               <button
                 key={r.label}
@@ -1212,7 +1229,7 @@ export default function StockPage() {
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   range.label === r.label
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-white border border-gray-300 text-gray-600 hover:border-blue-400 hover:text-blue-600'
+                    : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-blue-400 hover:text-blue-600'
                 }`}
               >
                 {r.label}
@@ -1224,15 +1241,15 @@ export default function StockPage() {
               </span>
             )}
             {/* ── Overlay toggles ── */}
-            <span className="text-xs text-gray-300 ml-3 mr-1 hidden sm:inline">|</span>
-            <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1 hidden sm:inline">Overlays:</span>
+            <span className="text-xs text-gray-300 dark:text-gray-600 ml-3 mr-1 hidden sm:inline">|</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mr-1 hidden sm:inline">Overlays:</span>
             <button
               onClick={toggleEMA20}
               title="Exponential Moving Average (20 periods)"
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
                 showEMA20
                   ? 'bg-green-600 text-white border-green-600 shadow-sm'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-green-400 hover:text-green-600'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-green-400 hover:text-green-600'
               }`}
             >
               EMA20
@@ -1243,7 +1260,7 @@ export default function StockPage() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
                 showSMA50
                   ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-amber-400 hover:text-amber-600'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-amber-400 hover:text-amber-600'
               }`}
             >
               SMA50
@@ -1254,7 +1271,7 @@ export default function StockPage() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
                 showSMA200
                   ? 'bg-red-600 text-white border-red-600 shadow-sm'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-600'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-red-400 hover:text-red-600'
               }`}
             >
               SMA200
@@ -1265,12 +1282,12 @@ export default function StockPage() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
                 showBB
                   ? 'bg-violet-600 text-white border-violet-600 shadow-sm'
-                  : 'bg-white border-gray-300 text-gray-600 hover:border-violet-400 hover:text-violet-600'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-violet-400 hover:text-violet-600'
               }`}
             >
               BB
             </button>
-            <span className="ml-auto text-xs text-gray-400 italic hidden md:block">
+            <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 italic hidden md:block">
               Hover legend labels for descriptions
             </span>
           </div>
@@ -1283,7 +1300,7 @@ export default function StockPage() {
     label="RSI (14)"
     value={ind.rsi.toString()}
     sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
-    color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
+    color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}
   />
 
   {/* Row 1, Col 2 */}
@@ -1317,16 +1334,16 @@ export default function StockPage() {
     label="Volume Ratio"
     value={`${ind.volumeRatio.toFixed(2)}×`}
     sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
-    color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
+    color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800 dark:text-gray-200'}
   />
 
 </div>
 
           {/* Volume Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-4 mb-3">
-              <h2 className="text-sm font-semibold text-gray-700">Volume</h2>
-              <span className="flex items-center gap-1.5 text-xs text-gray-400">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Volume</h2>
+              <span className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
                 <span className="inline-block w-5 border-t-2 border-dashed border-red-400" />
                 Vol SMA(20) — 20-period avg
               </span>
@@ -1345,11 +1362,11 @@ export default function StockPage() {
           </div>
 
           {/* Price + Moving Averages Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-sm font-semibold text-gray-700">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Price &amp; Moving Averages
-                <span className="text-gray-400 font-normal ml-2 text-xs">
+                <span className="text-gray-400 dark:text-gray-500 font-normal ml-2 text-xs">
                   ({data.chartData.length} {isWeekly ? 'weeks' : 'days'})
                 </span>
               </h2>
@@ -1381,8 +1398,8 @@ export default function StockPage() {
           </div>
 
           {/* RSI Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">RSI (14)</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">RSI (14)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1402,8 +1419,8 @@ export default function StockPage() {
           </div>
 
           {/* MACD Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">MACD (12, 26, 9)</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">MACD (12, 26, 9)</h2>
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={data.chartData} margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -1423,7 +1440,7 @@ export default function StockPage() {
           {data.fundamentals ? (
             <FundamentalsSection f={data.fundamentals} />
           ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center text-sm text-gray-400">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center text-sm text-gray-400 dark:text-gray-500">
               Key statistics not available for this ticker (e.g. ETFs may not have P/E or dividend data).
             </div>
           )}
@@ -1432,8 +1449,8 @@ export default function StockPage() {
           {financials && (financials.annual.length > 0 || financials.quarterly.length > 0) ? (
             <div className="grid grid-cols-2 gap-4">
               {/* Historical Financials */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <div className="text-sm font-semibold text-gray-700 mb-3">Historical Financials</div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Historical Financials</div>
                 <FinancialsWidget data={financials} />
               </div>
 
@@ -1445,15 +1462,18 @@ export default function StockPage() {
             earnings && <EarningsWidget data={earnings} />
           )}
 
+          {/* Short Interest */}
+          {data.fundamentals && <ShortInterestWidget fundamentals={data.fundamentals} />}
+
           {/* News Feed — collapsed by default */}
           {news && news.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <button
                 onClick={() => setShowNews(v => !v)}
-                className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
+                className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300"
               >
                 <span>Recent News</span>
-                <span className="text-gray-400 text-xs font-normal">{showNews ? '▲ collapse' : '▶ expand'}</span>
+                <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">{showNews ? '▲ collapse' : '▶ expand'}</span>
               </button>
               {showNews && (
                 <div className="mt-3">
@@ -1464,8 +1484,8 @@ export default function StockPage() {
           )}
 
           {/* Latest Indicator Values */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <h2 className="text-sm font-semibold text-gray-700 mb-2">Latest Indicator Values</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latest Indicator Values</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-0 text-sm">
               {(
                 [
@@ -1479,16 +1499,16 @@ export default function StockPage() {
                   ['Volume Ratio',   `${ind.volumeRatio.toFixed(2)}×`],
                 ] as [string, string | number][]
               ).map(([label, value]) => (
-                <div key={label} className="flex justify-between border-b border-gray-100 py-1.5">
-                  <span className="text-gray-400 text-xs">{label}</span>
-                  <span className="font-medium text-gray-800 text-xs">{value}</span>
+                <div key={label} className="flex justify-between border-b border-gray-100 dark:border-gray-700 py-1.5">
+                  <span className="text-gray-400 dark:text-gray-500 text-xs">{label}</span>
+                  <span className="font-medium text-gray-800 dark:text-gray-200 text-xs">{value}</span>
                 </div>
               ))}
             </div>
           </div>
         </main>
 
-        <footer className="text-center text-xs text-gray-400 py-3 border-t mt-2">
+        <footer className="text-center text-xs text-gray-400 dark:text-gray-500 py-3 border-t dark:border-gray-700 mt-2">
           Data via Yahoo Finance · Not financial advice · For educational use only
         </footer>
       </div>

@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd \\\"/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder\\\" && npx tsc --noEmit 2>&1\",\"description\":\"Run TypeScript type check\"}",
-  "error": "Exit code 2\napp/stock/[ticker]/page.tsx(1181,16): error TS2304: Cannot find name 'DarkToggle'.",
-  "timestamp": "2026-04-29T16:54:54.168Z",
-  "retry_count": 1
-}

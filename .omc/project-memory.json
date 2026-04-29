@@ -127,8 +127,8 @@
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 157,
-      "lastAccessed": 1777481700551,
+      "accessCount": 161,
+      "lastAccessed": 1777492272343,
       "type": "file"
     },
     {
@@ -418,6 +418,12 @@
       "accessCount": 1,
       "lastAccessed": 1777481309872,
       "type": "directory"
+    },
+    {
+      "path": "app/stock/components/Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1777491952589,
+      "type": "file"
     }
   ],
   "userDirectives": []

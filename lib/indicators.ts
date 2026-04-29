@@ -38,6 +38,7 @@ export function computeIndicators(data: OHLCVBar[]): IndicatorValues | null {
   const sma20Arr = SMA.calculate({ values: closes, period: 20 })
   const sma50Arr = SMA.calculate({ values: closes, period: 50 })
   const sma200Arr = SMA.calculate({ values: closes, period: 200 })
+  const ema9Arr  = EMA.calculate({ values: closes, period: 9 })
   const ema20Arr = EMA.calculate({ values: closes, period: 20 })
 
   // Volume
@@ -54,6 +55,7 @@ export function computeIndicators(data: OHLCVBar[]): IndicatorValues | null {
     sma20: round(sma20Arr[sma20Arr.length - 1]),
     sma50: round(sma50Arr[sma50Arr.length - 1]),
     sma200: sma200Arr.length > 0 ? round(sma200Arr[sma200Arr.length - 1]) : null,
+    ema9:  round(ema9Arr[ema9Arr.length - 1]),
     ema20: round(ema20Arr[ema20Arr.length - 1]),
     latestVolume,
     avgVolume20,
@@ -80,6 +82,7 @@ export function computeIndicatorHistory(data: OHLCVBar[], displayDays = 120): Ch
   const sma20Arr   = SMA.calculate({ values: closes,  period: 20 })
   const sma50Arr   = SMA.calculate({ values: closes,  period: 50 })
   const sma200Arr  = SMA.calculate({ values: closes,  period: 200 })
+  const ema9Arr    = EMA.calculate({ values: closes,  period: 9 })
   const ema20Arr   = EMA.calculate({ values: closes,  period: 20 })
   // Rolling 20-period average of volume — plotted as a dotted reference line on the volume chart
   const volSma20Arr = SMA.calculate({ values: volumes, period: 20 })
@@ -98,6 +101,7 @@ export function computeIndicatorHistory(data: OHLCVBar[], displayDays = 120): Ch
       sma20:    getVal(sma20Arr,  i, n),
       sma50:    getVal(sma50Arr,  i, n),
       sma200:   getVal(sma200Arr, i, n),
+      ema9:     getVal(ema9Arr,   i, n),
       ema20:    getVal(ema20Arr,  i, n),
       rsi:          getVal(rsiArr, i, n),
       macd:         getMacdVal(macdArr, i, n, 'MACD'),

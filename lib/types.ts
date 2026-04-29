@@ -17,6 +17,7 @@ export interface IndicatorValues {
   sma20: number
   sma50: number
   sma200: number | null
+  ema9: number
   ema20: number
   latestVolume: number
   avgVolume20: number
@@ -34,6 +35,7 @@ export interface ChartPoint {
   sma20: number | null
   sma50: number | null
   sma200: number | null
+  ema9: number | null
   ema20: number | null
   rsi: number | null
   macd: number | null

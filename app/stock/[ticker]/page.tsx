@@ -784,6 +784,14 @@ export default function StockPage() {
     if (typeof window === 'undefined') return true
     return localStorage.getItem('sf-chart-sma200') !== 'false'
   })
+  const [showEMA9, setShowEMA9] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('sf-chart-ema9') === 'true'
+  })
+  const [showSMA20, setShowSMA20] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('sf-chart-sma20') === 'true'
+  })
 
   const toggleBB = () => setShowBB(prev => {
     const next = !prev
@@ -803,6 +811,16 @@ export default function StockPage() {
   const toggleSMA200 = () => setShowSMA200(prev => {
     const next = !prev
     localStorage.setItem('sf-chart-sma200', String(next))
+    return next
+  })
+  const toggleEMA9 = () => setShowEMA9(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-ema9', String(next))
+    return next
+  })
+  const toggleSMA20 = () => setShowSMA20(prev => {
+    const next = !prev
+    localStorage.setItem('sf-chart-sma20', String(next))
     return next
   })
 
@@ -1244,6 +1262,17 @@ export default function StockPage() {
             <span className="text-xs text-gray-300 dark:text-gray-600 ml-3 mr-1 hidden sm:inline">|</span>
             <span className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide mr-1 hidden sm:inline">Overlays:</span>
             <button
+              onClick={toggleEMA9}
+              title="Exponential Moving Average (9 periods)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showEMA9
+                  ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-purple-400 hover:text-purple-600'
+              }`}
+            >
+              EMA9
+            </button>
+            <button
               onClick={toggleEMA20}
               title="Exponential Moving Average (20 periods)"
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
@@ -1253,6 +1282,17 @@ export default function StockPage() {
               }`}
             >
               EMA20
+            </button>
+            <button
+              onClick={toggleSMA20}
+              title="Simple Moving Average (20 periods)"
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                showSMA20
+                  ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-cyan-400 hover:text-cyan-600'
+              }`}
+            >
+              SMA20
             </button>
             <button
               onClick={toggleSMA50}
@@ -1384,7 +1424,9 @@ export default function StockPage() {
                 <Tooltip formatter={priceFormatter} labelFormatter={(l) => `📅 ${l}`} {...tooltipStyle} />
                 <Legend content={<ChartLegend />} />
                 <Line type="monotone" dataKey="close"  stroke="#2563eb" dot={false} name="Close"  strokeWidth={2}   connectNulls={false} />
+                {showEMA9  && <Line type="monotone" dataKey="ema9"   stroke="#a855f7" dot={false} name="EMA9"   strokeWidth={1.2} connectNulls={false} strokeDasharray="2 2" />}
                 {showEMA20 && <Line type="monotone" dataKey="ema20"  stroke="#10b981" dot={false} name="EMA20"  strokeWidth={1.2} connectNulls={false} strokeDasharray="4 3" />}
+                {showSMA20 && <Line type="monotone" dataKey="sma20"  stroke="#06b6d4" dot={false} name="SMA20"  strokeWidth={1.2} connectNulls={false} />}
                 {showSMA50 && <Line type="monotone" dataKey="sma50"  stroke="#f59e0b" dot={false} name="SMA50"  strokeWidth={1.5} connectNulls={false} />}
                 {showSMA200 && <Line type="monotone" dataKey="sma200" stroke="#ef4444" dot={false} name="SMA200" strokeWidth={1.5} connectNulls={false} />}
                 {/* Bollinger Bands — shown only when toggled on */}

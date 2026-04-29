@@ -6,11 +6,9 @@ import { useRouter } from 'next/navigation'
 import {
   Search, TrendingUp, RotateCcw, ChevronUp, ChevronDown,
   Settings, ChevronRight, Plus, Download, Upload, X, Check, ListFilter, ExternalLink,
-  Sun, Moon,
 } from 'lucide-react'
 import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import type { FilterCriteria, ScreenerRow } from '@/lib/types'
-import { useDarkMode } from '@/lib/useDarkMode'
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const ITEMS_PER_PAGE  = 20
@@ -336,22 +334,22 @@ function Pagination({
   }
 
   return (
-    <div className="flex items-center gap-1 justify-center py-4 border-t border-gray-100 dark:border-gray-700">
+    <div className="flex items-center gap-1 justify-center py-4 border-t border-gray-100">
       <button
         disabled={page === 1}
         onClick={() => onChange(page - 1)}
-        className="px-2 py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded"
+        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded"
       >‹ Prev</button>
 
       {items.map((p, i) =>
         p === '…' ? (
-          <span key={`e${i}`} className="px-1 text-gray-400 dark:text-gray-500 text-sm select-none">…</span>
+          <span key={`e${i}`} className="px-1 text-gray-400 text-sm select-none">…</span>
         ) : (
           <button
             key={p}
             onClick={() => onChange(p as number)}
             className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-              p === page ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+              p === page ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >{p}</button>
         )
@@ -360,7 +358,7 @@ function Pagination({
       <button
         disabled={page === total}
         onClick={() => onChange(page + 1)}
-        className="px-2 py-1 text-sm text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded"
+        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded"
       >Next ›</button>
     </div>
   )
@@ -369,7 +367,6 @@ function Pagination({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const router = useRouter()
-  const { dark, toggle } = useDarkMode()
   const [tickerSearch, setTickerSearch] = useState('')
 
   function handleTickerSearch(e: React.FormEvent) {
@@ -537,7 +534,7 @@ export default function Home() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50">
       {/* Ticker Modal */}
       {showTickerModal && (
         <TickerModal
@@ -591,13 +588,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <button
-            onClick={toggle}
-            className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            {dark ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
           <form onSubmit={handleTickerSearch} className="flex items-center gap-2">
             <input
               type="text"
@@ -616,15 +606,15 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
         {/* Filter Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Filters</h2>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Filters</h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
             {/* RSI */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">RSI (14)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">RSI (14)</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 value={filters.rsi}
                 onChange={e => setFilters({ ...filters, rsi: e.target.value as FilterCriteria['rsi'] })}
               >
@@ -637,9 +627,9 @@ export default function Home() {
 
             {/* MACD */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">MACD (12,26,9)</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">MACD (12,26,9)</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 value={filters.macd}
                 onChange={e => setFilters({ ...filters, macd: e.target.value as FilterCriteria['macd'] })}
               >
@@ -653,9 +643,9 @@ export default function Home() {
 
             {/* Moving Average */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Moving Average</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Moving Average</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 value={filters.movingAverage}
                 onChange={e =>
                   setFilters({ ...filters, movingAverage: e.target.value as FilterCriteria['movingAverage'] })
@@ -673,9 +663,9 @@ export default function Home() {
 
             {/* Volume */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Volume</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Volume</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 value={filters.volume}
                 onChange={e => setFilters({ ...filters, volume: e.target.value as FilterCriteria['volume'] })}
               >
@@ -688,14 +678,14 @@ export default function Home() {
           </div>
 
           {/* Fundamentals Row */}
-          <div className="mb-4 pb-4 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <h3 className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-3">Fundamentals</h3>
+          <div className="mb-4 pb-4 border-t border-gray-100 pt-4">
+            <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-3">Fundamentals</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* P/E Ratio */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">P/E Ratio</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">P/E Ratio</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                   value={filters.pe}
                   onChange={e => setFilters({ ...filters, pe: e.target.value as FilterCriteria['pe'] })}
                 >
@@ -710,9 +700,9 @@ export default function Home() {
 
               {/* Market Cap */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Market Cap</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Market Cap</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                   value={filters.marketCap}
                   onChange={e => setFilters({ ...filters, marketCap: e.target.value as FilterCriteria['marketCap'] })}
                 >
@@ -726,9 +716,9 @@ export default function Home() {
 
               {/* Dividend Yield */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Dividend Yield</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Dividend Yield</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                   value={filters.dividendYield}
                   onChange={e => setFilters({ ...filters, dividendYield: e.target.value as FilterCriteria['dividendYield'] })}
                 >
@@ -742,9 +732,9 @@ export default function Home() {
 
               {/* Revenue Growth */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Revenue Growth (YoY)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Revenue Growth (YoY)</label>
                 <select
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                   value={filters.revenueGrowth}
                   onChange={e => setFilters({ ...filters, revenueGrowth: e.target.value as FilterCriteria['revenueGrowth'] })}
                 >
@@ -759,11 +749,11 @@ export default function Home() {
           </div>
 
           {/* Watchlist bar */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 dark:border-gray-700 pt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <ListFilter size={14} className="text-gray-400 dark:text-gray-500" />
+          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <ListFilter size={14} className="text-gray-400" />
               <span>Watchlist:</span>
-              <span className="font-semibold text-gray-700 dark:text-gray-300">{watchlist.length} tickers</span>
+              <span className="font-semibold text-gray-700">{watchlist.length} tickers</span>
             </div>
             <button
               onClick={() => setShowTickerModal(true)}
@@ -795,7 +785,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => { setFilters(DEFAULT_FILTERS); setResults([]); setScanned(null) }}
-              className="flex items-center gap-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 px-4 py-2.5 rounded-lg text-sm transition-colors"
+              className="flex items-center gap-2 border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm transition-colors"
             >
               <RotateCcw size={14} /> Reset
             </button>
@@ -804,20 +794,20 @@ export default function Home() {
 
         {/* Progress bar */}
         {loading && progress && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600">
                 Scanning batch {Math.ceil(progress.done / SCAN_BATCH)} of {Math.ceil(progress.total / SCAN_BATCH)}…
               </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">{progress.done} / {progress.total}</span>
+              <span className="text-xs text-gray-400">{progress.done} / {progress.total}</span>
             </div>
-            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-100 rounded-full h-2">
               <div
                 className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">Results appear as each batch completes. 10-min cache active.</p>
+            <p className="text-xs text-gray-400 mt-1.5">Results appear as each batch completes. 10-min cache active.</p>
           </div>
         )}
 
@@ -830,15 +820,15 @@ export default function Home() {
 
         {/* Results */}
         {scanned !== null && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {/* Table header */}
-            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3 flex-wrap">
-              <h2 className="font-semibold text-gray-800 dark:text-gray-200">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 flex-wrap">
+              <h2 className="font-semibold text-gray-800">
                 {results.length} match{results.length !== 1 ? 'es' : ''}
-                <span className="text-gray-400 dark:text-gray-500 font-normal text-sm ml-2">of {scanned} scanned</span>
+                <span className="text-gray-400 font-normal text-sm ml-2">of {scanned} scanned</span>
               </h2>
               {results.length > 0 && (
-                <span className="text-xs text-gray-400 dark:text-gray-500">
+                <span className="text-xs text-gray-400">
                   Page {currentPage}/{totalPages} · {ITEMS_PER_PAGE} per page
                 </span>
               )}
@@ -847,43 +837,43 @@ export default function Home() {
                 <div className="relative">
                   <button
                     onClick={() => setShowColMenu(v => !v)}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1.5 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-2.5 py-1.5 transition-colors"
                   >
                     <Settings size={12} /> Columns
                   </button>
                   {showColMenu && (
-                    <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 p-3 w-44">
-                      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Show / Hide</p>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded px-1 py-1">
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-3 w-44">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Show / Hide</p>
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
                         <input
                           type="checkbox"
                           checked={showCompany}
                           onChange={e => setShowCompany(e.target.checked)}
                           className="rounded"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">Company Name</span>
+                        <span className="text-sm text-gray-700">Company Name</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded px-1 py-1">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
                         <input type="checkbox" checked={showPE} onChange={e => setShowPE(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">P/E Ratio</span>
+                        <span className="text-sm text-gray-700">P/E Ratio</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded px-1 py-1">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
                         <input type="checkbox" checked={showMarketCap} onChange={e => setShowMarketCap(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">Market Cap</span>
+                        <span className="text-sm text-gray-700">Market Cap</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded px-1 py-1">
+                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
                         <input type="checkbox" checked={showDividend} onChange={e => setShowDividend(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">Dividend Yield</span>
+                        <span className="text-sm text-gray-700">Dividend Yield</span>
                       </label>
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">Click ticker for charts</span>
+                <span className="text-xs text-gray-400 hidden sm:block">Click ticker for charts</span>
               </div>
             </div>
 
             {results.length === 0 && !loading ? (
-              <div className="text-center py-16 text-gray-400 dark:text-gray-500">
+              <div className="text-center py-16 text-gray-400">
                 <Search size={36} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm">No stocks match the current filters.</p>
                 <p className="text-xs mt-1">Try broadening your criteria or run a new scan.</p>
@@ -892,56 +882,56 @@ export default function Home() {
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Ticker</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-600">Ticker</th>
                         {showCompany && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Company</th>
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Company</th>
                         )}
                         {showPE && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                             onClick={() => toggleSort('trailingPE')}>
                             P/E <SortIcon col="trailingPE" />
                           </th>
                         )}
                         {showMarketCap && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                             onClick={() => toggleSort('marketCap')}>
                             Mkt Cap <SortIcon col="marketCap" />
                           </th>
                         )}
                         {showDividend && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                             onClick={() => toggleSort('dividendYield')}>
                             Div Yield <SortIcon col="dividendYield" />
                           </th>
                         )}
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                           onClick={() => toggleSort('price')}>
                           Price <SortIcon col="price" />
                         </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                           onClick={() => toggleSort('changePercent')}>
                           Chg% <SortIcon col="changePercent" />
                         </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                           onClick={() => toggleSort('rsi')}>
                           RSI <SortIcon col="rsi" />
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">MACD</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">MA Status</th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 cursor-pointer hover:text-blue-600"
+                        <th className="text-left px-4 py-3 font-semibold text-gray-600">MACD</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-600">MA Status</th>
+                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
                           onClick={() => toggleSort('volumeRatio')}>
                           Vol Ratio <SortIcon col="volumeRatio" />
                         </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Signals</th>
+                        <th className="text-left px-4 py-3 font-semibold text-gray-600">Signals</th>
                       </tr>
                     </thead>
                     <tbody>
                       {paginated.map((row, i) => (
                         <tr
                           key={row.ticker}
-                          className={`border-b border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700/50 transition-colors ${i % 2 === 0 ? '' : 'bg-gray-50/40 dark:bg-gray-700/20'}`}
+                          className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? '' : 'bg-gray-50/40'}`}
                         >
                           <td className="px-4 py-3">
                             <Link
@@ -952,26 +942,26 @@ export default function Home() {
                             </Link>
                           </td>
                           {showCompany && (
-                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{row.companyName ?? '—'}</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">{row.companyName ?? '—'}</td>
                           )}
                           {showPE && (
-                            <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">
+                            <td className="px-4 py-3 text-xs text-gray-700">
                               {row.trailingPE != null ? `${row.trailingPE.toFixed(1)}×` : '—'}
                             </td>
                           )}
                           {showMarketCap && (
-                            <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">
+                            <td className="px-4 py-3 text-xs text-gray-700">
                               {row.marketCap != null ? fmtCap(row.marketCap) : '—'}
                             </td>
                           )}
                           {showDividend && (
-                            <td className="px-4 py-3 text-xs text-gray-700 dark:text-gray-300">
+                            <td className="px-4 py-3 text-xs text-gray-700">
                               {row.dividendYield != null && row.dividendYield > 0
                                 ? `${(row.dividendYield * 100).toFixed(2)}%`
                                 : '—'}
                             </td>
                           )}
-                          <td className="px-4 py-3 text-right font-mono dark:text-gray-200">${formatPrice(row.price)}</td>
+                          <td className="px-4 py-3 text-right font-mono">${formatPrice(row.price)}</td>
                           <td className={`px-4 py-3 text-right font-mono ${changeColor(row.changePercent)}`}>
                             {row.changePercent >= 0 ? '+' : ''}{row.changePercent.toFixed(2)}%
                           </td>
@@ -987,7 +977,7 @@ export default function Home() {
                               <span className="badge-gray">Below Signal</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs dark:text-gray-300">{row.maStatus}</td>
+                          <td className="px-4 py-3 text-xs">{row.maStatus}</td>
                           <td className="px-4 py-3 text-right">{formatVol(row.volumeRatio)}</td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap">
@@ -1009,41 +999,41 @@ export default function Home() {
         )}
 
         {/* Indicator quick-reference */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-500 dark:text-gray-400">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-500">
           {[
             ['RSI',       'Relative Strength Index. <30 = Oversold, >70 = Overbought'],
             ['MACD',      'Moving Avg Convergence Divergence. Crossovers signal trend shifts'],
             ['MA Status', 'SMA50/SMA200 relationship. Golden/Death cross + price position'],
             ['Vol Ratio', "Today's volume vs 20-day avg. >2× = significant spike"],
           ].map(([title, desc]) => (
-            <div key={title} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-              <p className="font-semibold text-gray-700 dark:text-gray-300 mb-0.5">{title}</p>
+            <div key={title} className="bg-white rounded-lg border border-gray-200 p-3">
+              <p className="font-semibold text-gray-700 mb-0.5">{title}</p>
               <p>{desc}</p>
             </div>
           ))}
         </div>
 
         {/* Signal Glossary (collapsible) */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <button
             onClick={() => setShowGlossary(v => !v)}
-            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
           >
             <div>
-              <span className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Signal Glossary</span>
-              <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">— what each badge means</span>
+              <span className="font-semibold text-gray-700 text-sm">Signal Glossary</span>
+              <span className="text-xs text-gray-400 ml-2">— what each badge means</span>
             </div>
-            <ChevronRight size={16} className={`text-gray-400 dark:text-gray-500 transition-transform ${showGlossary ? 'rotate-90' : ''}`} />
+            <ChevronRight size={16} className={`text-gray-400 transition-transform ${showGlossary ? 'rotate-90' : ''}`} />
           </button>
           {showGlossary && (
-            <div className="border-t border-gray-100 dark:border-gray-700 p-5">
+            <div className="border-t border-gray-100 p-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {SIGNAL_GLOSSARY.map(({ signal, color, desc }) => (
-                  <div key={signal} className="flex gap-3 items-start p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div key={signal} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 mt-0.5 whitespace-nowrap ${color}`}>
                       {signal}
                     </span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
                   </div>
                 ))}
               </div>
@@ -1052,7 +1042,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="text-center text-xs text-gray-400 dark:text-gray-500 py-6 border-t dark:border-gray-700 mt-4">
+      <footer className="text-center text-xs text-gray-400 py-6 border-t mt-4">
         Data via Yahoo Finance · Not financial advice · For educational use only
       </footer>
     </div>

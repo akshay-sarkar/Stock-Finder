@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776542229987,
+  "lastScanned": 1777481879957,
   "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder",
   "techStack": {
     "languages": [
@@ -64,6 +64,7 @@
     "workspaces": [],
     "mainDirectories": [
       "app",
+      "docs",
       "lib"
     ],
     "gitBranches": {
@@ -77,51 +78,81 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 3,
-      "lastAccessed": 1776542229954,
+      "lastAccessed": 1777481879947,
       "keyFiles": [
         "globals.css",
         "layout.tsx",
         "page.tsx"
       ]
     },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1777481879948,
+      "keyFiles": []
+    },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
-      "fileCount": 7,
-      "lastAccessed": 1776542229955,
+      "fileCount": 9,
+      "lastAccessed": 1777481879949,
       "keyFiles": [
         "cache.ts",
         "indicators.ts",
+        "rateLimit.ts",
         "screener.ts",
-        "stockList.ts",
-        "types.ts"
+        "stockList.ts"
+      ]
+    },
+    "reports": {
+      "path": "reports",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1777481879949,
+      "keyFiles": [
+        "pm-features-2026-04-18.md",
+        "pm-features-2026-04-20.md",
+        "pm-features-2026-04-25.md"
       ]
     },
     "app/api": {
       "path": "app/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1776542229959,
+      "lastAccessed": 1777481879949,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 79,
-      "lastAccessed": 1776708175248,
+      "accessCount": 157,
+      "lastAccessed": 1777481700551,
       "type": "file"
     },
     {
       "path": "app/page.tsx",
-      "accessCount": 32,
-      "lastAccessed": 1776709299331,
+      "accessCount": 74,
+      "lastAccessed": 1777481807240,
       "type": "file"
     },
     {
       "path": "lib/types.ts",
+      "accessCount": 26,
+      "lastAccessed": 1777481354698,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 16,
+      "lastAccessed": 1777481322086,
+      "type": "directory"
+    },
+    {
+      "path": "lib/yahoo.ts",
       "accessCount": 14,
-      "lastAccessed": 1776708116043,
+      "lastAccessed": 1777481313772,
       "type": "file"
     },
     {
@@ -131,27 +162,69 @@
       "type": "file"
     },
     {
-      "path": "",
-      "accessCount": 10,
-      "lastAccessed": 1776707856350,
-      "type": "directory"
-    },
-    {
-      "path": "lib/yahoo.ts",
+      "path": "app/congress/page.tsx",
       "accessCount": 9,
-      "lastAccessed": 1776708128496,
+      "lastAccessed": 1777481690258,
       "type": "file"
     },
     {
       "path": "app/api/screener/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1777172436858,
+      "type": "file"
+    },
+    {
+      "path": "lib/useDarkMode.ts",
+      "accessCount": 8,
+      "lastAccessed": 1777264791858,
+      "type": "file"
+    },
+    {
+      "path": "app/layout.tsx",
       "accessCount": 7,
-      "lastAccessed": 1776708188951,
+      "lastAccessed": 1777481607954,
+      "type": "file"
+    },
+    {
+      "path": "app/api/stock/[ticker]/route.ts",
+      "accessCount": 6,
+      "lastAccessed": 1777481319295,
+      "type": "file"
+    },
+    {
+      "path": "lib/indicators.ts",
+      "accessCount": 6,
+      "lastAccessed": 1777481373114,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 5,
+      "lastAccessed": 1777152319077,
+      "type": "file"
+    },
+    {
+      "path": "app/globals.css",
+      "accessCount": 5,
+      "lastAccessed": 1777481603189,
       "type": "file"
     },
     {
       "path": "lib/screener.ts",
       "accessCount": 4,
       "lastAccessed": 1776708166303,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 4,
+      "lastAccessed": 1777171637884,
+      "type": "file"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "accessCount": 4,
+      "lastAccessed": 1777481591145,
       "type": "file"
     },
     {
@@ -173,21 +246,9 @@
       "type": "file"
     },
     {
-      "path": "app/congress/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1776546066633,
-      "type": "file"
-    },
-    {
       "path": "app/api/prices/route.ts",
       "accessCount": 3,
       "lastAccessed": 1776571830539,
-      "type": "file"
-    },
-    {
-      "path": "app/api/stock/[ticker]/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776572476171,
       "type": "file"
     },
     {
@@ -206,6 +267,18 @@
       "path": "lib/validation.ts",
       "accessCount": 3,
       "lastAccessed": 1776708140004,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-25-range-bar-news-financials.md",
+      "accessCount": 3,
+      "lastAccessed": 1777153389222,
+      "type": "file"
+    },
+    {
+      "path": "app/api/news/[ticker]/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1777172427974,
       "type": "file"
     },
     {
@@ -239,15 +312,33 @@
       "type": "file"
     },
     {
-      "path": "app/layout.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1776189213464,
+      "path": "docs/superpowers/specs/2026-04-25-range-bar-news-financials-design.md",
+      "accessCount": 2,
+      "lastAccessed": 1777152800457,
       "type": "file"
     },
     {
-      "path": "lib/indicators.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542902885,
+      "path": "docs/superpowers/specs/2026-04-25-ui-polish-news-short-layout-design.md",
+      "accessCount": 2,
+      "lastAccessed": 1777168372459,
+      "type": "file"
+    },
+    {
+      "path": ".claude/agent/PM/PM_AGENT.md",
+      "accessCount": 2,
+      "lastAccessed": 1777171637603,
+      "type": "file"
+    },
+    {
+      "path": "reports/pm-features-2026-04-20.md",
+      "accessCount": 2,
+      "lastAccessed": 1777172422107,
+      "type": "file"
+    },
+    {
+      "path": "app/api/financials/[ticker]/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1777172428744,
       "type": "file"
     },
     {
@@ -263,27 +354,9 @@
       "type": "file"
     },
     {
-      "path": "app/globals.css",
-      "accessCount": 1,
-      "lastAccessed": 1776543478002,
-      "type": "file"
-    },
-    {
       "path": ".claude/agent/Announcement Research Agent/AGENT.md",
       "accessCount": 1,
       "lastAccessed": 1776571105548,
-      "type": "file"
-    },
-    {
-      "path": ".claude/agent/PM/PM_AGENT.md",
-      "accessCount": 1,
-      "lastAccessed": 1776571105756,
-      "type": "file"
-    },
-    {
-      "path": "CLAUDE.md",
-      "accessCount": 1,
-      "lastAccessed": 1776571200861,
       "type": "file"
     },
     {
@@ -303,6 +376,48 @@
       "accessCount": 1,
       "lastAccessed": 1776707778376,
       "type": "file"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-25-ui-polish-news-short-layout.md",
+      "accessCount": 1,
+      "lastAccessed": 1777168475492,
+      "type": "file"
+    },
+    {
+      "path": ".claude",
+      "accessCount": 1,
+      "lastAccessed": 1777171632707,
+      "type": "directory"
+    },
+    {
+      "path": "reports/pm-features-2026-04-25.md",
+      "accessCount": 1,
+      "lastAccessed": 1777172604589,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-25-financials-always-visible-design.md",
+      "accessCount": 1,
+      "lastAccessed": 1777172759065,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-26-dark-mode-sticky-header-design.md",
+      "accessCount": 1,
+      "lastAccessed": 1777261592179,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-26-dark-mode-sticky-header.md",
+      "accessCount": 1,
+      "lastAccessed": 1777261842902,
+      "type": "file"
+    },
+    {
+      "path": "app/api/stock",
+      "accessCount": 1,
+      "lastAccessed": 1777481309872,
+      "type": "directory"
     }
   ],
   "userDirectives": []

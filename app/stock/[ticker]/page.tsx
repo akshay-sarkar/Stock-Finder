@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -764,6 +764,39 @@ export default function StockPage() {
         (COMPANY_NAMES[t] ?? '').toLowerCase().includes(sidebarSearch.toLowerCase()))
     : DEFAULT_TICKERS
 
+  const sidebarRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const savedScroll = sessionStorage.getItem('sf-sidebar-scroll')
+    if (savedScroll && sidebarRef.current) {
+      sidebarRef.current.scrollTop = parseInt(savedScroll, 10)
+    }
+    if (sessionStorage.getItem('sf-sidebar-focus') === 'true' && sidebarRef.current) {
+      sidebarRef.current.focus()
+      sessionStorage.removeItem('sf-sidebar-focus')
+    }
+  }, [ticker])
+
+  const handleSidebarScroll = (e: React.UIEvent<HTMLElement>) => {
+    sessionStorage.setItem('sf-sidebar-scroll', e.currentTarget.scrollTop.toString())
+  }
+
+  const handleSidebarKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault()
+      const currentIndex = filteredSidebarTickers.indexOf(ticker)
+      if (currentIndex === -1) return
+
+      if (e.key === 'ArrowDown' && currentIndex < filteredSidebarTickers.length - 1) {
+        sessionStorage.setItem('sf-sidebar-focus', 'true')
+        router.push(`/stock/${filteredSidebarTickers[currentIndex + 1]}`)
+      } else if (e.key === 'ArrowUp' && currentIndex > 0) {
+        sessionStorage.setItem('sf-sidebar-focus', 'true')
+        router.push(`/stock/${filteredSidebarTickers[currentIndex - 1]}`)
+      }
+    }
+  }
+
   // ── Chart overlay toggles (persisted to localStorage) ─────────────────────
   const [showBB, setShowBB] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
@@ -897,7 +930,13 @@ export default function StockPage() {
 
   // ── Sidebar — always rendered ──────────────────────────────────────────────
   const Sidebar = (
-    <aside className="w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 sticky top-0 h-screen overflow-y-auto z-10">
+    <aside
+      ref={sidebarRef}
+      onScroll={handleSidebarScroll}
+      onKeyDown={handleSidebarKeyDown}
+      tabIndex={0}
+      className="w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 sticky top-0 h-screen overflow-y-auto z-10 outline-none"
+    >
       <div className="px-3 py-4">
         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">
           Watchlist
@@ -963,7 +1002,7 @@ export default function StockPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-brand-bg flex">
+      <div className="min-h-screen bg-slate-50 flex">
         {Sidebar}
           <div className="flex-1 flex flex-col">
           <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
@@ -1094,7 +1133,7 @@ export default function StockPage() {
   const isWeekly = range.interval === '1wk'
 
   return (
-    <div className="min-h-screen bg-brand-bg flex">
+    <div className="min-h-screen bg-slate-50 flex">
       {/* ── Sidebar ── */}
       {Sidebar}
 
@@ -1219,7 +1258,7 @@ export default function StockPage() {
           )}
         </header>
 
-        <main className="px-4 py-4 space-y-4 bg-brand-bg">
+        <main className="px-4 py-4 space-y-4 bg-slate-50">
           {/* Range Selector + Chart Overlays */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-400 font-medium uppercase tracking-wide mr-1">Range:</span>

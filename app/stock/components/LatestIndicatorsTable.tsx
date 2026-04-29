@@ -1,12 +1,13 @@
 'use client'
 
+import { memo } from 'react'
 import { StockDetailData } from '@/lib/types'
 
 interface LatestIndicatorsTableProps {
   data: StockDetailData
 }
 
-export function LatestIndicatorsTable({ data }: LatestIndicatorsTableProps) {
+export const LatestIndicatorsTable = memo(function LatestIndicatorsTable({ data }: LatestIndicatorsTableProps) {
   const ind = data.latestIndicators
 
   return (
@@ -33,4 +34,4 @@ export function LatestIndicatorsTable({ data }: LatestIndicatorsTableProps) {
       </div>
     </div>
   )
-}
+})

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { StockDetailData } from '@/lib/types'
 import { AnalystWidget } from './AnalystWidget'
 import { AnalystData } from '@/lib/types'
@@ -26,7 +27,7 @@ interface IndicatorSummaryCardsProps {
   analyst: AnalystData | null
 }
 
-export function IndicatorSummaryCards({ data, analyst }: IndicatorSummaryCardsProps) {
+export const IndicatorSummaryCards = memo(function IndicatorSummaryCards({ data, analyst }: IndicatorSummaryCardsProps) {
   const ind = data.latestIndicators
 
   return (
@@ -71,4 +72,4 @@ export function IndicatorSummaryCards({ data, analyst }: IndicatorSummaryCardsPr
       />
     </div>
   )
-}
+})

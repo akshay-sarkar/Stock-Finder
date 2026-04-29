@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from 'recharts'
 import { StockDetailData } from '@/lib/types'
+import { tickDate, tooltipStyle } from './ChartUtils'
 
 interface VolumeChartProps {
   data: StockDetailData
@@ -23,23 +24,9 @@ function fmtVol(n: number) {
   return n.toString()
 }
 
-function tickDate(d: string) {
-  return d?.slice(5) ?? ''
-}
-
 function volFormatter(v: unknown, name: string): [string, string] {
   if (v == null || isNaN(Number(v))) return ['—', name]
   return [fmtVol(Number(v)), name]
-}
-
-const tooltipStyle = {
-  contentStyle: {
-    fontSize: '12px',
-    border: '1px solid #e5e7eb',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-    padding: '8px 12px',
-  },
 }
 
 export const VolumeChart = memo(function VolumeChart({ data }: VolumeChartProps) {

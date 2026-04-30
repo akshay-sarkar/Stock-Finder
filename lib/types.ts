@@ -188,6 +188,9 @@ export interface StockDetailData {
   currentPrice: number
   change: number
   changePercent: number
+  postMarketPrice?: number | null
+  postMarketChange?: number | null
+  postMarketChangePercent?: number | null
   chartData: ChartPoint[]
   latestIndicators: IndicatorValues
   fundamentals: StockFundamentals | null

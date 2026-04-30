@@ -2,11 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { DEFAULT_TICKERS } from '@/lib/stockList'
 import { isValidTicker } from '@/lib/validation'
 import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsData } from '@/lib/types'
 import {
-  Sidebar,
   StockHeader,
   QuickStatsBar,
   RangeSelector,
@@ -41,7 +39,6 @@ export default function StockPage() {
   const [news, setNews] = useState<NewsItem[] | null>(null)
   const [showNews, setShowNews] = useState(false)
   const [financials, setFinancials] = useState<FinancialsData | null>(null)
-  const [sidebarPrices, setSidebarPrices] = useState<Record<string, { price: number; changePercent: number }>>({})
 
   // Chart overlay toggles (persisted to localStorage)
   const [showBB, setShowBB] = useState<boolean>(() => {
@@ -113,18 +110,6 @@ export default function StockPage() {
     }
   }, [ticker, router])
 
-  // Fetch sidebar prices
-  useEffect(() => {
-    fetch('/api/prices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tickers: DEFAULT_TICKERS }),
-    })
-      .then((r) => r.json())
-      .then((d) => setSidebarPrices(d.prices ?? {}))
-      .catch(() => {})
-  }, [])
-
   // Fetch earnings
   useEffect(() => {
     if (!ticker || !isValidTicker(ticker)) return
@@ -192,73 +177,55 @@ export default function StockPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex">
-        <Sidebar
-          ticker={ticker}
-          sidebarPrices={sidebarPrices}
-        />
-        <div className="flex-1 flex flex-col">
-          <div className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-            <div className="px-4 py-4 text-slate-300 font-semibold">{ticker}</div>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              <p className="text-gray-500 text-sm">Loading {ticker} ({range.label})…</p>
-              {range.label === '5Y' && <p className="text-gray-400 text-xs mt-1">5Y weekly fetch may take a few seconds</p>}
-            </div>
+      <>
+        <div className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+          <div className="px-4 py-4 text-slate-300 font-semibold">{ticker}</div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <svg className="animate-spin h-8 w-8 text-blue-500 mx-auto mb-4" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <p className="text-gray-500 text-sm">Loading {ticker} ({range.label})…</p>
+            {range.label === '5Y' && <p className="text-gray-400 text-xs mt-1">5Y weekly fetch may take a few seconds</p>}
           </div>
         </div>
-      </div>
+      </>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-brand-bg flex">
-        <Sidebar
-          ticker={ticker}
-          sidebarPrices={sidebarPrices}
-        />
-        <div className="flex-1 flex flex-col">
-          <div className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-            <div className="px-4 py-4 text-slate-300 font-semibold">{ticker}</div>
-          </div>
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-red-500 mb-4">{error ?? 'Failed to load data'}</p>
-              <button onClick={() => router.push('/')} className="text-blue-600 hover:underline text-sm">
-                ← Back to Screener
-              </button>
-            </div>
+      <>
+        <div className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+          <div className="px-4 py-4 text-slate-300 font-semibold">{ticker}</div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">{error ?? 'Failed to load data'}</p>
+            <button onClick={() => router.push('/')} className="text-blue-600 hover:underline text-sm">
+              ← Back to Screener
+            </button>
           </div>
         </div>
-      </div>
+      </>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <Sidebar
-        ticker={ticker}
-        sidebarPrices={sidebarPrices}
-      />
+    <>
+      <StockHeader ticker={ticker} data={data} />
 
-      <div className="flex-1 min-w-0">
-        <StockHeader ticker={ticker} data={data} />
+      {data.fundamentals && (
+        <QuickStatsBar
+          fundamentals={data.fundamentals}
+          currentPrice={data.currentPrice}
+          lastUpdated={lastUpdated}
+        />
+      )}
 
-        {data.fundamentals && (
-          <QuickStatsBar
-            fundamentals={data.fundamentals}
-            currentPrice={data.currentPrice}
-            lastUpdated={lastUpdated}
-          />
-        )}
-
-        <main className="px-4 py-4 space-y-4 bg-slate-50">
+      <main className="px-4 py-4 space-y-4 bg-slate-50 flex-1">
           <RangeSelector
             range={range}
             onRangeChange={setRange}
@@ -339,7 +306,6 @@ export default function StockPage() {
         <footer className="text-center text-xs text-gray-400 py-3 border-t mt-2">
           Data via Yahoo Finance · Not financial advice · For educational use only
         </footer>
-      </div>
-    </div>
+    </>
   )
 }

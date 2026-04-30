@@ -11,7 +11,6 @@ import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
 import type { FilterCriteria, ScreenerRow } from '@/lib/types'
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const ITEMS_PER_PAGE  = 20
 const SCAN_BATCH      = 50
 const LS_WATCHLIST    = 'sf-watchlist-v2'
 const LS_SHOWCOL      = 'sf-show-company'
@@ -390,6 +389,7 @@ export default function Home() {
   const [sortAsc,    setSortAsc]    = useState(true)
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'All'>(20)
   // Column visibility
   const [showCompany, setShowCompany] = useState(true)
   const [showPE, setShowPE]               = useState(true)
@@ -524,8 +524,8 @@ export default function Home() {
   })
 
   // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages  = Math.ceil(sorted.length / ITEMS_PER_PAGE)
-  const paginated   = sorted.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+  const totalPages  = itemsPerPage === 'All' ? 1 : Math.ceil(sorted.length / itemsPerPage)
+  const paginated   = itemsPerPage === 'All' ? sorted : sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   function SortIcon({ col }: { col: keyof ScreenerRow }) {
     if (sortKey !== col) return null
@@ -828,9 +828,23 @@ export default function Home() {
                 <span className="text-gray-400 font-normal text-sm ml-2">of {scanned} scanned</span>
               </h2>
               {results.length > 0 && (
-                <span className="text-xs text-gray-400">
-                  Page {currentPage}/{totalPages} · {ITEMS_PER_PAGE} per page
-                </span>
+                <div className="text-xs text-gray-400 flex items-center gap-1">
+                  <span>Page {currentPage}/{totalPages} ·</span>
+                  <select
+                    className="bg-transparent border-none text-xs text-gray-400 cursor-pointer focus:ring-0 p-0 hover:text-gray-600"
+                    value={itemsPerPage}
+                    onChange={e => {
+                      setItemsPerPage(e.target.value === 'All' ? 'All' : Number(e.target.value))
+                      setCurrentPage(1)
+                    }}
+                  >
+                    <option value={20}>20 per page</option>
+                    <option value={40}>40 per page</option>
+                    <option value={60}>60 per page</option>
+                    <option value={80}>80 per page</option>
+                    <option value="All">All</option>
+                  </select>
+                </div>
               )}
               <div className="ml-auto flex items-center gap-2">
                 {/* Column settings */}

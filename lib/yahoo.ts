@@ -62,6 +62,9 @@ export async function getQuote(ticker: string): Promise<{
   price: number
   change: number
   changePercent: number
+  postMarketPrice: number | null
+  postMarketChange: number | null
+  postMarketChangePercent: number | null
   name: string
   exchange: string
 }> {
@@ -70,6 +73,9 @@ export async function getQuote(ticker: string): Promise<{
     price: result.regularMarketPrice ?? 0,
     change: result.regularMarketChange ?? 0,
     changePercent: result.regularMarketChangePercent ?? 0,
+    postMarketPrice: result.postMarketPrice ?? null,
+    postMarketChange: result.postMarketChange ?? null,
+    postMarketChangePercent: result.postMarketChangePercent ?? null,
     name: result.longName ?? result.shortName ?? ticker,
     exchange: toGoogleExchange(result.fullExchangeName ?? result.exchange),
   }

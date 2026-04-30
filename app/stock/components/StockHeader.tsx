@@ -36,6 +36,14 @@ export function StockHeader({ ticker, data }: StockHeaderProps) {
                 {changeUp ? '+' : ''}{data.change.toFixed(2)}&nbsp;
                 ({changeUp ? '+' : ''}{data.changePercent.toFixed(2)}%)
               </span>
+              {data.postMarketPrice != null && data.postMarketChange != null && data.postMarketChangePercent != null && (
+                <span className="flex items-center gap-1 text-sm text-slate-400 ml-1 border-l border-slate-600 pl-2">
+                  AH: <span className="font-semibold">${fmtPrice(data.postMarketPrice)}</span>
+                  <span className={data.postMarketChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                    {data.postMarketChange >= 0 ? '+' : ''}{data.postMarketChange.toFixed(2)} ({data.postMarketChangePercent >= 0 ? '+' : ''}{data.postMarketChangePercent.toFixed(2)}%)
+                  </span>
+                </span>
+              )}
               <a
                 href={`https://www.google.com/finance/quote/${ticker}:${data.exchange}`}
                 target="_blank"

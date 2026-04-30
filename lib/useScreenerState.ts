@@ -13,7 +13,7 @@ const SS_STATE        = 'sf-screener-state'
 
 export const DEFAULT_FILTERS: FilterCriteria = {
   rsi: 'any', macd: 'any', movingAverage: 'any', volume: 'any',
-  pe: 'any', marketCap: 'any', dividendYield: 'any', revenueGrowth: 'any', signals: 'any',
+  pe: 'any', marketCap: 'any', dividendYield: 'any', revenueGrowth: 'any',
 }
 
 export function useScreenerState() {

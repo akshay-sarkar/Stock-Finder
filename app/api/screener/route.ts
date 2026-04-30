@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
 
     // Validate + deduplicate tickers; fall back to DEFAULT_TICKERS if none provided
     const rawTickers = Array.isArray(obj.tickers) ? obj.tickers : DEFAULT_TICKERS
-    const tickers = sanitizeTickers(rawTickers, 50) // hard cap: 50 per batch
+    const tickerPerBatch = parseInt(process.env.TICKER_PER_BATCH || '50', 10) || 50
+    const tickers = sanitizeTickers(rawTickers, tickerPerBatch) // dynamic cap per batch
 
     if (tickers.length === 0) {
       return NextResponse.json({ results: [], scanned: 0 })

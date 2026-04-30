@@ -1,28 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import {
-  Search, TrendingUp, RotateCcw, ChevronUp, ChevronDown,
-  Settings, ChevronRight, Plus, Download, Upload, X, Check, ListFilter, ExternalLink,
-} from 'lucide-react'
-import { DEFAULT_TICKERS, COMPANY_NAMES } from '@/lib/stockList'
-import type { FilterCriteria, ScreenerRow } from '@/lib/types'
+import { useState, useEffect, useMemo } from 'react'
+import { ChevronRight } from 'lucide-react'
+import type { ScreenerRow } from '@/lib/types'
+import { TickerModal } from './components/Screener/TickerModal'
+import { FilterCard } from './components/Screener/FilterCard'
+import { ResultsTable } from './components/Screener/ResultsTable'
+import { Header } from './components/Screener/Header'
+import { useScreenerState, DEFAULT_FILTERS } from '@/lib/useScreenerState'
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const SCAN_BATCH      = 50
-const LS_WATCHLIST    = 'sf-watchlist-v2'
-const LS_SHOWCOL      = 'sf-show-company'
-const LS_COL_PE       = 'sf-col-pe'
-const LS_COL_MKTCAP   = 'sf-col-mktcap'
-const LS_COL_DIV      = 'sf-col-dividend'
-const SS_STATE        = 'sf-screener-state'
-
-const DEFAULT_FILTERS: FilterCriteria = {
-  rsi: 'any', macd: 'any', movingAverage: 'any', volume: 'any',
-  pe: 'any', marketCap: 'any', dividendYield: 'any', revenueGrowth: 'any',
-}
+const SCAN_BATCH      = parseInt(process.env.TICKER_PER_BATCH || '50', 10) || 50
 
 // ─── Signal glossary ──────────────────────────────────────────────────────────
 const SIGNAL_GLOSSARY = [
@@ -52,415 +40,30 @@ const SIGNAL_GLOSSARY = [
     desc: "Volume < 50% of 20-day avg. Low-volume moves are less reliable and often reverse." },
 ]
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function rsiColor(rsi: number) {
-  if (rsi < 30) return 'text-emerald-600 font-semibold'
-  if (rsi > 70) return 'text-red-600 font-semibold'
-  return 'text-gray-700'
-}
-function changeColor(val: number) {
-  return val >= 0 ? 'text-emerald-600' : 'text-red-500'
-}
-function formatPrice(n: number) {
-  return n >= 1000
-    ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : n.toFixed(2)
-}
-function formatVol(ratio: number) {
-  const cls = ratio >= 2 ? 'badge-green' : ratio < 0.5 ? 'badge-red' : 'badge-gray'
-  return <span className={cls}>{ratio.toFixed(2)}x</span>
-}
-
-function fmtCap(n: number): string {
-  if (n >= 1e12) return `$${(n / 1e12).toFixed(2)}T`
-  if (n >= 1e9)  return `$${(n / 1e9).toFixed(2)}B`
-  if (n >= 1e6)  return `$${(n / 1e6).toFixed(1)}M`
-  return `$${n.toLocaleString()}`
-}
-
-function SignalBadge({ label }: { label: string }) {
-  const isGreen = ['MACD Bull', 'Oversold', 'Golden', 'Above SMA', 'Vol Spike'].some(s => label.startsWith(s))
-  const isRed   = ['MACD Bear', 'Overbought', 'Death', 'Below SMA'].some(s => label.startsWith(s))
-  return <span className={`${isRed ? 'badge-red' : isGreen ? 'badge-green' : 'badge-gray'} mr-1 mb-1`}>{label}</span>
-}
-
-// ─── Ticker Management Modal ──────────────────────────────────────────────────
-function TickerModal({
-  watchlist,
-  onUpdate,
-  onClose,
-}: {
-  watchlist: string[]
-  onUpdate: (t: string[]) => void
-  onClose: () => void
-}) {
-  const [search,      setSearch]      = useState('')
-  const [addInput,    setAddInput]    = useState('')
-  const [importText,  setImportText]  = useState('')
-  const [tab,         setTab]         = useState<'list' | 'import'>('list')
-  const [copied,      setCopied]      = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  const filtered = search
-    ? watchlist.filter(t => t.includes(search.toUpperCase()) ||
-        (COMPANY_NAMES[t] ?? '').toLowerCase().includes(search.toLowerCase()))
-    : watchlist
-
-  function parseTickers(raw: string): string[] {
-    return raw.split(/[\s,;\n]+/)
-      .map(t => t.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, ''))
-      .filter(t => t.length >= 1 && t.length <= 8)
-  }
-
-  function remove(t: string) { onUpdate(watchlist.filter(x => x !== t)) }
-
-  function addTickers(raw: string) {
-    const news = parseTickers(raw)
-    onUpdate([...new Set([...watchlist, ...news])])
-  }
-
-  function handleAdd() {
-    if (!addInput.trim()) return
-    addTickers(addInput)
-    setAddInput('')
-  }
-
-  function handleImport() {
-    if (!importText.trim()) return
-    addTickers(importText)
-    setImportText('')
-    setTab('list')
-  }
-
-  function handleFileImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      addTickers(ev.target?.result as string ?? '')
-    }
-    reader.readAsText(file)
-    e.target.value = ''
-  }
-
-  function copyToClipboard() {
-    navigator.clipboard.writeText(watchlist.join(', ')).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
-
-  function downloadTxt() {
-    const blob = new Blob([watchlist.join('\n')], { type: 'text/plain' })
-    const url  = URL.createObjectURL(blob)
-    const a    = document.createElement('a')
-    a.href = url; a.download = 'watchlist.txt'; a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  function resetDefaults() {
-    if (confirm(`Reset to ${DEFAULT_TICKERS.length}-ticker default list? Your changes will be lost.`)) {
-      onUpdate([...DEFAULT_TICKERS])
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col"
-        style={{ maxHeight: '80vh' }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div>
-            <h2 className="font-semibold text-gray-800">Manage Watchlist</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{watchlist.length} tickers</p>
-          </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b border-gray-100 px-5">
-          {(['list', 'import'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`py-2.5 px-3 text-sm font-medium border-b-2 -mb-px capitalize transition-colors ${
-                tab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >{t === 'list' ? 'Tickers' : 'Import'}</button>
-          ))}
-        </div>
-
-        {tab === 'list' ? (
-          <>
-            {/* Search & Add */}
-            <div className="px-5 py-3 space-y-2 border-b border-gray-50">
-              <input
-                type="text"
-                placeholder="Search by ticker or company…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add ticker (e.g. RIVN, TSLA)"
-                  value={addInput}
-                  onChange={e => setAddInput(e.target.value.toUpperCase())}
-                  onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <button
-                  onClick={handleAdd}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1 shrink-0"
-                >
-                  <Plus size={14} /> Add
-                </button>
-              </div>
-            </div>
-
-            {/* Scrollable ticker grid */}
-            <div className="flex-1 overflow-y-auto px-5 py-3">
-              {filtered.length === 0 ? (
-                <p className="text-center text-gray-400 text-sm py-6">No tickers match your search.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-1.5">
-                  {filtered.map(t => (
-                    <div key={t} className="group flex items-center justify-between bg-gray-50 hover:bg-red-50 rounded-lg px-2.5 py-1.5 transition-colors">
-                      <div className="min-w-0">
-                        <span className="text-sm font-semibold text-gray-700">{t}</span>
-                        {COMPANY_NAMES[t] && (
-                          <span className="block text-[10px] text-gray-400 truncate leading-tight">
-                            {COMPANY_NAMES[t]}
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => remove(t)}
-                        className="text-gray-200 group-hover:text-red-400 transition-colors ml-1 shrink-0"
-                        title={`Remove ${t}`}
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-            <p className="text-xs text-gray-500">
-              Paste tickers separated by commas, spaces, or new lines. Duplicates are ignored.
-            </p>
-            <textarea
-              value={importText}
-              onChange={e => setImportText(e.target.value)}
-              placeholder={"AAPL, MSFT, GOOGL\nTSLA NVDA\nAMZN"}
-              rows={6}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono resize-none focus:ring-2 focus:ring-blue-500"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={handleImport}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium"
-              >
-                Add to Watchlist
-              </button>
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1.5 border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-lg px-3 py-2 text-sm"
-              >
-                <Upload size={13} /> .txt / .csv
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".txt,.csv"
-                className="hidden"
-                onChange={handleFileImport}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center gap-2 px-5 py-3 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-          <button
-            onClick={copyToClipboard}
-            className="flex items-center gap-1.5 text-xs text-gray-600 border border-gray-200 bg-white rounded-lg px-3 py-1.5 hover:border-gray-300 transition-colors"
-          >
-            {copied ? <Check size={12} className="text-emerald-500" /> : <Upload size={12} />}
-            {copied ? 'Copied!' : 'Copy list'}
-          </button>
-          <button
-            onClick={downloadTxt}
-            className="flex items-center gap-1.5 text-xs text-gray-600 border border-gray-200 bg-white rounded-lg px-3 py-1.5 hover:border-gray-300 transition-colors"
-          >
-            <Download size={12} /> Export .txt
-          </button>
-          <button
-            onClick={resetDefaults}
-            className="ml-auto text-xs text-gray-400 hover:text-red-500 transition-colors"
-          >
-            ↺ Reset to defaults
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Pagination ────────────────────────────────────────────────────────────────
-function Pagination({
-  page, total, onChange,
-}: { page: number; total: number; onChange: (p: number) => void }) {
-  if (total <= 1) return null
-
-  // Build compact page list with ellipsis
-  const items: (number | '…')[] = []
-  for (let i = 1; i <= total; i++) {
-    if (i === 1 || i === total || Math.abs(i - page) <= 1) {
-      items.push(i)
-    } else if (items[items.length - 1] !== '…') {
-      items.push('…')
-    }
-  }
-
-  return (
-    <div className="flex items-center gap-1 justify-center py-4 border-t border-gray-100">
-      <button
-        disabled={page === 1}
-        onClick={() => onChange(page - 1)}
-        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded"
-      >‹ Prev</button>
-
-      {items.map((p, i) =>
-        p === '…' ? (
-          <span key={`e${i}`} className="px-1 text-gray-400 text-sm select-none">…</span>
-        ) : (
-          <button
-            key={p}
-            onClick={() => onChange(p as number)}
-            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-              p === page ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >{p}</button>
-        )
-      )}
-
-      <button
-        disabled={page === total}
-        onClick={() => onChange(page + 1)}
-        className="px-2 py-1 text-sm text-gray-500 disabled:opacity-30 hover:bg-gray-100 rounded"
-      >Next ›</button>
-    </div>
-  )
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
-  const router = useRouter()
-  const [tickerSearch, setTickerSearch] = useState('')
+  const {
+    filters, setFilters,
+    results, setResults,
+    scanned, setScanned,
+    sortKey, setSortKey,
+    sortAsc, setSortAsc,
+    showCompany, setShowCompany,
+    showPE, setShowPE,
+    showMarketCap, setShowMarketCap,
+    showDividend, setShowDividend,
+    watchlist, setWatchlist
+  } = useScreenerState()
 
-  function handleTickerSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const t = tickerSearch.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '')
-    if (t.length >= 1 && t.length <= 8) {
-      router.push(`/stock/${t}`)
-      setTickerSearch('')
-    }
-  }
-
-  // Filters & results
-  const [filters,    setFilters]    = useState<FilterCriteria>(DEFAULT_FILTERS)
-  const [results,    setResults]    = useState<ScreenerRow[]>([])
   const [loading,    setLoading]    = useState(false)
   const [error,      setError]      = useState<string | null>(null)
-  const [scanned,    setScanned]    = useState<number | null>(null)
   const [progress,   setProgress]   = useState<{ done: number; total: number } | null>(null)
-  // Sort
-  const [sortKey,    setSortKey]    = useState<keyof ScreenerRow>('rsi')
-  const [sortAsc,    setSortAsc]    = useState(true)
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState<number | 'All'>(20)
-  // Column visibility
-  const [showCompany, setShowCompany] = useState(true)
-  const [showPE, setShowPE]               = useState(true)
-  const [showMarketCap, setShowMarketCap] = useState(true)
-  const [showDividend, setShowDividend]   = useState(false)
-  const [showColMenu, setShowColMenu] = useState(false)
   // UI toggles
   const [showGlossary,    setShowGlossary]    = useState(false)
   const [showTickerModal, setShowTickerModal] = useState(false)
-  // Watchlist (localStorage)
-  const [watchlist,    setWatchlist]    = useState<string[]>(DEFAULT_TICKERS)
-  const [watchlistReady, setWatchlistReady] = useState(false)
-  // Session restore flag — must be useState (not useRef) so the save effect
-  // only runs AFTER React re-renders with the restored values
-  const [stateLoaded, setStateLoaded] = useState(false)
-
-  // ── Restore column prefs & watchlist from localStorage ─────────────────────
-  useEffect(() => {
-    try {
-      const wl = localStorage.getItem(LS_WATCHLIST)
-      if (wl) setWatchlist(JSON.parse(wl))
-    } catch {}
-    try {
-      const col = localStorage.getItem(LS_SHOWCOL)
-      if (col !== null) setShowCompany(col === 'true')
-    } catch {}
-    if (localStorage.getItem(LS_COL_PE)     === 'false') setShowPE(false)
-    if (localStorage.getItem(LS_COL_MKTCAP) === 'false') setShowMarketCap(false)
-    if (localStorage.getItem(LS_COL_DIV)    === 'true')  setShowDividend(true)
-    setWatchlistReady(true)
-  }, [])
-
-  useEffect(() => {
-    if (!watchlistReady) return
-    localStorage.setItem(LS_WATCHLIST, JSON.stringify(watchlist))
-  }, [watchlist, watchlistReady])
-
-  useEffect(() => {
-    localStorage.setItem(LS_SHOWCOL, String(showCompany))
-  }, [showCompany])
-
-  useEffect(() => {
-    localStorage.setItem(LS_COL_PE,     String(showPE))
-    localStorage.setItem(LS_COL_MKTCAP, String(showMarketCap))
-    localStorage.setItem(LS_COL_DIV,    String(showDividend))
-  }, [showPE, showMarketCap, showDividend])
-
-  // ── Restore screener state from sessionStorage (coming back from stock page)
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem(SS_STATE)
-      if (saved) {
-        const s = JSON.parse(saved)
-        setFilters(s.filters    ?? DEFAULT_FILTERS)
-        setResults(s.results    ?? [])
-        setScanned(s.scanned    ?? null)
-        setSortKey(s.sortKey    ?? 'rsi')
-        setSortAsc(s.sortAsc    ?? true)
-        setCurrentPage(1) // always start on page 1 after returning
-      }
-    } catch {}
-    setStateLoaded(true)
-  }, [])
-
-  // ── Persist screener state to sessionStorage on every change ───────────────
-  // Runs only after stateLoaded=true, which fires in the same React batch as
-  // the restored state values — so we never save stale initial defaults.
-  useEffect(() => {
-    if (!stateLoaded) return
-    sessionStorage.setItem(SS_STATE, JSON.stringify({ filters, results, scanned, sortKey, sortAsc }))
-  }, [stateLoaded, filters, results, scanned, sortKey, sortAsc])
 
   // Reset to page 1 whenever sort changes
   useEffect(() => { setCurrentPage(1) }, [sortKey, sortAsc])
@@ -473,35 +76,40 @@ export default function Home() {
     setLoading(true)
     setError(null)
     setResults([])
-    setScanned(null)
+    setScanned(0)
     setCurrentPage(1)
 
-    // Split into batches of SCAN_BATCH, run sequentially so results trickle in
+    // Split into batches of SCAN_BATCH
     const batches: string[][] = []
     for (let i = 0; i < tickers.length; i += SCAN_BATCH) {
       batches.push(tickers.slice(i, i + SCAN_BATCH))
     }
     setProgress({ done: 0, total: tickers.length })
 
-    let allResults: ScreenerRow[] = []
-    let totalScanned = 0
-
     try {
-      for (const batch of batches) {
-        const res = await fetch('/api/screener', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tickers: batch, filters }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? 'Scan failed')
+      let batchIndex = 0
+      const CONCURRENCY = 3
+      
+      const workers = Array(CONCURRENCY).fill(null).map(async () => {
+        while (batchIndex < batches.length) {
+          const currentBatch = batches[batchIndex++]
+          
+          const res = await fetch('/api/screener', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tickers: currentBatch, filters }),
+          })
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error ?? 'Scan failed')
 
-        allResults  = [...allResults,  ...(data.results ?? [])]
-        totalScanned += data.scanned ?? batch.length
-        setResults(allResults)
-        setScanned(totalScanned)
-        setProgress({ done: totalScanned, total: tickers.length })
-      }
+          // Use functional state updates to safely handle concurrent responses
+          setResults(prev => [...prev, ...(data.results ?? [])])
+          setScanned(prev => (prev ?? 0) + (data.scanned ?? currentBatch.length))
+          setProgress(prev => prev ? { ...prev, done: prev.done + currentBatch.length } : null)
+        }
+      })
+
+      await Promise.all(workers)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -516,21 +124,23 @@ export default function Home() {
     else { setSortKey(key); setSortAsc(true) }
   }
 
-  const sorted = [...results].sort((a, b) => {
-    const av = a[sortKey] ?? (sortAsc ? Infinity : -Infinity)
-    const bv = b[sortKey] ?? (sortAsc ? Infinity : -Infinity)
-    if (typeof av === 'string' || typeof bv === 'string') return 0
-    return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number)
-  })
+  const sorted = useMemo(() => {
+    return [...results].sort((a, b) => {
+      const av = a[sortKey] ?? (sortAsc ? Infinity : -Infinity)
+      const bv = b[sortKey] ?? (sortAsc ? Infinity : -Infinity)
+      if (typeof av === 'string' || typeof bv === 'string') return 0
+      return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number)
+    })
+  }, [results, sortKey, sortAsc])
 
   // ── Pagination ─────────────────────────────────────────────────────────────
-  const totalPages  = itemsPerPage === 'All' ? 1 : Math.ceil(sorted.length / itemsPerPage)
-  const paginated   = itemsPerPage === 'All' ? sorted : sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  function SortIcon({ col }: { col: keyof ScreenerRow }) {
-    if (sortKey !== col) return null
-    return sortAsc ? <ChevronUp size={13} className="inline ml-0.5" /> : <ChevronDown size={13} className="inline ml-0.5" />
-  }
+  const totalPages = useMemo(() => 
+    itemsPerPage === 'All' ? 1 : Math.ceil(sorted.length / itemsPerPage)
+  , [sorted.length, itemsPerPage])
+  
+  const paginated = useMemo(() => 
+    itemsPerPage === 'All' ? sorted : sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  , [sorted, itemsPerPage, currentPage])
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
@@ -545,252 +155,21 @@ export default function Home() {
       )}
 
       {/* Header */}
-      <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-5 flex items-center gap-3">
-          <TrendingUp size={28} className="text-emerald-400" />
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Stock Finder</h1>
-            <p className="text-slate-400 text-sm">Free technical analysis screener · Powered by Yahoo Finance</p>
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative group">
-              <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                Congress Trades <ChevronDown size={13} />
-              </button>
-              <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">
-                <a href="https://www.capitoltrades.com/trades" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-                  <ExternalLink size={12} /> Capitol Trades
-                </a>
-                <a href="https://www.quiverquant.com/congresstrading/" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-                  <ExternalLink size={12} /> Quiver Congress
-                </a>
-              </div>
-            </div>
-            <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-              <ExternalLink size={13} /> Insider Trading
-            </a>
-            <div className="relative group">
-              <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
-                News <ChevronDown size={13} />
-              </button>
-              <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[160px]">
-                <a href="https://www.capitoltrades.com/buzz" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-                  <ExternalLink size={12} /> Capitol Buzz
-                </a>
-                <a href="https://www.capitoltrades.com/articles" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
-                  <ExternalLink size={12} /> Capitol Articles
-                </a>
-              </div>
-            </div>
-          </div>
-          <form onSubmit={handleTickerSearch} className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Go to ticker…"
-              value={tickerSearch}
-              onChange={e => setTickerSearch(e.target.value.toUpperCase())}
-              className="bg-slate-800 text-white placeholder-slate-400 border border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-36"
-            />
-            <button type="submit" className="text-slate-300 hover:text-white transition-colors">
-              <Search size={16} />
-            </button>
-          </form>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
         {/* Filter Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Filters</h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-            {/* RSI */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">RSI (14)</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                value={filters.rsi}
-                onChange={e => setFilters({ ...filters, rsi: e.target.value as FilterCriteria['rsi'] })}
-              >
-                <option value="any">Any</option>
-                <option value="oversold">Oversold (&lt; 30)</option>
-                <option value="overbought">Overbought (&gt; 70)</option>
-                <option value="neutral">Neutral (30–70)</option>
-              </select>
-            </div>
-
-            {/* MACD */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">MACD (12,26,9)</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                value={filters.macd}
-                onChange={e => setFilters({ ...filters, macd: e.target.value as FilterCriteria['macd'] })}
-              >
-                <option value="any">Any</option>
-                <option value="bullish_crossover">Bullish Crossover</option>
-                <option value="bearish_crossover">Bearish Crossover</option>
-                <option value="above_signal">Above Signal Line</option>
-                <option value="below_signal">Below Signal Line</option>
-              </select>
-            </div>
-
-            {/* Moving Average */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Moving Average</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                value={filters.movingAverage}
-                onChange={e =>
-                  setFilters({ ...filters, movingAverage: e.target.value as FilterCriteria['movingAverage'] })
-                }
-              >
-                <option value="any">Any</option>
-                <option value="above_sma50">Price Above SMA50</option>
-                <option value="below_sma50">Price Below SMA50</option>
-                <option value="price_above_sma200">Price Above SMA200</option>
-                <option value="price_below_sma200">Price Below SMA200</option>
-                <option value="golden_cross">Golden Cross (SMA50 &gt; SMA200)</option>
-                <option value="death_cross">Death Cross (SMA50 &lt; SMA200)</option>
-              </select>
-            </div>
-
-            {/* Volume */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Volume</label>
-              <select
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                value={filters.volume}
-                onChange={e => setFilters({ ...filters, volume: e.target.value as FilterCriteria['volume'] })}
-              >
-                <option value="any">Any</option>
-                <option value="spike">Spike (&gt; 2× avg)</option>
-                <option value="normal">Normal (0.5–2×)</option>
-                <option value="low">Low (&lt; 0.5× avg)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Fundamentals Row */}
-          <div className="mb-4 pb-4 border-t border-gray-100 pt-4">
-            <h3 className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-3">Fundamentals</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* P/E Ratio */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">P/E Ratio</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                  value={filters.pe}
-                  onChange={e => setFilters({ ...filters, pe: e.target.value as FilterCriteria['pe'] })}
-                >
-                  <option value="any">Any</option>
-                  <option value="under_15">Under 15</option>
-                  <option value="under_25">Under 25</option>
-                  <option value="under_40">Under 40</option>
-                  <option value="over_40">Over 40</option>
-                  <option value="negative">Negative</option>
-                </select>
-              </div>
-
-              {/* Market Cap */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Market Cap</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                  value={filters.marketCap}
-                  onChange={e => setFilters({ ...filters, marketCap: e.target.value as FilterCriteria['marketCap'] })}
-                >
-                  <option value="any">Any</option>
-                  <option value="mega">Mega (&gt;= $200B)</option>
-                  <option value="large">Large ($10B–$200B)</option>
-                  <option value="mid">Mid ($2B–$10B)</option>
-                  <option value="small">Small (&lt; $2B)</option>
-                </select>
-              </div>
-
-              {/* Dividend Yield */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Dividend Yield</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                  value={filters.dividendYield}
-                  onChange={e => setFilters({ ...filters, dividendYield: e.target.value as FilterCriteria['dividendYield'] })}
-                >
-                  <option value="any">Any</option>
-                  <option value="none">None (0%)</option>
-                  <option value="over_1">&gt; 1%</option>
-                  <option value="over_2">&gt; 2%</option>
-                  <option value="over_4">&gt; 4%</option>
-                </select>
-              </div>
-
-              {/* Revenue Growth */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Revenue Growth (YoY)</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
-                  value={filters.revenueGrowth}
-                  onChange={e => setFilters({ ...filters, revenueGrowth: e.target.value as FilterCriteria['revenueGrowth'] })}
-                >
-                  <option value="any">Any</option>
-                  <option value="positive">Positive (&gt; 0%)</option>
-                  <option value="over_10">&gt; 10%</option>
-                  <option value="over_20">&gt; 20%</option>
-                  <option value="negative">Negative (&lt; 0%)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Watchlist bar */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <ListFilter size={14} className="text-gray-400" />
-              <span>Watchlist:</span>
-              <span className="font-semibold text-gray-700">{watchlist.length} tickers</span>
-            </div>
-            <button
-              onClick={() => setShowTickerModal(true)}
-              className="flex items-center gap-1.5 text-xs text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-lg px-3 py-1.5 transition-colors"
-            >
-              <Settings size={12} />
-              Manage Watchlist
-            </button>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 mt-4">
-            <button
-              onClick={runScan}
-              disabled={loading}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-5 py-2.5 rounded-lg transition-colors text-sm"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  {progress ? `Scanning… ${progress.done}/${progress.total}` : 'Scanning…'}
-                </>
-              ) : (
-                <><Search size={16} /> Scan Stocks</>
-              )}
-            </button>
-            <button
-              onClick={() => { setFilters(DEFAULT_FILTERS); setResults([]); setScanned(null) }}
-              className="flex items-center gap-2 border border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm transition-colors"
-            >
-              <RotateCcw size={14} /> Reset
-            </button>
-          </div>
-        </div>
+        <FilterCard
+          filters={filters}
+          onFilterChange={setFilters}
+          watchlistCount={watchlist.length}
+          onShowTickerModal={() => setShowTickerModal(true)}
+          onRunScan={runScan}
+          onReset={() => { setFilters(DEFAULT_FILTERS); setResults([]); setScanned(null) }}
+          loading={loading}
+          progress={progress}
+        />
 
         {/* Progress bar */}
         {loading && progress && (
@@ -819,198 +198,28 @@ export default function Home() {
         )}
 
         {/* Results */}
-        {scanned !== null && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Table header */}
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-3 flex-wrap">
-              <h2 className="font-semibold text-gray-800">
-                {results.length} match{results.length !== 1 ? 'es' : ''}
-                <span className="text-gray-400 font-normal text-sm ml-2">of {scanned} scanned</span>
-              </h2>
-              {results.length > 0 && (
-                <div className="text-xs text-gray-400 flex items-center gap-1">
-                  <span>Page {currentPage}/{totalPages} ·</span>
-                  <select
-                    className="bg-transparent border-none text-xs text-gray-400 cursor-pointer focus:ring-0 p-0 hover:text-gray-600"
-                    value={itemsPerPage}
-                    onChange={e => {
-                      setItemsPerPage(e.target.value === 'All' ? 'All' : Number(e.target.value))
-                      setCurrentPage(1)
-                    }}
-                  >
-                    <option value={20}>20 per page</option>
-                    <option value={40}>40 per page</option>
-                    <option value={60}>60 per page</option>
-                    <option value={80}>80 per page</option>
-                    <option value="All">All</option>
-                  </select>
-                </div>
-              )}
-              <div className="ml-auto flex items-center gap-2">
-                {/* Column settings */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowColMenu(v => !v)}
-                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-2.5 py-1.5 transition-colors"
-                  >
-                    <Settings size={12} /> Columns
-                  </button>
-                  {showColMenu && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-20 p-3 w-44">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Show / Hide</p>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
-                        <input
-                          type="checkbox"
-                          checked={showCompany}
-                          onChange={e => setShowCompany(e.target.checked)}
-                          className="rounded"
-                        />
-                        <span className="text-sm text-gray-700">Company Name</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
-                        <input type="checkbox" checked={showPE} onChange={e => setShowPE(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700">P/E Ratio</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
-                        <input type="checkbox" checked={showMarketCap} onChange={e => setShowMarketCap(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700">Market Cap</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-1">
-                        <input type="checkbox" checked={showDividend} onChange={e => setShowDividend(e.target.checked)} className="rounded" />
-                        <span className="text-sm text-gray-700">Dividend Yield</span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-                <span className="text-xs text-gray-400 hidden sm:block">Click ticker for charts</span>
-              </div>
-            </div>
-
-            {results.length === 0 && !loading ? (
-              <div className="text-center py-16 text-gray-400">
-                <Search size={36} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No stocks match the current filters.</p>
-                <p className="text-xs mt-1">Try broadening your criteria or run a new scan.</p>
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600">Ticker</th>
-                        {showCompany && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600">Company</th>
-                        )}
-                        {showPE && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                            onClick={() => toggleSort('trailingPE')}>
-                            P/E <SortIcon col="trailingPE" />
-                          </th>
-                        )}
-                        {showMarketCap && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                            onClick={() => toggleSort('marketCap')}>
-                            Mkt Cap <SortIcon col="marketCap" />
-                          </th>
-                        )}
-                        {showDividend && (
-                          <th className="text-left px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                            onClick={() => toggleSort('dividendYield')}>
-                            Div Yield <SortIcon col="dividendYield" />
-                          </th>
-                        )}
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                          onClick={() => toggleSort('price')}>
-                          Price <SortIcon col="price" />
-                        </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                          onClick={() => toggleSort('changePercent')}>
-                          Chg% <SortIcon col="changePercent" />
-                        </th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                          onClick={() => toggleSort('rsi')}>
-                          RSI <SortIcon col="rsi" />
-                        </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600">MACD</th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600">MA Status</th>
-                        <th className="text-right px-4 py-3 font-semibold text-gray-600 cursor-pointer hover:text-blue-600"
-                          onClick={() => toggleSort('volumeRatio')}>
-                          Vol Ratio <SortIcon col="volumeRatio" />
-                        </th>
-                        <th className="text-left px-4 py-3 font-semibold text-gray-600">Signals</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginated.map((row, i) => (
-                        <tr
-                          key={row.ticker}
-                          className={`border-b border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? '' : 'bg-gray-50/40'}`}
-                        >
-                          <td className="px-4 py-3">
-                            <Link
-                              href={`/stock/${row.ticker}`}
-                              className="font-bold text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              {row.ticker}
-                            </Link>
-                          </td>
-                          {showCompany && (
-                            <td className="px-4 py-3 text-gray-500 text-xs">{row.companyName ?? '—'}</td>
-                          )}
-                          {showPE && (
-                            <td className="px-4 py-3 text-xs text-gray-700">
-                              {row.trailingPE != null ? `${row.trailingPE.toFixed(1)}×` : '—'}
-                            </td>
-                          )}
-                          {showMarketCap && (
-                            <td className="px-4 py-3 text-xs text-gray-700">
-                              {row.marketCap != null ? fmtCap(row.marketCap) : '—'}
-                            </td>
-                          )}
-                          {showDividend && (
-                            <td className="px-4 py-3 text-xs text-gray-700">
-                              {row.dividendYield != null && row.dividendYield > 0
-                                ? `${(row.dividendYield * 100).toFixed(2)}%`
-                                : '—'}
-                            </td>
-                          )}
-                          <td className="px-4 py-3 text-right font-mono">${formatPrice(row.price)}</td>
-                          <td className={`px-4 py-3 text-right font-mono ${changeColor(row.changePercent)}`}>
-                            {row.changePercent >= 0 ? '+' : ''}{row.changePercent.toFixed(2)}%
-                          </td>
-                          <td className={`px-4 py-3 text-right ${rsiColor(row.rsi)}`}>{row.rsi}</td>
-                          <td className="px-4 py-3">
-                            {row.macdCrossover === 'bullish' ? (
-                              <span className="badge-green">▲ Bull Cross</span>
-                            ) : row.macdCrossover === 'bearish' ? (
-                              <span className="badge-red">▼ Bear Cross</span>
-                            ) : row.macdHistogram > 0 ? (
-                              <span className="badge-blue">Above Signal</span>
-                            ) : (
-                              <span className="badge-gray">Below Signal</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-xs">{row.maStatus}</td>
-                          <td className="px-4 py-3 text-right">{formatVol(row.volumeRatio)}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap">
-                              {row.signals.slice(0, 3).map(s => (
-                                <SignalBadge key={s} label={s} />
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <Pagination page={currentPage} total={totalPages} onChange={p => { setCurrentPage(p); window.scrollTo({ top: 0 }) }} />
-              </>
-            )}
-          </div>
-        )}
+        <ResultsTable
+          results={results}
+          paginated={paginated}
+          scanned={scanned}
+          loading={loading}
+          sortKey={sortKey}
+          sortAsc={sortAsc}
+          onSort={toggleSort}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+          showCompany={showCompany}
+          onShowCompanyChange={setShowCompany}
+          showPE={showPE}
+          onShowPEChange={setShowPE}
+          showMarketCap={showMarketCap}
+          onShowMarketCapChange={setShowMarketCap}
+          showDividend={showDividend}
+          onShowDividendChange={setShowDividend}
+        />
 
         {/* Indicator quick-reference */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-500">

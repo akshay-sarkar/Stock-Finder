@@ -9,10 +9,11 @@ export const runtime = 'nodejs'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { ticker: string } }
+  { params }: { params: Promise<{ ticker: string }> }
 ) {
   // ── Validate route param ────────────────────────────────────────────────
-  const ticker = (params.ticker ?? '').toUpperCase()
+  const { ticker: rawTicker } = await params
+  const ticker = (rawTicker ?? '').toUpperCase()
   if (!isValidTicker(ticker)) {
     return NextResponse.json({ error: 'Invalid ticker symbol' }, { status: 400 })
   }

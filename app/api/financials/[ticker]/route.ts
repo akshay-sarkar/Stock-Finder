@@ -7,9 +7,10 @@ const TTL = 12 * 60 * 60 * 1000 // 12 hours
 
 export async function GET(
   _req: Request,
-  { params }: { params: { ticker: string } }
+  { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const ticker = params.ticker.toUpperCase()
+  const { ticker: rawTicker } = await params
+  const ticker = rawTicker.toUpperCase()
   if (!isValidTicker(ticker)) {
     return NextResponse.json({ error: 'Invalid ticker' }, { status: 400 })
   }

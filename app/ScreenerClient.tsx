@@ -92,6 +92,9 @@ export function ScreenerClient({}: ScreenerClientProps) {
     return [...results].sort((a, b) => {
       const av = a[sortKey] ?? (sortAsc ? Infinity : -Infinity)
       const bv = b[sortKey] ?? (sortAsc ? Infinity : -Infinity)
+      if (typeof av === 'string' && typeof bv === 'string') {
+        return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av)
+      }
       if (typeof av === 'string' || typeof bv === 'string') return 0
       return sortAsc ? (av as number) - (bv as number) : (bv as number) - (av as number)
     })

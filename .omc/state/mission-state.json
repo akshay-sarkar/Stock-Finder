@@ -1,4 +1,121 @@
 {
-  "updatedAt": "2026-04-30T02:44:08.336Z",
-  "missions": []
+  "updatedAt": "2026-05-01T02:41:21.263Z",
+  "missions": [
+    {
+      "id": "session:d5786d0e-d894-4ed0-aac1-a12512617fc2:none",
+      "source": "session",
+      "name": "none",
+      "objective": "Session mission",
+      "createdAt": "2026-05-01T02:26:50.769Z",
+      "updatedAt": "2026-05-01T02:41:21.263Z",
+      "status": "done",
+      "workerCount": 3,
+      "taskCounts": {
+        "total": 3,
+        "pending": 0,
+        "blocked": 0,
+        "inProgress": 0,
+        "completed": 3,
+        "failed": 0
+      },
+      "agents": [
+        {
+          "name": "architect:a6c0dfa",
+          "role": "architect",
+          "ownership": "a6c0dfa3ad993db3f",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-05-01T02:41:21.263Z"
+        },
+        {
+          "name": "architect:a345724",
+          "role": "architect",
+          "ownership": "a3457244599d78653",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-05-01T02:27:57.898Z"
+        },
+        {
+          "name": "code-simplifier:a6bdac8",
+          "role": "code-simplifier",
+          "ownership": "a6bdac8c237a87b1a",
+          "status": "done",
+          "currentStep": null,
+          "latestUpdate": "completed",
+          "completedSummary": null,
+          "updatedAt": "2026-05-01T02:27:45.153Z"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "session-start:a6c0dfa3ad993db3f:2026-05-01T02:26:50.769Z",
+          "at": "2026-05-01T02:26:50.769Z",
+          "kind": "update",
+          "agent": "architect:a6c0dfa",
+          "detail": "started architect:a6c0dfa",
+          "sourceKey": "session-start:a6c0dfa3ad993db3f"
+        },
+        {
+          "id": "session-start:a3457244599d78653:2026-05-01T02:26:53.509Z",
+          "at": "2026-05-01T02:26:53.509Z",
+          "kind": "update",
+          "agent": "architect:a345724",
+          "detail": "started architect:a345724",
+          "sourceKey": "session-start:a3457244599d78653"
+        },
+        {
+          "id": "session-start:a6bdac8c237a87b1a:2026-05-01T02:26:55.553Z",
+          "at": "2026-05-01T02:26:55.553Z",
+          "kind": "update",
+          "agent": "code-simplifier:a6bdac8",
+          "detail": "started code-simplifier:a6bdac8",
+          "sourceKey": "session-start:a6bdac8c237a87b1a"
+        },
+        {
+          "id": "session-stop:a6bdac8c237a87b1a:2026-05-01T02:27:45.153Z",
+          "at": "2026-05-01T02:27:45.153Z",
+          "kind": "completion",
+          "agent": "code-simplifier:a6bdac8",
+          "detail": "completed",
+          "sourceKey": "session-stop:a6bdac8c237a87b1a"
+        },
+        {
+          "id": "session-stop:a6c0dfa3ad993db3f:2026-05-01T02:27:55.941Z",
+          "at": "2026-05-01T02:27:55.941Z",
+          "kind": "completion",
+          "agent": "architect:a6c0dfa",
+          "detail": "completed",
+          "sourceKey": "session-stop:a6c0dfa3ad993db3f"
+        },
+        {
+          "id": "session-stop:a3457244599d78653:2026-05-01T02:27:57.898Z",
+          "at": "2026-05-01T02:27:57.898Z",
+          "kind": "completion",
+          "agent": "architect:a345724",
+          "detail": "completed",
+          "sourceKey": "session-stop:a3457244599d78653"
+        },
+        {
+          "id": "session-stop:ab9cde1e6fe187f68:2026-05-01T02:33:39.589Z",
+          "at": "2026-05-01T02:33:39.589Z",
+          "kind": "completion",
+          "agent": "architect:a6c0dfa",
+          "detail": "completed",
+          "sourceKey": "session-stop:ab9cde1e6fe187f68"
+        },
+        {
+          "id": "session-stop:a24c9cb2482a65fb5:2026-05-01T02:41:21.263Z",
+          "at": "2026-05-01T02:41:21.263Z",
+          "kind": "completion",
+          "agent": "architect:a6c0dfa",
+          "detail": "completed",
+          "sourceKey": "session-stop:a24c9cb2482a65fb5"
+        }
+      ]
+    }
+  ]
 }

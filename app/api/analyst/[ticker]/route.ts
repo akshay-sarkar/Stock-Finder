@@ -10,9 +10,10 @@ const TTL_4H = 4 * 60 * 60 * 1000
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { ticker: string } }
+  { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const ticker = (params.ticker ?? '').toUpperCase()
+  const { ticker: rawTicker } = await params
+  const ticker = (rawTicker ?? '').toUpperCase()
   if (!isValidTicker(ticker)) {
     return NextResponse.json({ error: 'Invalid ticker symbol' }, { status: 400 })
   }

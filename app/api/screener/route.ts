@@ -9,6 +9,7 @@ import type { FilterCriteria, ScreenerRow, IndicatorValues, StockFundamentals } 
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
+export const revalidate = 600 // 10 minutes (for ISR if screener becomes a page)
 
 // Raw per-ticker data we cache; filters are applied at query time
 interface TickerSnapshot {
@@ -89,7 +90,11 @@ export async function POST(req: NextRequest) {
       .map((r) => r.value)
       .filter((r): r is ScreenerRow => r !== null)
 
-    return NextResponse.json({ results, scanned: tickers.length })
+    return NextResponse.json({ results, scanned: tickers.length }, {
+      headers: {
+        'Cache-Control': 'private, no-cache',
+      },
+    })
   } catch (err) {
     // Log full error server-side only; return a generic message to the client
     console.error('[screener] Unexpected error:', err instanceof Error ? err.message : String(err))

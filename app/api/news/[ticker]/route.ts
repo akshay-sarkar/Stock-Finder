@@ -5,6 +5,8 @@ import { getNews } from '@/lib/yahoo'
 
 const TTL = 15 * 60 * 1000 // 15 minutes
 
+export const revalidate = 900 // 15 minutes
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ ticker: string }> }
@@ -23,7 +25,11 @@ export async function GET(
     const items = await getNews(ticker)
     const payload = { items }
     cacheSet(cacheKey, payload, TTL)
-    return NextResponse.json(payload)
+    return NextResponse.json(payload, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600',
+      },
+    })
   } catch (err) {
     console.error(`[news/${ticker}]`, err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: 'Failed to load news' }, { status: 500 })

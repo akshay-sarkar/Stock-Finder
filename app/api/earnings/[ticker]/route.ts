@@ -5,6 +5,7 @@ import { isValidTicker } from '@/lib/validation'
 import type { EarningsData } from '@/lib/types'
 
 export const runtime = 'nodejs'
+export const revalidate = 21600 // 6 hours
 
 const TTL_6H = 6 * 60 * 60 * 1000
 
@@ -25,7 +26,11 @@ export async function GET(
   try {
     const data = await getEarnings(ticker)
     cacheSet(cacheKey, data, TTL_6H)
-    return NextResponse.json(data)
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=21600, stale-while-revalidate=86400',
+      },
+    })
   } catch (err) {
     console.error(`[earnings/${ticker}]`, err instanceof Error ? err.message : String(err))
     return NextResponse.json({ error: `Failed to load earnings for ${ticker}` }, { status: 500 })

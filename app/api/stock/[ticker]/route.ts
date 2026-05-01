@@ -6,6 +6,7 @@ import { isValidTicker, parseDays, parseInterval, parseDisplay } from '@/lib/val
 import type { StockDetailData } from '@/lib/types'
 
 export const runtime = 'nodejs'
+export const revalidate = 600 // 10 minutes
 
 export async function GET(
   req: NextRequest,
@@ -63,7 +64,11 @@ export async function GET(
     }
 
     cacheSet(cacheKey, result)
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600',
+      },
+    })
   } catch (err) {
     // Never forward raw error objects or stack traces to the client
     console.error(`[stock/${ticker}] Error:`, err instanceof Error ? err.message : String(err))

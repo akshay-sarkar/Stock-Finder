@@ -5,6 +5,7 @@ import { AnalystData } from '@/lib/types'
 interface AnalystWidgetProps {
   data: AnalystData
   currentPrice: number
+  ticker?: string
 }
 
 function fmtPrice(n: number) {
@@ -19,7 +20,7 @@ function recLabel(mean: number): { label: string; color: string } {
   return { label: 'Sell', color: 'text-red-600' }
 }
 
-export function AnalystWidget({ data, currentPrice }: AnalystWidgetProps) {
+export function AnalystWidget({ data, currentPrice, ticker }: AnalystWidgetProps) {
   const hasMean = data.recommendationMean != null
   const hasTargets = data.targetMeanPrice != null
 
@@ -40,7 +41,14 @@ export function AnalystWidget({ data, currentPrice }: AnalystWidgetProps) {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-gray-700">Analyst Ratings</h2>
         {data.numberOfAnalystOpinions != null && (
-          <span className="text-xs text-gray-400">{data.numberOfAnalystOpinions} analysts</span>
+          <a
+            href={ticker ? `https://finance.yahoo.com/quote/${ticker}/analysis` : '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-500 hover:text-blue-600 hover:underline"
+          >
+            {data.numberOfAnalystOpinions} analysts
+          </a>
         )}
       </div>
 
@@ -64,9 +72,6 @@ export function AnalystWidget({ data, currentPrice }: AnalystWidgetProps) {
           </div>
           <div className="mt-2 text-center">
             <span className={`text-sm font-bold ${rec.color}`}>{rec.label}</span>
-            {data.recommendationMean != null && (
-              <span className="text-xs text-gray-400 ml-1.5">({data.recommendationMean.toFixed(1)} / 5.0)</span>
-            )}
           </div>
         </div>
       )}

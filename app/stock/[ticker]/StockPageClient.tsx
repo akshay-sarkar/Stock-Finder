@@ -171,23 +171,6 @@ export function StockPageClient({
       )}
 
       <main className="px-4 py-4 space-y-4 bg-slate-50 flex-1">
-        <RangeSelector
-          range={range}
-          onRangeChange={handleRangeChange}
-          showEMA9={showEMA9}
-          onToggleEMA9={toggleEMA9}
-          showEMA20={showEMA20}
-          onToggleEMA20={toggleEMA20}
-          showSMA20={showSMA20}
-          onToggleSMA20={toggleSMA20}
-          showSMA50={showSMA50}
-          onToggleSMA50={toggleSMA50}
-          showSMA200={showSMA200}
-          onToggleSMA200={toggleSMA200}
-          showBB={showBB}
-          onToggleBB={toggleBB}
-        />
-
         {loading && (
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
@@ -205,9 +188,26 @@ export function StockPageClient({
             {(data || analyst) && (
               <div className="grid grid-cols-2 gap-4">
                 <LatestIndicatorsTable data={data} />
-                {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} />}
+                {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} ticker={ticker} />}
               </div>
             )}
+
+            <RangeSelector
+              range={range}
+              onRangeChange={handleRangeChange}
+              showEMA9={showEMA9}
+              onToggleEMA9={toggleEMA9}
+              showEMA20={showEMA20}
+              onToggleEMA20={toggleEMA20}
+              showSMA20={showSMA20}
+              onToggleSMA20={toggleSMA20}
+              showSMA50={showSMA50}
+              onToggleSMA50={toggleSMA50}
+              showSMA200={showSMA200}
+              onToggleSMA200={toggleSMA200}
+              showBB={showBB}
+              onToggleBB={toggleBB}
+            />
 
             <VolumeChart data={data} />
 

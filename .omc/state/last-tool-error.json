@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /Users/akshaysarkar/Documents/Claude/Projects/Stock\\\\ Finder && git add app/api/stock/[ticker]/route.ts app/api/earnings/[ticker]/route.ts app/api/analyst/[ticker]/route.ts app/api/news...",
+  "error": "Exit code 1\n(eval):1: no matches found: app/api/stock/[ticker]/route.ts",
+  "timestamp": "2026-05-01T02:57:37.217Z",
+  "retry_count": 1
+}

@@ -4,7 +4,7 @@ import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsDa
 import { StockPageClient } from './StockPageClient'
 
 type Props = {
-  params: Promise<{ ticker: string }>
+  params: { ticker: string }
 }
 
 export const revalidate = 600 // 10 minutes ISR
@@ -65,7 +65,7 @@ async function fetchFinancials(ticker: string): Promise<FinancialsData | null> {
 }
 
 export default async function StockPage({ params }: Props) {
-  const { ticker: rawTicker } = await params
+  const { ticker: rawTicker } = params
   const ticker = rawTicker.toUpperCase()
 
   if (!isValidTicker(ticker)) {

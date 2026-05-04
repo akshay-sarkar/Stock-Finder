@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1777602166600,
+  "lastScanned": 1777861489501,
   "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder",
   "techStack": {
     "languages": [
@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd /Users/akshaysarkar/Documents/Claude/Projects/Stock\\ Finder && npm run build 2>&1 | tail -30",
+    "buildCommand": "cd /Users/akshaysarkar/Documents/Claude/Projects/Stock\\ Finder && npm run build 2>&1 | tail -15",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -77,9 +77,10 @@
     "app": {
       "path": "app",
       "purpose": "Application code",
-      "fileCount": 4,
-      "lastAccessed": 1777602166583,
+      "fileCount": 5,
+      "lastAccessed": 1777861489492,
       "keyFiles": [
+        "ScreenerClient.tsx",
         "error.tsx",
         "globals.css",
         "layout.tsx",
@@ -90,14 +91,14 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 0,
-      "lastAccessed": 1777602166585,
+      "lastAccessed": 1777861489492,
       "keyFiles": []
     },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
       "fileCount": 10,
-      "lastAccessed": 1777602166585,
+      "lastAccessed": 1777861489493,
       "keyFiles": [
         "cache.ts",
         "indicators.ts",
@@ -110,7 +111,7 @@
       "path": "reports",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1777602166586,
+      "lastAccessed": 1777861489493,
       "keyFiles": [
         "pm-features-2026-04-18.md",
         "pm-features-2026-04-20.md",
@@ -121,22 +122,22 @@
       "path": "app/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1777602166586,
+      "lastAccessed": 1777861489494,
       "keyFiles": []
     },
     "app/components": {
       "path": "app/components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1777602166587,
+      "lastAccessed": 1777861489494,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 166,
-      "lastAccessed": 1777602417597,
+      "accessCount": 172,
+      "lastAccessed": 1777862428534,
       "type": "file"
     },
     {
@@ -164,6 +165,18 @@
       "type": "file"
     },
     {
+      "path": "app/api/stock/[ticker]/route.ts",
+      "accessCount": 13,
+      "lastAccessed": 1777604135132,
+      "type": "file"
+    },
+    {
+      "path": "app/api/screener/route.ts",
+      "accessCount": 13,
+      "lastAccessed": 1777604157309,
+      "type": "file"
+    },
+    {
       "path": "app/api/congressional-trades/route.ts",
       "accessCount": 10,
       "lastAccessed": 1776546058773,
@@ -176,21 +189,15 @@
       "type": "file"
     },
     {
-      "path": "app/api/screener/route.ts",
-      "accessCount": 9,
-      "lastAccessed": 1777533394779,
-      "type": "file"
-    },
-    {
-      "path": "app/api/stock/[ticker]/route.ts",
-      "accessCount": 9,
-      "lastAccessed": 1777601644767,
-      "type": "file"
-    },
-    {
       "path": "lib/useDarkMode.ts",
       "accessCount": 8,
       "lastAccessed": 1777264791858,
+      "type": "file"
+    },
+    {
+      "path": "app/api/news/[ticker]/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1777604143054,
       "type": "file"
     },
     {
@@ -200,9 +207,27 @@
       "type": "file"
     },
     {
+      "path": "app/api/earnings/[ticker]/route.ts",
+      "accessCount": 7,
+      "lastAccessed": 1777604140045,
+      "type": "file"
+    },
+    {
+      "path": "app/api/financials/[ticker]/route.ts",
+      "accessCount": 7,
+      "lastAccessed": 1777604148600,
+      "type": "file"
+    },
+    {
       "path": "lib/indicators.ts",
       "accessCount": 6,
       "lastAccessed": 1777481373114,
+      "type": "file"
+    },
+    {
+      "path": "app/api/analyst/[ticker]/route.ts",
+      "accessCount": 6,
+      "lastAccessed": 1777604141591,
       "type": "file"
     },
     {
@@ -224,12 +249,6 @@
       "type": "file"
     },
     {
-      "path": "app/api/news/[ticker]/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1777601642120,
-      "type": "file"
-    },
-    {
       "path": "CLAUDE.md",
       "accessCount": 4,
       "lastAccessed": 1777171637884,
@@ -242,27 +261,21 @@
       "type": "file"
     },
     {
-      "path": "app/api/financials/[ticker]/route.ts",
+      "path": "lib/cache.ts",
       "accessCount": 4,
-      "lastAccessed": 1777601641895,
+      "lastAccessed": 1777604013044,
       "type": "file"
     },
     {
-      "path": "app/api/earnings/[ticker]/route.ts",
+      "path": "lib/validation.ts",
       "accessCount": 4,
-      "lastAccessed": 1777601642258,
+      "lastAccessed": 1777862399228,
       "type": "file"
     },
     {
       "path": "next.config.js",
       "accessCount": 3,
       "lastAccessed": 1776543470263,
-      "type": "file"
-    },
-    {
-      "path": "lib/cache.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776543871205,
       "type": "file"
     },
     {
@@ -290,21 +303,9 @@
       "type": "file"
     },
     {
-      "path": "lib/validation.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776708140004,
-      "type": "file"
-    },
-    {
       "path": "docs/superpowers/plans/2026-04-25-range-bar-news-financials.md",
       "accessCount": 3,
       "lastAccessed": 1777153389222,
-      "type": "file"
-    },
-    {
-      "path": "app/api/analyst/[ticker]/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1777601641746,
       "type": "file"
     },
     {

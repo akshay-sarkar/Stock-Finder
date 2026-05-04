@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsData } from '@/lib/types'
 import {
   StockHeader,
@@ -42,7 +42,12 @@ export function StockPageClient({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [range, setRange] = useState<Range>(DATE_RANGES[3])
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(new Date())
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+  // Set initial timestamp after hydration to avoid mismatch
+  useEffect(() => {
+    setLastUpdated(new Date())
+  }, [])
 
   const [earnings] = useState<EarningsData | null>(initialEarnings)
   const [analyst] = useState<AnalystData | null>(initialAnalyst)

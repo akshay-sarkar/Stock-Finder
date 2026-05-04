@@ -2,6 +2,13 @@
 
 import { StockFundamentals } from '@/lib/types'
 
+function fmtVol(n: number) {
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B'
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M'
+  if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K'
+  return n.toString()
+}
+
 interface RangeBarProps {
   low: number
   high: number
@@ -43,8 +50,8 @@ export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: Quick
     <div className="px-4 pb-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-700/60 pt-2 justify-between">
       <div className="flex flex-wrap gap-x-5 gap-y-1">
         {fundamentals.trailingPE != null && (
-          <span className="text-xs text-slate-400">
-            P/E&nbsp;<span className="text-white font-semibold">{fundamentals.trailingPE.toFixed(1)}×</span>
+          <span className="text-xs text-blue-500">
+            P/E&nbsp;<span className="text-blue-400 font-semibold">{fundamentals.trailingPE.toFixed(1)}×</span>
           </span>
         )}
         {fundamentals.fiftyTwoWeekHigh != null && fundamentals.fiftyTwoWeekLow != null && (
@@ -55,17 +62,37 @@ export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: Quick
           />
         )}
         {fundamentals.dividendYield != null && fundamentals.dividendYield > 0 && (
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-amber-500">
             Div&nbsp;<span className="text-amber-400 font-semibold">{(fundamentals.dividendYield * 100).toFixed(2)}%</span>
           </span>
         )}
-        {fundamentals.shortPercentOfFloat != null && (
-          <span className="text-xs text-slate-400">
-            Short&nbsp;
-            <span className={`font-semibold ${fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-400' : 'text-white'}`}>
-              {(fundamentals.shortPercentOfFloat * 100).toFixed(1)}%
-            </span>
-          </span>
+        {(fundamentals.shortPercentOfFloat != null || fundamentals.shortRatio != null || fundamentals.sharesShort != null) && (
+          <div className="flex gap-2 text-xs">
+            {fundamentals.shortPercentOfFloat != null && (
+              <span className={fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-500' : 'text-purple-500'}>
+                Short Float&nbsp;
+                <span className={`font-semibold ${fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-400' : 'text-purple-400'}`}>
+                  {(fundamentals.shortPercentOfFloat * 100).toFixed(2)}%
+                </span>
+              </span>
+            )}
+            {fundamentals.shortRatio != null && (
+              <span className="text-pink-500">
+                Ratio&nbsp;
+                <span className="font-semibold text-pink-400">
+                  {fundamentals.shortRatio.toFixed(1)}×
+                </span>
+              </span>
+            )}
+            {fundamentals.sharesShort != null && (
+              <span className="text-cyan-500">
+                Shares&nbsp;
+                <span className="font-semibold text-cyan-400">
+                  {fmtVol(fundamentals.sharesShort)}
+                </span>
+              </span>
+            )}
+          </div>
         )}
       </div>
       {lastUpdated && (

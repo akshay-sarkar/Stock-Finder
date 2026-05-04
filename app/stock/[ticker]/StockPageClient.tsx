@@ -13,7 +13,6 @@ import {
   MACDChart,
   LatestIndicatorsTable,
   EarningsWidget,
-  ShortInterestWidget,
   FinancialsWidget,
   FundamentalsSection,
   NewsWidget,
@@ -240,8 +239,6 @@ export function StockPageClient({
             ) : (
               earnings && <EarningsWidget data={earnings} />
             )}
-
-            {data.fundamentals && <ShortInterestWidget fundamentals={data.fundamentals} />}
 
             {news && news.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">

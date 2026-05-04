@@ -7,6 +7,8 @@ type Props = {
   params: Promise<{ ticker: string }>
 }
 
+export const revalidate = 600 // 10 minutes ISR
+
 async function fetchStockData(ticker: string): Promise<StockDetailData | null> {
   const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/stock/${ticker}?days=320&interval=1d&display=100`
   try {

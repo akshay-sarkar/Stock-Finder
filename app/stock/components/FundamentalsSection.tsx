@@ -73,52 +73,12 @@ function FundRow({ label, value, hint, positive }: {
 }
 
 export function FundamentalsSection({ f }: { f: StockFundamentals }) {
-  const [growthView, setGrowthView] = useState<'yoy' | 'qoq'>('yoy')
-
-  const revGrowth  = fmtPctChange(growthView === 'yoy' ? f.revenueGrowth  : f.revenueGrowthQoQ)
-  const earnGrowth = fmtPctChange(growthView === 'yoy' ? f.earningsGrowth : f.earningsGrowthQoQ)
-  const grossMarg  = growthView === 'qoq' && f.grossMarginsQoQ != null
-    ? fmtPct(f.grossMarginsQoQ)
-    : fmtPct(f.grossMargins)
-
-  const hasQoQ = f.revenueGrowthQoQ != null || f.earningsGrowthQoQ != null
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <div className="flex items-center gap-3 mb-3">
         <h2 className="text-sm font-semibold text-gray-700">Key Statistics</h2>
-        {/* YoY / QoQ toggle — only show if QoQ data is available */}
-        <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
-          <button
-            onClick={() => setGrowthView('yoy')}
-            className={`px-2.5 py-1 transition-colors ${
-              growthView === 'yoy'
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            YoY
-          </button>
-          <button
-            onClick={() => setGrowthView('qoq')}
-            className={`px-2.5 py-1 transition-colors border-l border-gray-200 ${
-              growthView === 'qoq'
-                ? 'bg-blue-600 text-white'
-                : hasQoQ ? 'bg-white text-gray-500 hover:bg-gray-50' : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-            }`}
-            disabled={!hasQoQ}
-            title={hasQoQ ? 'Quarter-over-Quarter (sequential quarters)' : 'QoQ data not available for this ticker'}
-          >
-            QoQ
-          </button>
-        </div>
-        <span className="text-[11px] text-gray-400 italic">
-          {growthView === 'yoy'
-            ? 'Year-over-Year (trailing annual)'
-            : 'Quarter-over-Quarter (most recent vs prior quarter)'}
-        </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-0">
         {/* Valuation */}
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Valuation</p>
@@ -146,41 +106,6 @@ export function FundamentalsSection({ f }: { f: StockFundamentals }) {
           <FundRow label="Beta"     value={fmtMult(f.beta, '')}           hint="Volatility vs the S&P 500. Beta > 1 = moves more than the market. Beta < 1 = less volatile." />
           <FundRow label="52W High" value={fmtDollar(f.fiftyTwoWeekHigh)} hint="Highest price in the past 52 weeks. A breakout above this level is a strong bullish signal." />
           <FundRow label="52W Low"  value={fmtDollar(f.fiftyTwoWeekLow)}  hint="Lowest price in the past 52 weeks. Bouncing from this level may signal a support floor." />
-        </div>
-
-        {/* Financials */}
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Financials</p>
-          <FundRow
-            label="Revenue Growth"
-            value={revGrowth.text}
-            positive={revGrowth.positive}
-            hint={growthView === 'yoy'
-              ? 'Year-over-year revenue growth (trailing 12 months vs prior year). Sustained positive growth indicates business expansion.'
-              : 'Quarter-over-quarter revenue growth (most recent quarter vs prior quarter). Useful for spotting acceleration or deceleration in near-term momentum.'}
-          />
-          <FundRow
-            label="Earnings Growth"
-            value={earnGrowth.text}
-            positive={earnGrowth.positive}
-            hint={growthView === 'yoy'
-              ? 'Year-over-year earnings (net income) growth. Accelerating EPS growth often drives share price appreciation.'
-              : 'Quarter-over-quarter net income growth. Sequential acceleration in profitability is a strong near-term bullish signal.'}
-          />
-          <FundRow label="Profit Margin"   value={fmtPct(f.profitMargins)}  hint="Net income ÷ revenue (trailing 12 months). Higher margins mean more pricing power and operational efficiency." />
-          <FundRow
-            label={growthView === 'qoq' && f.grossMarginsQoQ != null ? 'Gross Margin (MRQ)' : 'Gross Margin'}
-            value={grossMarg}
-            hint={growthView === 'qoq' && f.grossMarginsQoQ != null
-              ? 'Gross profit ÷ revenue for the most recent quarter. Comparing to the TTM figure highlights seasonal or structural margin shifts.'
-              : 'Gross profit ÷ revenue (trailing 12 months). High gross margins leave more room for R&D, marketing, and growth.'}
-          />
-          <FundRow label="Current Ratio"   value={fmtMult(f.currentRatio, '')} hint="Current assets ÷ current liabilities. Ratio > 1 means the company can cover short-term obligations." />
-          <FundRow
-            label="Debt / Equity"
-            value={f.debtToEquity != null ? `${f.debtToEquity.toFixed(1)}%` : 'N/A'}
-            hint="Total debt as a % of shareholders' equity. High D/E = more leverage and financial risk."
-          />
         </div>
       </div>
     </div>

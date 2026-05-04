@@ -6,13 +6,13 @@ import {
   StockHeader,
   QuickStatsBar,
   RangeSelector,
-  IndicatorSummaryCards,
   VolumeChart,
   PriceChart,
   RSIChart,
   MACDChart,
   LatestIndicatorsTable,
   EarningsWidget,
+  AnalystWidget,
   FinancialsWidget,
   FundamentalsSection,
   NewsWidget,
@@ -202,7 +202,12 @@ export function StockPageClient({
 
         {!loading && (
           <>
-            <IndicatorSummaryCards data={data} analyst={analyst} />
+            {(data || analyst) && (
+              <div className="grid grid-cols-2 gap-4">
+                <LatestIndicatorsTable data={data} />
+                {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} />}
+              </div>
+            )}
 
             <VolumeChart data={data} />
 
@@ -256,8 +261,6 @@ export function StockPageClient({
                 )}
               </div>
             )}
-
-            <LatestIndicatorsTable data={data} />
           </>
         )}
       </main>

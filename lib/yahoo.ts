@@ -4,10 +4,12 @@ import type { OHLCVBar, StockFundamentals, EarningsData, EarningsHistoryEntry, A
 // yahoo-finance2 v3 uses class instantiation
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinanceClass = require('yahoo-finance2').default
-const yahooFinance: any = new YahooFinanceClass()
+const yahooFinance: any = new YahooFinanceClass({
+  suppressNotices: ['yahooSurvey', 'ripHistorical'],
+})
 
 /**
- * Fetches historical OHLCV data for a ticker.
+ * Fetches historical OHLCV data for a ticker using chart() API.
  * @param ticker   - Stock symbol (e.g. "AAPL")
  * @param days     - Calendar days to look back
  * @param interval - '1d' daily | '1wk' weekly | '1mo' monthly
@@ -25,13 +27,14 @@ export async function getHistoricalData(
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 
-  const result: any[] = await yahooFinance.historical(ticker, {
+  const result: any = await yahooFinance.chart(ticker, {
     period1: startDate,
     period2: endDate,
     interval,
   })
 
-  return result
+  const quotes = result.quotes ?? []
+  return quotes
     .filter((bar: any) => bar.close != null && bar.volume != null)
     .map((bar: any): OHLCVBar => ({
       date: bar.date,

@@ -12,8 +12,11 @@ export const revalidate = 3600
 
 export interface RelatedStock {
   symbol: string
+  name: string
   price: number | null
   changePercent: number | null
+  fiftyTwoWeekLow: number | null
+  fiftyTwoWeekHigh: number | null
 }
 
 export async function GET(
@@ -46,13 +49,20 @@ export async function GET(
     }
 
     const quotes = await Promise.allSettled(
-      symbols.map(sym =>
-        yahooFinance.quote(sym).then((q: any) => ({
+      symbols.map(async (sym) => {
+        const [quote, summary] = await Promise.all([
+          yahooFinance.quote(sym),
+          yahooFinance.quoteSummary(sym, { modules: ['summaryDetail'] }, { validateResult: false }).catch(() => null),
+        ])
+        return {
           symbol: sym,
-          price: q.regularMarketPrice ?? null,
-          changePercent: q.regularMarketChangePercent ?? null,
-        }))
-      )
+          name: quote.longName ?? quote.shortName ?? sym,
+          price: quote.regularMarketPrice ?? null,
+          changePercent: quote.regularMarketChangePercent ?? null,
+          fiftyTwoWeekLow: summary?.summaryDetail?.fiftyTwoWeekLow ?? null,
+          fiftyTwoWeekHigh: summary?.summaryDetail?.fiftyTwoWeekHigh ?? null,
+        }
+      })
     )
 
     const related: RelatedStock[] = quotes

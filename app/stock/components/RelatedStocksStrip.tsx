@@ -5,8 +5,11 @@ import Link from 'next/link'
 
 interface RelatedStock {
   symbol: string
+  name: string
   price: number | null
   changePercent: number | null
+  fiftyTwoWeekLow: number | null
+  fiftyTwoWeekHigh: number | null
 }
 
 interface RelatedStocksStripProps {
@@ -42,23 +45,33 @@ export function RelatedStocksStrip({ ticker }: RelatedStocksStripProps) {
           ? Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-6 w-16 rounded-full bg-slate-700 animate-pulse shrink-0"
+                className="w-32 h-14 rounded-lg bg-slate-700 animate-pulse shrink-0"
               />
             ))
           : related.map(stock => {
               const up = (stock.changePercent ?? 0) >= 0
+              const displayPrice = stock.price != null ? `$${stock.price.toFixed(2)}` : '—'
+              const rangeText = stock.fiftyTwoWeekLow != null && stock.fiftyTwoWeekHigh != null
+                ? `$${stock.fiftyTwoWeekLow.toFixed(0)}–$${stock.fiftyTwoWeekHigh.toFixed(0)}`
+                : '—'
               return (
                 <Link
                   key={stock.symbol}
                   href={`/stock/${stock.symbol}`}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors text-xs shrink-0 whitespace-nowrap"
+                  className="flex flex-col gap-1 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors text-xs shrink-0 w-36"
                 >
-                  <span className="font-semibold text-white">{stock.symbol}</span>
-                  {stock.changePercent != null && (
-                    <span className={up ? 'text-emerald-400' : 'text-red-400'}>
-                      {up ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                    </span>
-                  )}
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-semibold text-white truncate">{stock.symbol}</span>
+                    {stock.changePercent != null && (
+                      <span className={`font-medium shrink-0 ${up ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {up ? '+' : ''}{stock.changePercent.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-slate-300 text-[11px] flex items-center justify-between">
+                    <span>{rangeText}</span>
+                    <span className="font-semibold">{displayPrice}</span>
+                  </div>
                 </Link>
               )
             })}

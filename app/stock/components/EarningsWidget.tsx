@@ -2,7 +2,7 @@
 
 import { EarningsData } from '@/lib/types'
 
-export function EarningsWidget({ data }: { data: EarningsData }) {
+export function EarningsWidget({ data, ticker }: { data: EarningsData; ticker?: string }) {
   const now = new Date()
 
   let daysUntil: number | null = null
@@ -17,7 +17,18 @@ export function EarningsWidget({ data }: { data: EarningsData }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-3">Earnings</h2>
+      {ticker ? (
+        <a
+          href={`https://finance.yahoo.com/quote/${ticker}/earnings`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-block mb-3"
+        >
+          Earnings ↗
+        </a>
+      ) : (
+        <h2 className="text-sm font-semibold text-gray-700 mb-3">Earnings</h2>
+      )}
 
       {/* Next earnings date + estimate */}
       <div className="flex flex-wrap gap-3 mb-3">

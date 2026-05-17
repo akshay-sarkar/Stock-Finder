@@ -233,17 +233,16 @@ export function StockPageClient({
               </div>
             )}
 
-            {financials && (financials.annual.length > 0 || financials.quarterly.length > 0) ? (
+            {financials || earnings ? (
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                  <div className="text-sm font-semibold text-gray-700 mb-3">Historical Financials</div>
-                  <FinancialsWidget data={financials} />
-                </div>
-                {earnings && <EarningsWidget data={earnings} />}
+                {financials && (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <FinancialsWidget data={financials} ticker={ticker} />
+                  </div>
+                )}
+                {earnings && <EarningsWidget data={earnings} ticker={ticker} />}
               </div>
-            ) : (
-              earnings && <EarningsWidget data={earnings} />
-            )}
+            ) : null}
 
             {news && news.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">

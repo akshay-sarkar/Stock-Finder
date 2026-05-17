@@ -259,12 +259,10 @@ export async function getNews(ticker: string): Promise<NewsItem[]> {
  * Returns { annual: [], quarterly: [] } gracefully if modules unavailable.
  */
 export async function getFinancials(ticker: string): Promise<FinancialsData> {
-  const result = await yahooFinance.quoteSummary(ticker, {
-    modules: ['incomeStatementHistory', 'incomeStatementHistoryQuarterly'],
-  }, { validateResult: false }).catch(() => null)
+  const apiKey = process.env.FMP_API
 
-  function toLabel(date: any, type: 'annual' | 'quarterly'): string {
-    const d = date instanceof Date ? date : new Date(date)
+  function toLabel(dateStr: string, type: 'annual' | 'quarterly'): string {
+    const d = new Date(dateStr)
     if (type === 'annual') return `FY${d.getFullYear()}`
     const q = Math.ceil((d.getMonth() + 1) / 3)
     return `Q${q} ${d.getFullYear()}`
@@ -278,29 +276,41 @@ export async function getFinancials(ticker: string): Promise<FinancialsData> {
   function mapRows(entries: any[], type: 'annual' | 'quarterly'): FinancialsRow[] {
     return entries.map((e: any, i: number): FinancialsRow => {
       const prev = entries[i + 1] ?? null
-      const rev  = e.totalRevenue    ?? null
-      const gp   = e.grossProfit     ?? null
-      const oi   = e.operatingIncome ?? null
-      const ni   = e.netIncome       ?? null
+      const rev = e.revenue ?? null
+      const gp = e.grossProfit ?? null
+      const oi = e.operatingIncome ?? null
+      const ni = e.netIncome ?? null
       return {
-        period:                toLabel(e.endDate, type),
-        revenue:               rev,
-        grossProfit:           gp,
-        operatingIncome:       oi,
-        netIncome:             ni,
-        revenueGrowth:         growth(rev, prev?.totalRevenue    ?? null),
-        grossProfitGrowth:     growth(gp,  prev?.grossProfit     ?? null),
-        operatingIncomeGrowth: growth(oi,  prev?.operatingIncome ?? null),
-        netIncomeGrowth:       growth(ni,  prev?.netIncome       ?? null),
+        period: toLabel(e.date, type),
+        revenue: rev,
+        grossProfit: gp,
+        operatingIncome: oi,
+        netIncome: ni,
+        revenueGrowth: growth(rev, prev?.revenue ?? null),
+        grossProfitGrowth: growth(gp, prev?.grossProfit ?? null),
+        operatingIncomeGrowth: growth(oi, prev?.operatingIncome ?? null),
+        netIncomeGrowth: growth(ni, prev?.netIncome ?? null),
       }
     })
   }
 
-  const annualEntries: any[]    = result?.incomeStatementHistory?.incomeStatementHistory ?? []
-  const quarterlyEntries: any[] = result?.incomeStatementHistoryQuarterly?.incomeStatementHistory ?? []
+  try {
+    const [annual, quarterly] = await Promise.all([
+      fetch(`https://financialmodelingprep.com/api/v3/income-statement/${ticker}?limit=4&apikey=${apiKey}`)
+        .then(r => r.json())
+        .then(d => d ?? [])
+        .catch(() => []),
+      fetch(`https://financialmodelingprep.com/api/v3/income-statement/${ticker}?period=quarter&limit=8&apikey=${apiKey}`)
+        .then(r => r.json())
+        .then(d => d ?? [])
+        .catch(() => []),
+    ])
 
-  return {
-    annual:    mapRows(annualEntries.slice(0, 4),    'annual'),
-    quarterly: mapRows(quarterlyEntries.slice(0, 8), 'quarterly'),
+    return {
+      annual: mapRows(annual, 'annual'),
+      quarterly: mapRows(quarterly, 'quarterly'),
+    }
+  } catch {
+    return { annual: [], quarterly: [] }
   }
 }

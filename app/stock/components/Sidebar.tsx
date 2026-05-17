@@ -18,7 +18,11 @@ export function Sidebar({
   const router = useRouter()
   const sidebarRef = useRef<HTMLElement>(null)
   const [sidebarSearch, setSidebarSearch] = useState('')
-  const [expandedSectors, setExpandedSectors] = useState<Record<string, boolean>>({})
+  const [expandedSectors, setExpandedSectors] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return {}
+    const saved = localStorage.getItem('sf-sidebar-expanded')
+    return saved ? JSON.parse(saved) : {}
+  })
 
   const filteredSidebarTickers = sidebarSearch
     ? DEFAULT_TICKERS.filter(
@@ -39,11 +43,17 @@ export function Sidebar({
     {} as Record<string, string[]>
   )
 
-  const toggleSector = (sector: string) => {
-    setExpandedSectors((prev) => ({
-      ...prev,
-      [sector]: !prev[sector],
-    }))
+  const toggleSector = (sector: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setExpandedSectors((prev) => {
+      const next = {
+        ...prev,
+        [sector]: !prev[sector],
+      }
+      localStorage.setItem('sf-sidebar-expanded', JSON.stringify(next))
+      return next
+    })
   }
 
   useEffect(() => {
@@ -108,7 +118,7 @@ export function Sidebar({
               return (
                 <div key={sector}>
                   <button
-                    onClick={() => toggleSector(sector)}
+                    onClick={(e) => toggleSector(sector, e)}
                     className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
                   >
                     <span>{sector}</span>

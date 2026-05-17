@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1777861489501,
-  "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/Stock Finder",
+  "lastScanned": 1779041785981,
+  "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/StockFinder",
   "techStack": {
     "languages": [
       {
@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "cd /Users/akshaysarkar/Documents/Claude/Projects/Stock\\ Finder && npx tsc --noEmit && npm run build 2>&1 | tail -10",
+    "buildCommand": "npx tsc --noEmit 2>&1 | head -50",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -78,7 +78,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 5,
-      "lastAccessed": 1777861489492,
+      "lastAccessed": 1779041785972,
       "keyFiles": [
         "ScreenerClient.tsx",
         "error.tsx",
@@ -91,14 +91,14 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 0,
-      "lastAccessed": 1777861489492,
+      "lastAccessed": 1779041785974,
       "keyFiles": []
     },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
       "fileCount": 10,
-      "lastAccessed": 1777861489493,
+      "lastAccessed": 1779041785974,
       "keyFiles": [
         "cache.ts",
         "indicators.ts",
@@ -110,46 +110,53 @@
     "reports": {
       "path": "reports",
       "purpose": null,
-      "fileCount": 3,
-      "lastAccessed": 1777861489493,
+      "fileCount": 4,
+      "lastAccessed": 1779041785974,
       "keyFiles": [
         "pm-features-2026-04-18.md",
         "pm-features-2026-04-20.md",
-        "pm-features-2026-04-25.md"
+        "pm-features-2026-04-25.md",
+        "pm-features-2026-05-17.md"
       ]
     },
     "app/api": {
       "path": "app/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1777861489494,
+      "lastAccessed": 1779041785974,
       "keyFiles": []
     },
     "app/components": {
       "path": "app/components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1777861489494,
+      "lastAccessed": 1779041785975,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 173,
-      "lastAccessed": 1777862698463,
+      "accessCount": 174,
+      "lastAccessed": 1777863901073,
       "type": "file"
     },
     {
       "path": "app/page.tsx",
-      "accessCount": 80,
-      "lastAccessed": 1777602574611,
+      "accessCount": 81,
+      "lastAccessed": 1779041812955,
       "type": "file"
     },
     {
       "path": "lib/types.ts",
+      "accessCount": 28,
+      "lastAccessed": 1777865627325,
+      "type": "file"
+    },
+    {
+      "path": "lib/yahoo.ts",
       "accessCount": 27,
-      "lastAccessed": 1777533403905,
+      "lastAccessed": 1777866893098,
       "type": "file"
     },
     {
@@ -159,33 +166,27 @@
       "type": "directory"
     },
     {
-      "path": "lib/yahoo.ts",
-      "accessCount": 15,
-      "lastAccessed": 1777601514444,
+      "path": "app/api/screener/route.ts",
+      "accessCount": 14,
+      "lastAccessed": 1779041811727,
       "type": "file"
     },
     {
       "path": "app/api/stock/[ticker]/route.ts",
-      "accessCount": 13,
-      "lastAccessed": 1777604135132,
-      "type": "file"
-    },
-    {
-      "path": "app/api/screener/route.ts",
-      "accessCount": 13,
-      "lastAccessed": 1777604157309,
+      "accessCount": 14,
+      "lastAccessed": 1779041817371,
       "type": "file"
     },
     {
       "path": "app/api/congressional-trades/route.ts",
-      "accessCount": 10,
-      "lastAccessed": 1776546058773,
+      "accessCount": 11,
+      "lastAccessed": 1779041811387,
       "type": "file"
     },
     {
       "path": "app/congress/page.tsx",
-      "accessCount": 9,
-      "lastAccessed": 1777481690258,
+      "accessCount": 10,
+      "lastAccessed": 1779041812772,
       "type": "file"
     },
     {
@@ -201,33 +202,33 @@
       "type": "file"
     },
     {
+      "path": "app/api/financials/[ticker]/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1777865629680,
+      "type": "file"
+    },
+    {
       "path": "app/layout.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1777481607954,
+      "accessCount": 8,
+      "lastAccessed": 1779041812721,
+      "type": "file"
+    },
+    {
+      "path": "app/api/analyst/[ticker]/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1779041822655,
       "type": "file"
     },
     {
       "path": "app/api/earnings/[ticker]/route.ts",
-      "accessCount": 7,
-      "lastAccessed": 1777604140045,
-      "type": "file"
-    },
-    {
-      "path": "app/api/financials/[ticker]/route.ts",
-      "accessCount": 7,
-      "lastAccessed": 1777604148600,
+      "accessCount": 8,
+      "lastAccessed": 1779041822984,
       "type": "file"
     },
     {
       "path": "lib/indicators.ts",
       "accessCount": 6,
       "lastAccessed": 1777481373114,
-      "type": "file"
-    },
-    {
-      "path": "app/api/analyst/[ticker]/route.ts",
-      "accessCount": 6,
-      "lastAccessed": 1777604141591,
       "type": "file"
     },
     {
@@ -273,6 +274,12 @@
       "type": "file"
     },
     {
+      "path": "app/api/prices/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1779041818416,
+      "type": "file"
+    },
+    {
       "path": "next.config.js",
       "accessCount": 3,
       "lastAccessed": 1776543470263,
@@ -282,12 +289,6 @@
       "path": "lib/rateLimit.ts",
       "accessCount": 3,
       "lastAccessed": 1776545350907,
-      "type": "file"
-    },
-    {
-      "path": "app/api/prices/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776571830539,
       "type": "file"
     },
     {
@@ -357,15 +358,15 @@
       "type": "file"
     },
     {
-      "path": "lib/stockList.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542905297,
+      "path": "app/api/watchlist-prices/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1779041823829,
       "type": "file"
     },
     {
-      "path": "app/api/watchlist-prices/route.ts",
+      "path": "lib/stockList.ts",
       "accessCount": 1,
-      "lastAccessed": 1776542905769,
+      "lastAccessed": 1776542905297,
       "type": "file"
     },
     {

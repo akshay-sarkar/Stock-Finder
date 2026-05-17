@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, TrendingUp, ChevronDown, ExternalLink } from 'lucide-react'
 
@@ -39,6 +40,9 @@ export function Header() {
               </a>
             </div>
           </div>
+          <Link href="/market-movers" className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+            Market Movers
+          </Link>
           <a href="https://www.quiverquant.com/insiders/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
             <ExternalLink size={13} /> Insider Trading
           </a>

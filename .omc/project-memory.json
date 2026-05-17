@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "npx tsc --noEmit 2>&1 | head -50",
+    "buildCommand": "npx tsc --noEmit",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -149,14 +149,14 @@
     },
     {
       "path": "lib/types.ts",
-      "accessCount": 28,
-      "lastAccessed": 1777865627325,
+      "accessCount": 29,
+      "lastAccessed": 1779042508296,
       "type": "file"
     },
     {
       "path": "lib/yahoo.ts",
-      "accessCount": 27,
-      "lastAccessed": 1777866893098,
+      "accessCount": 28,
+      "lastAccessed": 1779042508620,
       "type": "file"
     },
     {
@@ -166,15 +166,15 @@
       "type": "directory"
     },
     {
-      "path": "app/api/screener/route.ts",
-      "accessCount": 14,
-      "lastAccessed": 1779041811727,
+      "path": "app/api/stock/[ticker]/route.ts",
+      "accessCount": 15,
+      "lastAccessed": 1779042509383,
       "type": "file"
     },
     {
-      "path": "app/api/stock/[ticker]/route.ts",
+      "path": "app/api/screener/route.ts",
       "accessCount": 14,
-      "lastAccessed": 1779041817371,
+      "lastAccessed": 1779041811727,
       "type": "file"
     },
     {
@@ -250,6 +250,12 @@
       "type": "file"
     },
     {
+      "path": "lib/cache.ts",
+      "accessCount": 5,
+      "lastAccessed": 1779042520563,
+      "type": "file"
+    },
+    {
       "path": "CLAUDE.md",
       "accessCount": 4,
       "lastAccessed": 1777171637884,
@@ -259,12 +265,6 @@
       "path": "tailwind.config.ts",
       "accessCount": 4,
       "lastAccessed": 1777481591145,
-      "type": "file"
-    },
-    {
-      "path": "lib/cache.ts",
-      "accessCount": 4,
-      "lastAccessed": 1777604013044,
       "type": "file"
     },
     {

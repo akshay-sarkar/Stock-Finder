@@ -1,5 +1,6 @@
 export { Sidebar } from './Sidebar'
 export { StockHeader } from './StockHeader'
+export { RelatedStocksStrip } from './RelatedStocksStrip'
 export { QuickStatsBar } from './QuickStatsBar'
 export { RangeSelector, DATE_RANGES, type Range } from './RangeSelector'
 export { IndicatorSummaryCards } from './IndicatorSummaryCards'

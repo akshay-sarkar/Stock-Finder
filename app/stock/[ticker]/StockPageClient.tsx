@@ -5,6 +5,7 @@ import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsDa
 import {
   StockHeader,
   QuickStatsBar,
+  RelatedStocksStrip,
   RangeSelector,
   VolumeChart,
   PriceChart,
@@ -161,6 +162,7 @@ export function StockPageClient({
   return (
     <>
       <StockHeader ticker={ticker} data={data} />
+      <RelatedStocksStrip ticker={ticker} />
 
       {data.fundamentals && (
         <QuickStatsBar

@@ -1,7 +1,7 @@
 {
   "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"sleep 2 && curl -s http://localhost:3000/api/market-movers/week | jq '.weekGainers[0:2]'\",\"timeout\":15000}",
-  "error": "Exit code 143",
-  "timestamp": "2026-05-17T18:26:12.366Z",
+  "tool_input_preview": "{\"command\":\"ls /Users/akshaysarkar/Documents/Claude/Projects/StockFinder/app/api/stock/ 2>/dev/null && ls /Users/akshaysarkar/Documents/Claude/Projects/StockFinder/app/api/stock/[symbol]/ 2>/dev/null\"...",
+  "error": "Exit code 1\n[ticker]\n(eval):1: no matches found: /Users/akshaysarkar/Documents/Claude/Projects/StockFinder/app/api/stock/[symbol]/",
+  "timestamp": "2026-05-17T18:28:13.751Z",
   "retry_count": 1
 }

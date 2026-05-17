@@ -25,6 +25,7 @@ interface RangeSelectorProps {
   onToggleSMA200: () => void
   showBB: boolean
   onToggleBB: () => void
+  onToggleAllOverlays: () => void
 }
 
 export function RangeSelector({
@@ -42,8 +43,11 @@ export function RangeSelector({
   onToggleSMA200,
   showBB,
   onToggleBB,
+  onToggleAllOverlays,
 }: RangeSelectorProps) {
   const isWeekly = range.interval === '1wk'
+  const allOverlaysOn = showEMA9 && showEMA20 && showSMA20 && showSMA50 && showSMA200 && showBB
+  const anyOverlaysOn = showEMA9 || showEMA20 || showSMA20 || showSMA50 || showSMA200 || showBB
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -135,6 +139,21 @@ export function RangeSelector({
       >
         BB
       </button>
+
+      <button
+        onClick={onToggleAllOverlays}
+        title={allOverlaysOn ? 'Disable all overlays' : 'Enable all overlays'}
+        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ml-2 ${
+          allOverlaysOn
+            ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
+            : anyOverlaysOn
+              ? 'bg-slate-100 text-slate-700 border-slate-300 hover:border-slate-400'
+              : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'
+        }`}
+      >
+        {allOverlaysOn ? 'All On' : anyOverlaysOn ? 'Mixed' : 'All Off'}
+      </button>
+
       <span className="ml-auto text-xs text-gray-400 italic hidden md:block">
         Hover legend labels for descriptions
       </span>

@@ -142,6 +142,23 @@ export function StockPageClient({
       return next
     })
 
+  const toggleAllOverlays = () => {
+    const allOn = showBB && showEMA9 && showEMA20 && showSMA20 && showSMA50 && showSMA200
+    const newState = !allOn
+    setShowBB(newState)
+    setShowEMA9(newState)
+    setShowEMA20(newState)
+    setShowSMA20(newState)
+    setShowSMA50(newState)
+    setShowSMA200(newState)
+    localStorage.setItem('sf-chart-bb', String(newState))
+    localStorage.setItem('sf-chart-ema9', String(newState))
+    localStorage.setItem('sf-chart-ema20', String(newState))
+    localStorage.setItem('sf-chart-sma20', String(newState))
+    localStorage.setItem('sf-chart-sma50', String(newState))
+    localStorage.setItem('sf-chart-sma200', String(newState))
+  }
+
   const fetchData = useCallback(
     (r: Range) => {
       setLoading(true)
@@ -233,6 +250,7 @@ export function StockPageClient({
               onToggleSMA200={toggleSMA200}
               showBB={showBB}
               onToggleBB={toggleBB}
+              onToggleAllOverlays={toggleAllOverlays}
             />
 
             <VolumeChart data={data} />

@@ -27,29 +27,38 @@ async function fetchLiveQuotes(tickers: string[]): Promise<Record<string, PriceE
   if (tickers.length === 0) return {}
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const yf = new (require('yahoo-finance2').default)()
+  const yf = new (require('yahoo-finance2').default)({
+    suppressNotices: ['yahooSurvey', 'ripHistorical'],
+  })
 
   const result: Record<string, PriceEntry> = {}
 
   // Fetch quotes in parallel (sidebar tickers are a small set, ~20-154)
   const settled = await Promise.allSettled(
     tickers.map(async (ticker) => {
-      const q = await yf.quote(ticker, {}, { validateResult: false })
-      const price         = q?.regularMarketPrice         ?? null
-      const changePercent = q?.regularMarketChangePercent ?? null
-      if (price == null || changePercent == null) return
+      try {
+        const q = await yf.quote(ticker, {}, { validateResult: false })
+        const price         = q?.regularMarketPrice         ?? null
+        const changePercent = q?.regularMarketChangePercent ?? null
+        if (price == null || changePercent == null) {
+          console.warn(`[prices] incomplete data for ${ticker}`)
+          return
+        }
 
-      const entry: PriceEntry = { price, changePercent }
-      result[ticker] = entry
+        const entry: PriceEntry = { price, changePercent }
+        result[ticker] = entry
 
-      // Populate screener cache so subsequent reads are instant
-      const existing = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
-      if (!existing) {
-        cacheSet<ScreenerSnapshot>(`screener:${ticker}`, {
-          price,
-          change: q?.regularMarketChange ?? 0,
-          changePercent,
-        })
+        // Populate screener cache so subsequent reads are instant
+        const existing = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
+        if (!existing) {
+          cacheSet<ScreenerSnapshot>(`screener:${ticker}`, {
+            price,
+            change: q?.regularMarketChange ?? 0,
+            changePercent,
+          })
+        }
+      } catch (err) {
+        console.error(`[prices] quote error for ${ticker}:`, err instanceof Error ? err.message : String(err))
       }
     })
   )

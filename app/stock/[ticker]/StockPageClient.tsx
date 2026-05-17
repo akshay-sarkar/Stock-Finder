@@ -49,11 +49,35 @@ export function StockPageClient({
     setLastUpdated(new Date())
   }, [])
 
+  // Fetch financials in background if not provided server-side
+  useEffect(() => {
+    if (initialFinancials) return
+    const abortController = new AbortController()
+    const fetchFinancialsData = async () => {
+      try {
+        const res = await fetch(`/api/financials/${ticker}`, {
+          signal: abortController.signal,
+        })
+        const data = await res.json()
+        setFinancials(data.error ? null : data)
+      } catch (e) {
+        if ((e as Error).name !== 'AbortError') {
+          setFinancials(null)
+        }
+      } finally {
+        setFinancialsLoading(false)
+      }
+    }
+    fetchFinancialsData()
+    return () => abortController.abort()
+  }, [ticker, initialFinancials])
+
   const [earnings] = useState<EarningsData | null>(initialEarnings)
   const [analyst] = useState<AnalystData | null>(initialAnalyst)
   const [news] = useState<NewsItem[] | null>(initialNews)
   const [showNews, setShowNews] = useState(false)
-  const [financials] = useState<FinancialsData | null>(initialFinancials)
+  const [financials, setFinancials] = useState<FinancialsData | null>(initialFinancials)
+  const [financialsLoading, setFinancialsLoading] = useState(!initialFinancials)
 
   // Chart overlay toggles (persisted to localStorage)
   const [showBB, setShowBB] = useState<boolean>(() => {
@@ -235,13 +259,17 @@ export function StockPageClient({
               </div>
             )}
 
-            {financials || earnings ? (
+            {financials || earnings || financialsLoading ? (
               <div className="grid grid-cols-2 gap-4">
-                {financials && (
+                {financials ? (
                   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                     <FinancialsWidget data={financials} ticker={ticker} />
                   </div>
-                )}
+                ) : financialsLoading ? (
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="h-32 bg-slate-100 animate-pulse rounded" />
+                  </div>
+                ) : null}
                 {earnings && <EarningsWidget data={earnings} ticker={ticker} />}
               </div>
             ) : null}

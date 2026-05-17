@@ -72,14 +72,14 @@ export default async function StockPage({ params }: Props) {
     notFound()
   }
 
-  // Fetch all data in parallel
-  const [stockData, earnings, analyst, news, financials] = await Promise.all([
+  // Fetch critical data server-side, financials loads client-side (non-blocking)
+  const [stockData, earnings, analyst, news] = await Promise.all([
     fetchStockData(ticker),
     fetchEarnings(ticker),
     fetchAnalyst(ticker),
     fetchNews(ticker),
-    fetchFinancials(ticker),
   ])
+  const financials = null
 
   if (!stockData) {
     notFound()

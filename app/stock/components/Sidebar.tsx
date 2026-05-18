@@ -45,7 +45,7 @@ export function Sidebar({
     setExpandedSectors((prev) => {
       const next = {
         ...prev,
-        [sector]: !prev[sector],
+        [sector]: !(prev[sector] ?? true),
       }
       localStorage.setItem('sf-sidebar-expanded', JSON.stringify(next))
       return next

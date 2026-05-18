@@ -18,11 +18,7 @@ export function Sidebar({
   const router = useRouter()
   const sidebarRef = useRef<HTMLElement>(null)
   const [sidebarSearch, setSidebarSearch] = useState('')
-  const [expandedSectors, setExpandedSectors] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') return {}
-    const saved = localStorage.getItem('sf-sidebar-expanded')
-    return saved ? JSON.parse(saved) : {}
-  })
+  const [expandedSectors, setExpandedSectors] = useState<Record<string, boolean>>({})
 
   const filteredSidebarTickers = sidebarSearch
     ? DEFAULT_TICKERS.filter(
@@ -66,6 +62,17 @@ export function Sidebar({
       sessionStorage.removeItem('sf-sidebar-focus')
     }
   }, [ticker])
+
+  useEffect(() => {
+    const saved = localStorage.getItem('sf-sidebar-expanded')
+    if (saved) {
+      try {
+        setExpandedSectors(JSON.parse(saved))
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [])
 
   const handleSidebarScroll = (e: React.UIEvent<HTMLElement>) => {
     sessionStorage.setItem('sf-sidebar-scroll', e.currentTarget.scrollTop.toString())

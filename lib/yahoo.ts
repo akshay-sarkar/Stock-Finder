@@ -155,14 +155,15 @@ export async function getAnalystData(ticker: string): Promise<AnalystData> {
  *     (silently omitted if unavailable — many tickers lack this since late 2024)
  */
 export async function getQuoteSummary(ticker: string): Promise<StockFundamentals | null> {
-  // Fetch primary modules + attempt quarterly income statements (may fail)
-  const [primary, quarterly] = await Promise.all([
+  // Fetch primary modules + quarterly fundamentals via fundamentalsTimeSeries
+  const [primary, quarterlyTimeSeries] = await Promise.all([
     yahooFinance.quoteSummary(ticker, {
       modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
     }),
-    yahooFinance.quoteSummary(ticker, {
-      modules: ['incomeStatementHistoryQuarterly'],
-    }, { validateResult: false }).catch(() => null),
+    yahooFinance.fundamentalsTimeSeries(ticker, {
+      type: 'quarterly',
+      module: 'financials',
+    }).catch(() => []),
   ])
 
   const sd = primary?.summaryDetail ?? {}
@@ -179,18 +180,24 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
     } catch { exDividendDate = null }
   }
 
-  // ── QoQ metrics from quarterly income statements ────────────────────────────
-  // Quarters are ordered most-recent first: [Q_n, Q_n-1, Q_n-2, Q_n-3]
+  // ── QoQ metrics from fundamentalsTimeSeries quarterly data ──────────────────
+  // Array is ordered by date; we need the two most recent quarters
   let revenueGrowthQoQ: number | null = null
   let earningsGrowthQoQ: number | null = null
   let grossMarginsQoQ: number | null = null
 
-  const qHistory: any[] =
-    quarterly?.incomeStatementHistoryQuarterly?.incomeStatementHistory ?? []
+  const qData: any[] = quarterlyTimeSeries ?? []
 
-  if (qHistory.length >= 2) {
-    const q0 = qHistory[0] // most recent quarter
-    const q1 = qHistory[1] // prior quarter
+  if (qData.length >= 2) {
+    // Most recent quarter is typically at the end (or check date field)
+    const sorted = [...qData].sort((a: any, b: any) => {
+      const aDate = a.date instanceof Date ? a.date.getTime() : new Date(a.date).getTime()
+      const bDate = b.date instanceof Date ? b.date.getTime() : new Date(b.date).getTime()
+      return bDate - aDate // descending: newest first
+    })
+
+    const q0 = sorted[0] // most recent quarter
+    const q1 = sorted[1] // prior quarter
 
     const rev0 = q0?.totalRevenue ?? null
     const rev1 = q1?.totalRevenue ?? null

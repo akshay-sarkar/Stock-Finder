@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { isValidTicker } from '@/lib/validation'
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-const YahooFinanceClass = require('yahoo-finance2').default
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-const yahooFinance: any = new YahooFinanceClass()
+import { yf } from '@/lib/yahoo'
 
 export const runtime = 'nodejs'
 export const revalidate = 3600
@@ -37,7 +33,7 @@ export async function GET(
   }
 
   try {
-    const result: any = await yahooFinance.recommendationsBySymbol(ticker, {}, { validateResult: false })
+    const result: any = await yf.recommendationsBySymbol(ticker, {}, { validateResult: false })
     const symbols: string[] = (result?.recommendedSymbols ?? [])
       .slice(0, 8)
       .map((r: any) => r.symbol as string)
@@ -51,8 +47,8 @@ export async function GET(
     const quotes = await Promise.allSettled(
       symbols.map(async (sym) => {
         const [quote, summary] = await Promise.all([
-          yahooFinance.quote(sym),
-          yahooFinance.quoteSummary(sym, { modules: ['summaryDetail'] }, { validateResult: false }).catch(() => null),
+          yf.quote(sym),
+          yf.quoteSummary(sym, { modules: ['summaryDetail'] }, { validateResult: false }).catch(() => null),
         ])
         return {
           symbol: sym,

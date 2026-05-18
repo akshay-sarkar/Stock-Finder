@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { isValidTicker } from '@/lib/validation'
-import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsData } from '@/lib/types'
+import { getHistoricalData, getQuote, getQuoteSummary, getEarnings, getAnalystData, getNews } from '@/lib/yahoo'
+import { computeIndicators, computeIndicatorHistory } from '@/lib/indicators'
+import type { StockDetailData, EarningsData, AnalystData, NewsItem } from '@/lib/types'
 import { StockPageClient } from './StockPageClient'
 
 type Props = {
@@ -8,61 +10,6 @@ type Props = {
 }
 
 export const revalidate = 600 // 10 minutes ISR
-
-async function fetchStockData(ticker: string): Promise<StockDetailData | null> {
-  const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/stock/${ticker}?days=320&interval=1d&display=100`
-  try {
-    const res = await fetch(url, { next: { revalidate: 600 } })
-    const data = await res.json()
-    return data.error ? null : data
-  } catch {
-    return null
-  }
-}
-
-async function fetchEarnings(ticker: string): Promise<EarningsData | null> {
-  const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/earnings/${ticker}`
-  try {
-    const res = await fetch(url, { next: { revalidate: 21600 } })
-    const data = await res.json()
-    return data.error ? null : data
-  } catch {
-    return null
-  }
-}
-
-async function fetchAnalyst(ticker: string): Promise<AnalystData | null> {
-  const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/analyst/${ticker}`
-  try {
-    const res = await fetch(url, { next: { revalidate: 14400 } })
-    const data = await res.json()
-    return data.error ? null : data
-  } catch {
-    return null
-  }
-}
-
-async function fetchNews(ticker: string): Promise<NewsItem[] | null> {
-  const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/news/${ticker}`
-  try {
-    const res = await fetch(url, { next: { revalidate: 900 } })
-    const data = await res.json()
-    return data.error ? null : data.items ?? null
-  } catch {
-    return null
-  }
-}
-
-async function fetchFinancials(ticker: string): Promise<FinancialsData | null> {
-  const url = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/financials/${ticker}`
-  try {
-    const res = await fetch(url, { next: { revalidate: 43200 } })
-    const data = await res.json()
-    return data.error ? null : data
-  } catch {
-    return null
-  }
-}
 
 export default async function StockPage({ params }: Props) {
   const { ticker: rawTicker } = params
@@ -72,17 +19,40 @@ export default async function StockPage({ params }: Props) {
     notFound()
   }
 
-  // Fetch critical data server-side, financials loads client-side (non-blocking)
-  const [stockData, earnings, analyst, news] = await Promise.all([
-    fetchStockData(ticker),
-    fetchEarnings(ticker),
-    fetchAnalyst(ticker),
-    fetchNews(ticker),
+  // Fetch all data in parallel — direct lib calls, no loopback HTTP
+  const [data, quote, fundamentals, earnings, analyst, news] = await Promise.all([
+    getHistoricalData(ticker, 320, '1d'),
+    getQuote(ticker),
+    getQuoteSummary(ticker).catch(() => null),
+    getEarnings(ticker).catch((): EarningsData => ({
+      nextEarningsDate: null, epsEstimateNext: null,
+      epsEstimateLow: null, epsEstimateHigh: null, history: [],
+    })),
+    getAnalystData(ticker).catch((): AnalystData => ({
+      targetMeanPrice: null, targetLowPrice: null, targetHighPrice: null,
+      recommendationMean: null, recommendationKey: null, numberOfAnalystOpinions: null,
+    })),
+    getNews(ticker).catch((): NewsItem[] => []),
   ])
-  const financials = null
 
-  if (!stockData) {
-    notFound()
+  if (data.length < 35) notFound()
+
+  const ind = computeIndicators(data)
+  if (!ind) notFound()
+
+  const stockData: StockDetailData = {
+    ticker,
+    companyName:             quote.name,
+    exchange:                quote.exchange,
+    currentPrice:            quote.price,
+    change:                  quote.change,
+    changePercent:           quote.changePercent,
+    postMarketPrice:         quote.postMarketPrice,
+    postMarketChange:        quote.postMarketChange,
+    postMarketChangePercent: quote.postMarketChangePercent,
+    chartData:               computeIndicatorHistory(data, 100),
+    latestIndicators:        ind,
+    fundamentals,
   }
 
   return (
@@ -92,7 +62,7 @@ export default async function StockPage({ params }: Props) {
       initialEarnings={earnings}
       initialAnalyst={analyst}
       initialNews={news}
-      initialFinancials={financials}
+      initialFinancials={null}
     />
   )
 }

@@ -7,6 +7,7 @@ const YahooFinanceClass = require('yahoo-finance2').default
 const yahooFinance: any = new YahooFinanceClass({
   suppressNotices: ['yahooSurvey', 'ripHistorical'],
 })
+export { yahooFinance as yf }
 
 /**
  * Fetches historical OHLCV data for a ticker using chart() API.
@@ -21,7 +22,7 @@ const yahooFinance: any = new YahooFinanceClass({
 export async function getHistoricalData(
   ticker: string,
   days = 320,
-  interval: '1d' | '1wk' | '1mo' = '1d'
+  interval: '1d' | '1wk' | '1mo' = '1wk'
 ): Promise<OHLCVBar[]> {
   const endDate = new Date()
   const startDate = new Date()

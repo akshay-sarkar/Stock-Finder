@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { sanitizeTickers } from '@/lib/validation'
+import { yf } from '@/lib/yahoo'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -25,11 +26,6 @@ interface ScreenerSnapshot {
 
 async function fetchLiveQuotes(tickers: string[]): Promise<Record<string, PriceEntry>> {
   if (tickers.length === 0) return {}
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const yf = new (require('yahoo-finance2').default)({
-    suppressNotices: ['yahooSurvey', 'ripHistorical'],
-  })
 
   const result: Record<string, PriceEntry> = {}
 
@@ -46,9 +42,9 @@ async function fetchLiveQuotes(tickers: string[]): Promise<Record<string, PriceE
         const changePercent = q?.regularMarketChangePercent ?? null
         if (price != null && changePercent != null) {
           result[ticker] = { price, changePercent }
-          const existing = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
-          if (!existing) {
-            cacheSet<ScreenerSnapshot>(`screener:${ticker}`, {
+          // Write to quote: key — keeps thin shape separate from screener: (rich shape)
+          if (!cacheGet<ScreenerSnapshot>(`quote:${ticker}`)) {
+            cacheSet<ScreenerSnapshot>(`quote:${ticker}`, {
               price,
               change: q?.regularMarketChange ?? 0,
               changePercent,
@@ -85,7 +81,8 @@ export async function POST(req: NextRequest) {
   const coldTickers: string[] = []
 
   for (const ticker of tickers) {
-    const cached = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
+    // screener: has rich shape (price+ind+fundamentals); quote: has thin shape — both have price/changePercent
+    const cached = cacheGet<ScreenerSnapshot>(`screener:${ticker}`) ?? cacheGet<ScreenerSnapshot>(`quote:${ticker}`)
     if (cached) {
       prices[ticker] = { price: cached.price, changePercent: cached.changePercent }
     } else {

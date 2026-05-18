@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet } from '@/lib/cache'
+import { yf } from '@/lib/yahoo'
+import { DEFAULT_TICKERS } from '@/lib/stockList'
 
 export const runtime = 'nodejs'
 export const revalidate = 900
@@ -18,74 +20,65 @@ interface WeekMoversResponse {
   weekLosers: MoverStock[]
 }
 
+// Representative cross-sector sample — large enough for meaningful movers, small enough to be fast
+const SYMBOLS = DEFAULT_TICKERS.slice(0, 60)
+const CONCURRENCY = 10
+
 async function computeWeeklyMovers(): Promise<WeekMoversResponse> {
   try {
-    // Popular tech stocks to compute weekly movers for
-    const symbols = [
-      'NVDA', 'MSFT', 'AAPL', 'GOOGL', 'TSLA', 'META', 'AMZN', 'NFLX', 'AVGO', 'ADBE',
-      'IBM', 'XOM', 'CVX', 'JNJ', 'KO', 'PG', 'JPM', 'BAC', 'GE', 'F',
-    ]
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const YahooFinanceClass = require('yahoo-finance2').default
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const yahooFinance: any = new YahooFinanceClass()
-
     const endDate = new Date()
     const startDate = new Date()
-    startDate.setDate(startDate.getDate() - 5)
+    startDate.setDate(startDate.getDate() - 7)
 
-    const historicalResults = await Promise.allSettled(
-      symbols.map(symbol =>
-        yahooFinance.historical(symbol, {
-          period1: startDate,
-          period2: endDate,
-          interval: '1d',
-        }).catch(() => [])
-      )
-    )
+    // Pass 1: chart() for weekly price change — concurrency-capped to avoid Yahoo throttle
+    const weeklyChange = new Map<string, number>()
+    let chartIdx = 0
+    async function chartWorker() {
+      while (chartIdx < SYMBOLS.length) {
+        const symbol = SYMBOLS[chartIdx++]
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const result: any = await yf.chart(symbol, { period1: startDate, period2: endDate, interval: '1d' })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const bars = (result.quotes ?? []).filter((b: any) => b.close != null)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          if (bars.length >= 2) {
+            weeklyChange.set(symbol, ((bars.at(-1).close - bars[0].close) / bars[0].close) * 100)
+          }
+        } catch { /* skip failed tickers */ }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, SYMBOLS.length) }, chartWorker))
 
-    // Get current quotes for all symbols
-    const quotes = await Promise.all(
-      symbols.map(s => yahooFinance.quote(s).catch(() => null))
-    )
+    const symbolsWithData = [...weeklyChange.keys()]
+    if (symbolsWithData.length === 0) return { weekGainers: [], weekLosers: [] }
 
-    // Compute weekly changes
-    const moversWithWeeklyChange = historicalResults
-      .map((result, idx) => {
-        if (result.status !== 'fulfilled' || !result.value?.length) return null
+    // Pass 2: one batched quote call for name + current price
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawQuotes: any[] = await yf.quote(symbolsWithData).catch(() => [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const quoteMap = new Map<string, any>(rawQuotes.map((q: any) => [q.symbol, q]))
 
-        const symbol = symbols[idx]
-        const history = (result.value as any[])
-          .filter(bar => bar.close != null)
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-
-        if (history.length < 2) return null
-
-        const firstClose = history[0].close
-        const lastClose = history[history.length - 1].close
-        const weeklyChange = ((lastClose - firstClose) / firstClose) * 100
-
-        // Get current quote for name + price
-        const quote = quotes[idx]
-        if (!quote || !quote.regularMarketPrice) return null
-
+    const movers: MoverStock[] = symbolsWithData
+      .filter(s => quoteMap.get(s)?.regularMarketPrice != null)
+      .map(s => {
+        const q = quoteMap.get(s)
         return {
-          symbol,
-          name: quote.shortName || quote.longName || symbol,
-          price: quote.regularMarketPrice,
-          change: quote.regularMarketChange ?? 0,
-          changePercent: weeklyChange,
-          volume: quote.regularMarketVolume ?? 0,
+          symbol: s,
+          name: q.shortName || q.longName || s,
+          price: q.regularMarketPrice,
+          change: q.regularMarketChange ?? 0,
+          changePercent: weeklyChange.get(s)!,
+          volume: q.regularMarketVolume ?? 0,
         }
       })
-      .filter((item): item is MoverStock => item != null)
       .sort((a, b) => b.changePercent - a.changePercent)
 
-    const weekGainers = moversWithWeeklyChange.slice(0, 10)
-    const weekLosers = moversWithWeeklyChange.slice(-10).reverse()
-
-    return { weekGainers, weekLosers }
+    return {
+      weekGainers: movers.slice(0, 10),
+      weekLosers: [...movers].reverse().slice(0, 10),
+    }
   } catch (err) {
     console.error('[market-movers/week]', err instanceof Error ? err.message : String(err))
     return { weekGainers: [], weekLosers: [] }

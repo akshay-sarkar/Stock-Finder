@@ -24,7 +24,7 @@ export async function GET() {
   const out: WatchlistPrices = {}
 
   for (const ticker of DEFAULT_TICKERS) {
-    const snap = cacheGet<TickerSnapshot>(`screener:${ticker}`)
+    const snap = cacheGet<TickerSnapshot>(`screener:${ticker}`) ?? cacheGet<TickerSnapshot>(`quote:${ticker}`)
     if (snap) {
       out[ticker] = {
         price: snap.price,

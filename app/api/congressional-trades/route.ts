@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cacheGet, cacheSet, cacheDel } from '@/lib/cache'
 import { checkRateLimit } from '@/lib/rateLimit'
 import type { CongressionalTrade } from '@/lib/types'
+import { yf } from '@/lib/yahoo'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -114,12 +115,16 @@ async function enrichWithPrices(trades: CongressionalTrade[]): Promise<Congressi
   const uniqueTickers = [...new Set(trades.map(t => t.ticker).filter(Boolean))]
   if (uniqueTickers.length === 0) return trades
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const yf = new (require('yahoo-finance2').default)()
   const priceMap: Record<string, { price: number; changePercent: number }> = {}
 
   const settled = await Promise.allSettled(
     uniqueTickers.map(async (ticker) => {
+      const cached = cacheGet<{ price: number; changePercent: number }>(`quote:${ticker}`)
+        ?? cacheGet<{ price: number; changePercent: number }>(`screener:${ticker}`)
+      if (cached) {
+        priceMap[ticker] = { price: cached.price, changePercent: cached.changePercent }
+        return
+      }
       const q = await yf.quote(ticker, {}, { validateResult: false })
       const price         = q?.regularMarketPrice         ?? null
       const changePercent = q?.regularMarketChangePercent ?? null

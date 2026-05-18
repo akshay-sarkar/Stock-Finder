@@ -33,45 +33,38 @@ async function fetchLiveQuotes(tickers: string[]): Promise<Record<string, PriceE
 
   const result: Record<string, PriceEntry> = {}
 
-  // Fetch quotes in parallel (sidebar tickers are a small set, ~20-154)
-  const settled = await Promise.allSettled(
-    tickers.map(async (ticker) => {
+  // Concurrency-limited fetch — prevents rate-limiting Yahoo Finance
+  // when many tickers are cold-cache (e.g. after a server restart).
+  const CONCURRENCY = 20
+  let idx = 0
+  async function worker() {
+    while (idx < tickers.length) {
+      const ticker = tickers[idx++]
       try {
         const q = await yf.quote(ticker, {}, { validateResult: false })
         const price         = q?.regularMarketPrice         ?? null
         const changePercent = q?.regularMarketChangePercent ?? null
-        if (price == null || changePercent == null) {
-          console.warn(`[prices] incomplete data for ${ticker}`)
-          return
-        }
-
-        const entry: PriceEntry = { price, changePercent }
-        result[ticker] = entry
-
-        // Populate screener cache so subsequent reads are instant
-        const existing = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
-        if (!existing) {
-          cacheSet<ScreenerSnapshot>(`screener:${ticker}`, {
-            price,
-            change: q?.regularMarketChange ?? 0,
-            changePercent,
-          })
+        if (price != null && changePercent != null) {
+          result[ticker] = { price, changePercent }
+          const existing = cacheGet<ScreenerSnapshot>(`screener:${ticker}`)
+          if (!existing) {
+            cacheSet<ScreenerSnapshot>(`screener:${ticker}`, {
+              price,
+              change: q?.regularMarketChange ?? 0,
+              changePercent,
+            })
+          }
         }
       } catch (err) {
         console.error(`[prices] quote error for ${ticker}:`, err instanceof Error ? err.message : String(err))
       }
-    })
-  )
-
-  // Log any individual failures without leaking details to the client
-  settled.forEach((s, i) => {
-    if (s.status === 'rejected') {
-      console.error(`[prices] quote failed for ${tickers[i]}:`, s.reason?.message ?? s.reason)
     }
-  })
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, tickers.length) }, worker))
 
   return result
 }
+
 
 export async function POST(req: NextRequest) {
   // ── Parse + validate body ─────────────────────────────────────────────────
@@ -84,8 +77,8 @@ export async function POST(req: NextRequest) {
 
   const obj = (body !== null && typeof body === 'object' ? body : {}) as Record<string, unknown>
 
-  // Validate + deduplicate; cap at 200 (full watchlist)
-  const tickers = sanitizeTickers(obj.tickers, 200)
+  // Validate + deduplicate; cap at 400 (full watchlist is ~375 tickers)
+  const tickers = sanitizeTickers(obj.tickers, 400)
 
   // ── Tier 1: read from screener cache ──────────────────────────────────────
   const prices: Record<string, PriceEntry> = {}

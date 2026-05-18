@@ -40,7 +40,12 @@ export function useScreenerState() {
   useEffect(() => {
     try {
       const wl = localStorage.getItem(LS_WATCHLIST)
-      if (wl) setWatchlist(JSON.parse(wl))
+      if (wl) {
+        const saved: string[] = JSON.parse(wl)
+        const savedSet = new Set(saved)
+        const added = DEFAULT_TICKERS.filter(t => !savedSet.has(t))
+        setWatchlist(added.length > 0 ? [...saved, ...added] : saved)
+      }
     } catch {}
     try {
       const col = localStorage.getItem(LS_SHOWCOL)

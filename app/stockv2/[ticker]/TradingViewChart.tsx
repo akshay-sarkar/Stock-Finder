@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 
 const STUDY_OPTIONS = [
-  { ids: ['Volume@tv-basicstudies'],                                   label: 'Volume' },
   { ids: ['RSI@tv-basicstudies'],                                      label: 'RSI' },
   { ids: ['MACD@tv-basicstudies'],                                     label: 'MACD' },
   { ids: ['BB@tv-basicstudies'],                                       label: 'BB Band' },
@@ -11,7 +10,6 @@ const STUDY_OPTIONS = [
 ]
 
 const DEFAULT_STUDIES = [
-  'Volume@tv-basicstudies',
   'RSI@tv-basicstudies',
   'MACD@tv-basicstudies',
   'BB@tv-basicstudies',

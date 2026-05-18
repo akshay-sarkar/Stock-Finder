@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { ScreenerRow } from '@/lib/types'
 import { TickerModal } from './components/Screener/TickerModal'
@@ -34,7 +34,7 @@ export function ScreenerClient({}: ScreenerClientProps) {
   const [showTickerModal, setShowTickerModal] = useState(false)
 
   // Reset to page 1 whenever sort changes
-  useMemo(() => { setCurrentPage(1) }, [sortKey, sortAsc])
+  useEffect(() => { setCurrentPage(1) }, [sortKey, sortAsc])
 
   async function runScan() {
     const tickers = watchlist.slice()

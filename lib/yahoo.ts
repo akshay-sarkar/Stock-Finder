@@ -9,6 +9,15 @@ const yahooFinance: any = new YahooFinanceClass({
 })
 export { yahooFinance as yf }
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Yahoo Finance timeout after ${ms}ms`)), ms)
+    ),
+  ])
+}
+
 /**
  * Fetches historical OHLCV data for a ticker using chart() API.
  * @param ticker   - Stock symbol (e.g. "AAPL")
@@ -22,17 +31,16 @@ export { yahooFinance as yf }
 export async function getHistoricalData(
   ticker: string,
   days = 320,
-  interval: '1d' | '1wk' | '1mo' = '1wk'
+  interval: '1d' | '1wk' | '1mo' = '1d'
 ): Promise<OHLCVBar[]> {
   const endDate = new Date()
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 
-  const result: any = await yahooFinance.chart(ticker, {
-    period1: startDate,
-    period2: endDate,
-    interval,
-  })
+  const result: any = await withTimeout(
+    yahooFinance.chart(ticker, { period1: startDate, period2: endDate, interval }),
+    15_000
+  )
 
   const quotes = result.quotes ?? []
   return quotes
@@ -162,9 +170,9 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
 
   const [primary, quarterlyTimeSeries] = await Promise.all([
-    yahooFinance.quoteSummary(ticker, {
+    withTimeout<any>(yahooFinance.quoteSummary(ticker, {
       modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
-    }, { validateResult: false }),
+    }, { validateResult: false }), 15_000),
     yahooFinance.fundamentalsTimeSeries(ticker, {
       period1: twoYearsAgo,
       type: 'quarterly',

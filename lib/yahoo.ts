@@ -156,11 +156,15 @@ export async function getAnalystData(ticker: string): Promise<AnalystData> {
  */
 export async function getQuoteSummary(ticker: string): Promise<StockFundamentals | null> {
   // Fetch primary modules + quarterly fundamentals via fundamentalsTimeSeries
+  const twoYearsAgo = new Date()
+  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+
   const [primary, quarterlyTimeSeries] = await Promise.all([
     yahooFinance.quoteSummary(ticker, {
       modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
     }),
     yahooFinance.fundamentalsTimeSeries(ticker, {
+      period1: twoYearsAgo,
       type: 'quarterly',
       module: 'financials',
     }).catch(() => []),

@@ -207,7 +207,7 @@ function MoverCard({ title, stocks, highlight }: MoverCardProps) {
         {stocks.map(stock => (
           <Link
             key={stock.symbol}
-            href={`/stock/${stock.symbol}`}
+            href={`/stockv2/${stock.symbol}`}
             className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
           >
             <div className="flex-1 min-w-0">

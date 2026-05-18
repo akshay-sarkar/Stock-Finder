@@ -155,6 +155,7 @@ export async function getAnalystData(ticker: string): Promise<AnalystData> {
  *     (silently omitted if unavailable — many tickers lack this since late 2024)
  */
 export async function getQuoteSummary(ticker: string): Promise<StockFundamentals | null> {
+  try {
   // Fetch primary modules + quarterly fundamentals via fundamentalsTimeSeries
   const twoYearsAgo = new Date()
   twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
@@ -162,7 +163,7 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
   const [primary, quarterlyTimeSeries] = await Promise.all([
     yahooFinance.quoteSummary(ticker, {
       modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
-    }),
+    }, { validateResult: false }),
     yahooFinance.fundamentalsTimeSeries(ticker, {
       period1: twoYearsAgo,
       type: 'quarterly',
@@ -248,6 +249,9 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
     shortPercentOfFloat: ks.shortPercentOfFloat ?? null,
     shortRatio:         ks.shortRatio          ?? null,
     sharesShort:        ks.sharesShort         ?? null,
+  }
+  } catch {
+    return null
   }
 }
 

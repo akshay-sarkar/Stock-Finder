@@ -26,11 +26,12 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",   // unsafe-eval needed by Next.js dev HMR; acceptable in prod for this use case
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com",   // unsafe-eval needed by Next.js dev HMR; s3.tradingview.com for chart widget
+      "style-src 'self' 'unsafe-inline' https://s3.tradingview.com",
       "img-src 'self' data: https:",
-      "font-src 'self'",
-      "connect-src 'self'",
+      "font-src 'self' https://s3.tradingview.com",
+      "connect-src 'self' https://*.tradingview.com wss://*.tradingview.com https://*.tradingview-widget.com",
+      "frame-src https://*.tradingview.com https://*.tradingview-widget.com https://s.tradingview.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",

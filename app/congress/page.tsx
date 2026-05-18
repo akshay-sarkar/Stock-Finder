@@ -112,7 +112,7 @@ export default function CongressPage() {
     e.preventDefault()
     const t = tickerSearch.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '')
     if (t.length >= 1 && t.length <= 8) {
-      router.push(`/stock/${t}`)
+      router.push(`/stockv2/${t}`)
       setTickerSearch('')
     }
   }
@@ -346,7 +346,7 @@ export default function CongressPage() {
                         <td className="px-4 py-3">
                           {trade.ticker ? (
                             <Link
-                              href={`/stock/${trade.ticker}`}
+                              href={`/stockv2/${trade.ticker}`}
                               className="font-bold text-blue-600 hover:text-blue-800 hover:underline"
                             >
                               {trade.ticker}

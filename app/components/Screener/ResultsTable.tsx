@@ -267,7 +267,7 @@ export function ResultsTable({
                   >
                     <td className="px-4 py-3">
                       <Link
-                        href={`/stock/${row.ticker}`}
+                        href={`/stockv2/${row.ticker}`}
                         className="font-bold text-blue-600 hover:text-blue-800 hover:underline"
                       >
                         {row.ticker}

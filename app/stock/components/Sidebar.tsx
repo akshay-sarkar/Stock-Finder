@@ -86,10 +86,10 @@ export function Sidebar({
 
       if (e.key === 'ArrowDown' && currentIndex < filteredSidebarTickers.length - 1) {
         sessionStorage.setItem('sf-sidebar-focus', 'true')
-        router.push(`/stock/${filteredSidebarTickers[currentIndex + 1]}`)
+        router.push(`/stockv2/${filteredSidebarTickers[currentIndex + 1]}`)
       } else if (e.key === 'ArrowUp' && currentIndex > 0) {
         sessionStorage.setItem('sf-sidebar-focus', 'true')
-        router.push(`/stock/${filteredSidebarTickers[currentIndex - 1]}`)
+        router.push(`/stockv2/${filteredSidebarTickers[currentIndex - 1]}`)
       }
     }
   }
@@ -143,7 +143,7 @@ export function Sidebar({
                         return (
                           <Link
                             key={t}
-                            href={`/stock/${t}`}
+                            href={`/stockv2/${t}`}
                             className={`flex items-center justify-between gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors ${
                               isActive
                                 ? 'bg-blue-600 text-white font-semibold'

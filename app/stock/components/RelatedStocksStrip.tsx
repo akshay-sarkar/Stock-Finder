@@ -62,7 +62,7 @@ export function RelatedStocksStrip({ ticker }: RelatedStocksStripProps) {
               return (
                 <Link
                   key={stock.symbol}
-                  href={`/stock/${stock.symbol}`}
+                  href={`/stockv2/${stock.symbol}`}
                   className="flex flex-col gap-1.5 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors text-xs shrink-0 w-40"
                 >
                   <div className="flex items-baseline justify-between gap-2">

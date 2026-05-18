@@ -13,7 +13,7 @@ export function Header() {
     e.preventDefault()
     const t = tickerSearch.trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '')
     if (t.length >= 1 && t.length <= 8) {
-      router.push(`/stock/${t}`)
+      router.push(`/stockv2/${t}`)
       setTickerSearch('')
     }
   }

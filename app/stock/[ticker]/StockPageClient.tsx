@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useLocalStorageBool } from '@/lib/useLocalStorageBool'
 import type { StockDetailData, EarningsData, AnalystData, NewsItem, FinancialsData } from '@/lib/types'
 import {
   StockHeader,
@@ -79,84 +80,17 @@ export function StockPageClient({
   const [financials, setFinancials] = useState<FinancialsData | null>(initialFinancials)
   const [financialsLoading, setFinancialsLoading] = useState(!initialFinancials)
 
-  // Chart overlay toggles (persisted to localStorage)
-  const [showBB, setShowBB] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('sf-chart-bb') === 'true'
-  })
-  const [showEMA20, setShowEMA20] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true
-    return localStorage.getItem('sf-chart-ema20') !== 'false'
-  })
-  const [showSMA50, setShowSMA50] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true
-    return localStorage.getItem('sf-chart-sma50') !== 'false'
-  })
-  const [showSMA200, setShowSMA200] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return true
-    return localStorage.getItem('sf-chart-sma200') !== 'false'
-  })
-  const [showEMA9, setShowEMA9] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('sf-chart-ema9') === 'true'
-  })
-  const [showSMA20, setShowSMA20] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('sf-chart-sma20') === 'true'
-  })
-
-  const toggleBB = () =>
-    setShowBB((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-bb', String(next))
-      return next
-    })
-  const toggleEMA20 = () =>
-    setShowEMA20((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-ema20', String(next))
-      return next
-    })
-  const toggleSMA50 = () =>
-    setShowSMA50((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-sma50', String(next))
-      return next
-    })
-  const toggleSMA200 = () =>
-    setShowSMA200((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-sma200', String(next))
-      return next
-    })
-  const toggleEMA9 = () =>
-    setShowEMA9((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-ema9', String(next))
-      return next
-    })
-  const toggleSMA20 = () =>
-    setShowSMA20((prev) => {
-      const next = !prev
-      localStorage.setItem('sf-chart-sma20', String(next))
-      return next
-    })
+  // Chart overlay toggles (persisted to localStorage, hydration-safe)
+  const [showBB,    toggleBB,    setBB]    = useLocalStorageBool('sf-chart-bb',    false)
+  const [showEMA20, toggleEMA20, setEMA20] = useLocalStorageBool('sf-chart-ema20', true)
+  const [showSMA50, toggleSMA50, setSMA50] = useLocalStorageBool('sf-chart-sma50', true)
+  const [showSMA200,toggleSMA200,setSMA200]= useLocalStorageBool('sf-chart-sma200',true)
+  const [showEMA9,  toggleEMA9,  setEMA9]  = useLocalStorageBool('sf-chart-ema9',  false)
+  const [showSMA20, toggleSMA20, setSMA20] = useLocalStorageBool('sf-chart-sma20', false)
 
   const toggleAllOverlays = () => {
-    const allOn = showBB && showEMA9 && showEMA20 && showSMA20 && showSMA50 && showSMA200
-    const newState = !allOn
-    setShowBB(newState)
-    setShowEMA9(newState)
-    setShowEMA20(newState)
-    setShowSMA20(newState)
-    setShowSMA50(newState)
-    setShowSMA200(newState)
-    localStorage.setItem('sf-chart-bb', String(newState))
-    localStorage.setItem('sf-chart-ema9', String(newState))
-    localStorage.setItem('sf-chart-ema20', String(newState))
-    localStorage.setItem('sf-chart-sma20', String(newState))
-    localStorage.setItem('sf-chart-sma50', String(newState))
-    localStorage.setItem('sf-chart-sma200', String(newState))
+    const next = !(showBB && showEMA9 && showEMA20 && showSMA20 && showSMA50 && showSMA200)
+    setBB(next); setEMA9(next); setEMA20(next); setSMA20(next); setSMA50(next); setSMA200(next)
   }
 
   const fetchData = useCallback(

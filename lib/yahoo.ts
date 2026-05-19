@@ -80,7 +80,7 @@ export async function getQuote(ticker: string): Promise<{
   name: string
   exchange: string
 }> {
-  const result: any = await yahooFinance.quote(ticker)
+  const result: any = await withTimeout(yahooFinance.quote(ticker), 10_000)
   return {
     price: result.regularMarketPrice ?? 0,
     change: result.regularMarketChange ?? 0,
@@ -99,9 +99,9 @@ export async function getQuote(ticker: string): Promise<{
  * Returns gracefully if modules unavailable (ETFs, indices).
  */
 export async function getEarnings(ticker: string): Promise<EarningsData> {
-  const result = await yahooFinance.quoteSummary(ticker, {
+  const result = await withTimeout<any>(yahooFinance.quoteSummary(ticker, {
     modules: ['calendarEvents', 'earningsHistory'],
-  }, { validateResult: false }).catch(() => null)
+  }, { validateResult: false }), 10_000).catch(() => null)
 
   const cal = result?.calendarEvents ?? {}
   const earningsDates: any[] = cal?.earnings?.earningsDate ?? []
@@ -137,9 +137,9 @@ export async function getEarnings(ticker: string): Promise<EarningsData> {
  *   recommendationMean (1=Strong Buy…5=Sell), recommendationKey, numberOfAnalystOpinions
  */
 export async function getAnalystData(ticker: string): Promise<AnalystData> {
-  const result = await yahooFinance.quoteSummary(ticker, {
+  const result = await withTimeout<any>(yahooFinance.quoteSummary(ticker, {
     modules: ['financialData'],
-  }, { validateResult: false }).catch(() => null)
+  }, { validateResult: false }), 10_000).catch(() => null)
 
   const fd = result?.financialData ?? {}
 
@@ -269,7 +269,7 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
  * Returns up to 8 items. Gracefully returns [] if unavailable.
  */
 export async function getNews(ticker: string): Promise<NewsItem[]> {
-  const result: any = await (yahooFinance as any).search(ticker, { newsCount: 8 }).catch(() => null)
+  const result: any = await withTimeout((yahooFinance as any).search(ticker, { newsCount: 8 }), 10_000).catch(() => null)
   if (!result?.news?.length) return []
   return result.news
     .filter((n: any) => n.title && n.link)

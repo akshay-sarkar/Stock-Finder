@@ -117,28 +117,34 @@ async function enrichWithPrices(trades: CongressionalTrade[]): Promise<Congressi
 
   const priceMap: Record<string, { price: number; changePercent: number }> = {}
 
-  const settled = await Promise.allSettled(
-    uniqueTickers.map(async (ticker) => {
-      const cached = cacheGet<{ price: number; changePercent: number }>(`quote:${ticker}`)
-        ?? cacheGet<{ price: number; changePercent: number }>(`screener:${ticker}`)
-      if (cached) {
-        priceMap[ticker] = { price: cached.price, changePercent: cached.changePercent }
-        return
+  const errors: string[] = []
+  const CONCURRENCY = 10
+  let idx = 0
+  async function worker() {
+    while (idx < uniqueTickers.length) {
+      const ticker = uniqueTickers[idx++]
+      try {
+        const cached = cacheGet<{ price: number; changePercent: number }>(`quote:${ticker}`)
+          ?? cacheGet<{ price: number; changePercent: number }>(`screener:${ticker}`)
+        if (cached) {
+          priceMap[ticker] = { price: cached.price, changePercent: cached.changePercent }
+          continue
+        }
+        const q = await yf.quote(ticker, {}, { validateResult: false })
+        const price         = q?.regularMarketPrice         ?? null
+        const changePercent = q?.regularMarketChangePercent ?? null
+        if (price != null && changePercent != null) {
+          priceMap[ticker] = { price, changePercent }
+        }
+      } catch (e) {
+        errors.push(`${ticker}: ${e instanceof Error ? e.message : String(e)}`)
       }
-      const q = await yf.quote(ticker, {}, { validateResult: false })
-      const price         = q?.regularMarketPrice         ?? null
-      const changePercent = q?.regularMarketChangePercent ?? null
-      if (price != null && changePercent != null) {
-        priceMap[ticker] = { price, changePercent }
-      }
-    })
-  )
-
-  settled.forEach((s, i) => {
-    if (s.status === 'rejected') {
-      console.error(`[congress] quote failed for ${uniqueTickers[i]}:`, s.reason?.message ?? s.reason)
     }
-  })
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, uniqueTickers.length) }, worker))
+  if (errors.length > 0) {
+    console.error(`[congress] quote failures:`, errors.join(', '))
+  }
 
   return trades.map(t => ({
     ...t,

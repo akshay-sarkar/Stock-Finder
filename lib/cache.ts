@@ -9,6 +9,7 @@
  */
 
 const TTL_MS = 10 * 60 * 1000
+const MAX_ENTRIES = 500
 
 interface Entry<T> {
   value: T
@@ -31,6 +32,11 @@ export function cacheGet<T>(key: string): T | null {
 
 /** Stores a value under the given key. Uses TTL_MS by default; pass ttlMs to override. */
 export function cacheSet<T>(key: string, value: T, ttlMs = TTL_MS): void {
+  if (store.size >= MAX_ENTRIES && !store.has(key)) {
+    // Evict oldest entry (Map preserves insertion order)
+    const oldest = store.keys().next().value
+    if (oldest) store.delete(oldest)
+  }
   store.set(key, { value, expires: Date.now() + ttlMs })
 }
 

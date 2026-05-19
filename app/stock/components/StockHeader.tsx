@@ -71,6 +71,19 @@ export function StockHeader({ ticker, data }: StockHeaderProps) {
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <div className="relative group">
             <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
+              Tools <ChevronDown size={13} />
+            </button>
+            <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[160px]">
+              <Link href="/tradingview" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                Trading Dashboard
+              </Link>
+              <Link href="/market-movers" className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors">
+                Market Movers
+              </Link>
+            </div>
+          </div>
+          <div className="relative group">
+            <button className="flex items-center gap-1 text-sm text-slate-300 hover:text-white border border-slate-600 hover:border-slate-400 rounded-lg px-3 py-1.5 transition-colors">
               Congress Trades <ChevronDown size={13} />
             </button>
             <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-800 border border-slate-600 rounded-xl shadow-xl z-50 py-1 min-w-[170px]">

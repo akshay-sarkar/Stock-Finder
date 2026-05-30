@@ -150,7 +150,7 @@ export default function MarketMoversPage() {
 
         {/* Day Tab */}
         {!loading && activeTab === 'day' && dayData && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MoverCard
               title="🟢 Top Gainers"
               stocks={dayData.gainers}
@@ -171,7 +171,7 @@ export default function MarketMoversPage() {
 
         {/* Week Tab */}
         {!loading && activeTab === 'week' && weekData && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MoverCard
               title="📈 Week Gainers"
               stocks={weekData.weekGainers}

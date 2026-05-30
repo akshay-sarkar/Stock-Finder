@@ -184,11 +184,11 @@ export function FilterCard({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 mt-4">
+      <div className="flex flex-col sm:flex-row gap-3 mt-4">
         <button
           onClick={onRunScan}
           disabled={loading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-5 py-2.5 rounded-lg transition-colors text-sm"
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium px-5 py-2.5 rounded-lg transition-colors text-sm w-full sm:w-auto"
         >
           {loading ? (
             <>

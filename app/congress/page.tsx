@@ -290,7 +290,54 @@ export default function CongressPage() {
                 </a>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Mobile card list */}
+              <div className="block md:hidden divide-y divide-gray-100">
+                {paginated.map(trade => (
+                  <div key={trade.id} className="px-4 py-3 hover:bg-blue-50 transition-colors">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="min-w-0">
+                        {trade.politicianId ? (
+                          <a href={`https://www.capitoltrades.com/politicians/${trade.politicianId}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-sm font-semibold text-gray-800 hover:text-blue-600 hover:underline truncate block">
+                            {trade.politician}
+                          </a>
+                        ) : (
+                          <span className="text-sm font-semibold text-gray-800 truncate block">{trade.politician}</span>
+                        )}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {partyBadge(trade.party)}
+                          <span className="text-xs text-gray-400">{trade.chamber}</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        {trade.currentPrice != null && (
+                          <div className="font-mono text-sm font-semibold text-gray-800">${fmtPrice(trade.currentPrice)}</div>
+                        )}
+                        {trade.changePercent != null && (
+                          <div className={`font-mono text-xs ${trade.changePercent >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {trade.changePercent >= 0 ? '+' : ''}{trade.changePercent.toFixed(2)}%
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap mt-1">
+                      {trade.ticker ? (
+                        <Link href={`/stockv2/${trade.ticker}`}
+                          className="font-bold text-blue-600 hover:text-blue-800 text-sm">
+                          {trade.ticker}
+                        </Link>
+                      ) : <span className="text-gray-400 text-xs">—</span>}
+                      {typeBadge(trade.tradeType)}
+                      {trade.amountRange && <span className="text-xs text-gray-500">{trade.amountRange}</span>}
+                      <span className="text-xs text-gray-400">{trade.transactionDate || '—'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>

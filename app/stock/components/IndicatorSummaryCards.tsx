@@ -31,45 +31,82 @@ export const IndicatorSummaryCards = memo(function IndicatorSummaryCards({ data,
   const ind = data.latestIndicators
 
   return (
-    <div className="grid grid-cols-3 gap-3" style={{ gridTemplateRows: 'auto auto' }}>
-      <StatCard
-        label="RSI (14)"
-        value={ind.rsi.toString()}
-        sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
-        color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
-      />
+    <>
+      {/* Mobile: 2-col grid for stat cards, analyst below */}
+      <div className="grid grid-cols-2 gap-3 md:hidden">
+        <StatCard
+          label="RSI (14)"
+          value={ind.rsi.toString()}
+          sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
+          color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
+        />
+        <StatCard
+          label="MACD Histogram"
+          value={ind.macdHistogram.toFixed(3)}
+          sub={
+            ind.macdCrossover !== 'none'
+              ? `${ind.macdCrossover === 'bullish' ? '▲ Bullish' : '▼ Bearish'} crossover!`
+              : ind.macdHistogram > 0
+                ? 'Above signal'
+                : 'Below signal'
+          }
+          color={ind.macdHistogram > 0 ? 'text-emerald-600' : 'text-red-500'}
+        />
+        <StatCard
+          label="SMA 50 / 200"
+          value={`${ind.sma50.toFixed(0)} / ${ind.sma200?.toFixed(0) ?? 'N/A'}`}
+          sub={ind.sma200 ? (ind.sma50 > ind.sma200 ? '🟢 Golden Cross' : '🔴 Death Cross') : 'Not enough data'}
+        />
+        <StatCard
+          label="Volume Ratio"
+          value={`${ind.volumeRatio.toFixed(2)}×`}
+          sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
+          color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
+        />
+        {analyst && (
+          <div className="col-span-2">
+            <AnalystWidget data={analyst} currentPrice={data.currentPrice} />
+          </div>
+        )}
+      </div>
 
-      <StatCard
-        label="MACD Histogram"
-        value={ind.macdHistogram.toFixed(3)}
-        sub={
-          ind.macdCrossover !== 'none'
-            ? `${ind.macdCrossover === 'bullish' ? '▲ Bullish' : '▼ Bearish'} crossover!`
-            : ind.macdHistogram > 0
-              ? 'Above signal'
-              : 'Below signal'
-        }
-        color={ind.macdHistogram > 0 ? 'text-emerald-600' : 'text-red-500'}
-      />
-
-      {analyst && (
-        <div className="row-span-2">
-          <AnalystWidget data={analyst} currentPrice={data.currentPrice} />
-        </div>
-      )}
-
-      <StatCard
-        label="SMA 50 / 200"
-        value={`${ind.sma50.toFixed(0)} / ${ind.sma200?.toFixed(0) ?? 'N/A'}`}
-        sub={ind.sma200 ? (ind.sma50 > ind.sma200 ? '🟢 Golden Cross' : '🔴 Death Cross') : 'Not enough data'}
-      />
-
-      <StatCard
-        label="Volume Ratio"
-        value={`${ind.volumeRatio.toFixed(2)}×`}
-        sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
-        color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
-      />
-    </div>
+      {/* Desktop: original 3-col layout */}
+      <div className="hidden md:grid grid-cols-3 gap-3" style={{ gridTemplateRows: 'auto auto' }}>
+        <StatCard
+          label="RSI (14)"
+          value={ind.rsi.toString()}
+          sub={ind.rsi < 30 ? 'Oversold' : ind.rsi > 70 ? 'Overbought' : 'Neutral'}
+          color={ind.rsi < 30 ? 'text-emerald-600' : ind.rsi > 70 ? 'text-red-600' : 'text-gray-800'}
+        />
+        <StatCard
+          label="MACD Histogram"
+          value={ind.macdHistogram.toFixed(3)}
+          sub={
+            ind.macdCrossover !== 'none'
+              ? `${ind.macdCrossover === 'bullish' ? '▲ Bullish' : '▼ Bearish'} crossover!`
+              : ind.macdHistogram > 0
+                ? 'Above signal'
+                : 'Below signal'
+          }
+          color={ind.macdHistogram > 0 ? 'text-emerald-600' : 'text-red-500'}
+        />
+        {analyst && (
+          <div className="row-span-2">
+            <AnalystWidget data={analyst} currentPrice={data.currentPrice} />
+          </div>
+        )}
+        <StatCard
+          label="SMA 50 / 200"
+          value={`${ind.sma50.toFixed(0)} / ${ind.sma200?.toFixed(0) ?? 'N/A'}`}
+          sub={ind.sma200 ? (ind.sma50 > ind.sma200 ? '🟢 Golden Cross' : '🔴 Death Cross') : 'Not enough data'}
+        />
+        <StatCard
+          label="Volume Ratio"
+          value={`${ind.volumeRatio.toFixed(2)}×`}
+          sub={ind.volumeRatio >= 2 ? 'Spike!' : ind.volumeRatio < 0.5 ? 'Low volume' : 'Normal'}
+          color={ind.volumeRatio >= 2 ? 'text-emerald-600' : 'text-gray-800'}
+        />
+      </div>
+    </>
   )
 })

@@ -67,7 +67,7 @@ export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: Quick
           </span>
         )}
         {(fundamentals.shortPercentOfFloat != null || fundamentals.shortRatio != null || fundamentals.sharesShort != null) && (
-          <div className="flex gap-2 text-xs">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
             {fundamentals.shortPercentOfFloat != null && (
               <span className={fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-500' : 'text-purple-500'}>
                 Short Float&nbsp;
@@ -96,7 +96,7 @@ export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: Quick
         )}
       </div>
       {lastUpdated && (
-        <span className="text-xs text-slate-500 italic">
+        <span className="text-xs text-slate-500 italic shrink-0">
           Updated {lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
         </span>
       )}

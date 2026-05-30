@@ -14,6 +14,7 @@ import {
   NewsWidget,
 } from '../../stock/components'
 import { TradingViewChart } from './TradingViewChart'
+import { AccordionSection } from './AccordionSection'
 
 interface StockPageClientProps {
   ticker: string
@@ -42,8 +43,7 @@ export function StockPageClient({
   const [earnings] = useState<EarningsData | null>(initialEarnings)
   const [analyst] = useState<AnalystData | null>(initialAnalyst)
   const [news] = useState<NewsItem[] | null>(initialNews)
-  const [showNews, setShowNews] = useState(false)
-  const [financials, setFinancials] = useState<FinancialsData | null>(initialFinancials)
+const [financials, setFinancials] = useState<FinancialsData | null>(initialFinancials)
   const [financialsLoading, setFinancialsLoading] = useState(!initialFinancials)
 
   useEffect(() => {
@@ -88,54 +88,51 @@ export function StockPageClient({
         />
       )}
 
-      <main className="px-4 py-4 space-y-4 bg-slate-50 flex-1">
+      <main className="px-4 py-4 space-y-3 bg-slate-50 flex-1">
         {(data || analyst) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <LatestIndicatorsTable data={data} />
-            {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} ticker={ticker} />}
-          </div>
+          <AccordionSection title="Indicators & Analysis" storageKey="indicators">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <LatestIndicatorsTable data={data} />
+              {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} ticker={ticker} />}
+            </div>
+          </AccordionSection>
         )}
 
-        <TradingViewChart ticker={ticker} exchange={data.exchange} />
+        <AccordionSection title="Price Chart" storageKey="chart">
+          <TradingViewChart ticker={ticker} exchange={data.exchange} />
+        </AccordionSection>
 
-        {data.fundamentals ? (
-          <FundamentalsSection f={data.fundamentals} />
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center text-sm text-gray-400">
-            Key statistics not available for this ticker (e.g. ETFs may not have P/E or dividend data).
-          </div>
+        <AccordionSection title="Key Statistics" storageKey="fundamentals">
+          {data.fundamentals ? (
+            <FundamentalsSection f={data.fundamentals} />
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">
+              Key statistics not available for this ticker (e.g. ETFs may not have P/E or dividend data).
+            </p>
+          )}
+        </AccordionSection>
+
+        {(financials || earnings || financialsLoading) && (
+          <AccordionSection title="Financials & Earnings" storageKey="financials" defaultOpen={false}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {financials ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                  <FinancialsWidget data={financials} ticker={ticker} />
+                </div>
+              ) : financialsLoading ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                  <div className="h-32 bg-slate-100 animate-pulse rounded" />
+                </div>
+              ) : null}
+              {earnings && <EarningsWidget data={earnings} ticker={ticker} />}
+            </div>
+          </AccordionSection>
         )}
-
-        {financials || earnings || financialsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {financials ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <FinancialsWidget data={financials} ticker={ticker} />
-              </div>
-            ) : financialsLoading ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <div className="h-32 bg-slate-100 animate-pulse rounded" />
-              </div>
-            ) : null}
-            {earnings && <EarningsWidget data={earnings} ticker={ticker} />}
-          </div>
-        ) : null}
 
         {news && news.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <button
-              onClick={() => setShowNews((v) => !v)}
-              className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
-            >
-              <span>Recent News</span>
-              <span className="text-gray-400 text-xs font-normal">{showNews ? '▲ collapse' : '▶ expand'}</span>
-            </button>
-            {showNews && (
-              <div className="mt-3">
-                <NewsWidget items={news} />
-              </div>
-            )}
-          </div>
+          <AccordionSection title="Recent News" storageKey="news" defaultOpen={false}>
+            <NewsWidget items={news} />
+          </AccordionSection>
         )}
       </main>
 

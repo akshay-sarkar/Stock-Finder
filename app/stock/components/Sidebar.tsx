@@ -4,19 +4,21 @@ import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DEFAULT_TICKERS, COMPANY_NAMES, SECTOR_MAP } from '@/lib/stockList'
-import { ChevronDown, ChevronRight, X } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 interface SidebarProps {
   ticker: string
   sidebarPrices: Record<string, { price: number; changePercent: number }>
 }
 
-export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
+export function Sidebar({
+  ticker,
+  sidebarPrices,
+}: SidebarProps) {
   const router = useRouter()
   const sidebarRef = useRef<HTMLElement>(null)
   const [sidebarSearch, setSidebarSearch] = useState('')
   const [expandedSectors, setExpandedSectors] = useState<Record<string, boolean>>({})
-  const [open, setOpen] = useState(false)
 
   const filteredSidebarTickers = sidebarSearch
     ? DEFAULT_TICKERS.filter(
@@ -26,6 +28,7 @@ export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
       )
     : DEFAULT_TICKERS
 
+  // Group filtered tickers by sector
   const groupedBySector = filteredSidebarTickers.reduce(
     (acc, t) => {
       const sector = SECTOR_MAP[t] ?? 'Other'
@@ -40,7 +43,10 @@ export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
     e.preventDefault()
     e.stopPropagation()
     setExpandedSectors((prev) => {
-      const next = { ...prev, [sector]: !(prev[sector] ?? true) }
+      const next = {
+        ...prev,
+        [sector]: !(prev[sector] ?? true),
+      }
       localStorage.setItem('sf-sidebar-expanded', JSON.stringify(next))
       return next
     })
@@ -60,7 +66,11 @@ export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
   useEffect(() => {
     const saved = localStorage.getItem('sf-sidebar-expanded')
     if (saved) {
-      try { setExpandedSectors(JSON.parse(saved)) } catch {}
+      try {
+        setExpandedSectors(JSON.parse(saved))
+      } catch {
+        // Invalid JSON, ignore
+      }
     }
   }, [])
 
@@ -73,6 +83,7 @@ export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
       e.preventDefault()
       const currentIndex = filteredSidebarTickers.indexOf(ticker)
       if (currentIndex === -1) return
+
       if (e.key === 'ArrowDown' && currentIndex < filteredSidebarTickers.length - 1) {
         sessionStorage.setItem('sf-sidebar-focus', 'true')
         router.push(`/stockv2/${filteredSidebarTickers[currentIndex + 1]}`)
@@ -84,127 +95,105 @@ export function Sidebar({ ticker, sidebarPrices }: SidebarProps) {
   }
 
   return (
-    <>
-      {/* Backdrop — mobile only, shown when drawer is open */}
-      {open && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={() => setOpen(false)}
-        />
-      )}
-
-      {/* Open tab — sticks to left edge when drawer is closed on mobile */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Open watchlist"
-          className="md:hidden fixed left-0 top-20 z-30 bg-slate-900 text-slate-400 hover:text-white rounded-r-lg px-1.5 py-3 border border-l-0 border-slate-700 shadow-lg transition-colors"
-        >
-          <ChevronRight size={14} />
-        </button>
-      )}
-
-      <aside
-        ref={sidebarRef}
-        onScroll={handleSidebarScroll}
-        onKeyDown={handleSidebarKeyDown}
-        tabIndex={0}
-        className={[
-          'w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 overflow-y-auto outline-none',
-          // Mobile: fixed overlay, slide in/out
-          'fixed top-0 left-0 h-screen z-40 transition-transform duration-200 ease-in-out',
-          open ? 'translate-x-0' : '-translate-x-full',
-          // Desktop: revert to sticky in-flow sidebar
-          'md:sticky md:translate-x-0 md:z-10',
-        ].join(' ')}
-      >
-        {/* Close button — mobile only */}
-        <button
-          onClick={() => setOpen(false)}
-          aria-label="Close watchlist"
-          className="md:hidden absolute top-3 right-3 text-slate-400 hover:text-white transition-colors"
-        >
-          <X size={18} />
-        </button>
-
-        <div className="px-3 py-4">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">
-            Watchlist
-          </p>
-          <div className="mb-2">
-            <input
-              type="text"
-              placeholder="Search…"
-              value={sidebarSearch}
-              onChange={(e) => setSidebarSearch(e.target.value)}
-              className="w-full bg-slate-800 text-white placeholder-slate-500 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-          <nav className="space-y-1">
-            {Object.keys(groupedBySector)
-              .sort()
-              .map((sector) => {
-                const isExpanded = expandedSectors[sector] ?? true
-                const sectorTickers = groupedBySector[sector]
-                return (
-                  <div key={sector}>
-                    <button
-                      onClick={(e) => toggleSector(sector, e)}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
-                    >
-                      <span>{sector}</span>
-                      <ChevronDown
-                        size={14}
-                        className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                    {isExpanded && (
-                      <div className="ml-1 space-y-0.5 mt-0.5 border-l border-slate-700 pl-0">
-                        {sectorTickers.map((t) => {
-                          const priceData = sidebarPrices[t]
-                          const isActive = t === ticker
-                          return (
-                            <Link
-                              key={t}
-                              href={`/stockv2/${t}`}
-                              onClick={() => setOpen(false)}
-                              className={`flex items-center justify-between gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors ${
-                                isActive
-                                  ? 'bg-blue-600 text-white font-semibold'
-                                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                              }`}
-                            >
-                              <span className="flex flex-col min-w-0 flex-1">
-                                <span className="font-semibold leading-tight">{t}</span>
-                                {COMPANY_NAMES[t] && (
-                                  <span className={`truncate leading-tight text-[10px] ${isActive ? 'text-blue-200' : 'text-slate-500'}`}>
-                                    {COMPANY_NAMES[t]}
-                                  </span>
-                                )}
-                              </span>
-                              {priceData ? (
-                                <span className="flex flex-col items-end shrink-0 tabular-nums">
-                                  <span className="text-[10px] text-slate-300 leading-tight">
-                                    ${priceData.price >= 1000
-                                      ? priceData.price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-                                      : priceData.price.toFixed(2)}
-                                  </span>
-                                  <span className={`text-[10px] font-medium leading-tight ${priceData.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {priceData.changePercent >= 0 ? '+' : ''}{priceData.changePercent.toFixed(1)}%
-                                  </span>
-                                </span>
-                              ) : null}
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-          </nav>
+    <aside
+      ref={sidebarRef}
+      onScroll={handleSidebarScroll}
+      onKeyDown={handleSidebarKeyDown}
+      tabIndex={0}
+      className="w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 sticky top-0 h-screen overflow-y-auto z-10 outline-none"
+    >
+      <div className="px-3 py-4">
+        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">
+          Watchlist
+        </p>
+        <div className="mb-2">
+          <input
+            type="text"
+            placeholder="Search…"
+            value={sidebarSearch}
+        onChange={(e) => setSidebarSearch(e.target.value)}
+            className="w-full bg-slate-800 text-white placeholder-slate-500 border border-slate-600 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
         </div>
-      </aside>
-    </>
+        <nav className="space-y-1">
+          {Object.keys(groupedBySector)
+            .sort()
+            .map((sector) => {
+              const isExpanded = expandedSectors[sector] ?? true
+              const sectorTickers = groupedBySector[sector]
+
+              return (
+                <div key={sector}>
+                  <button
+                    onClick={(e) => toggleSector(sector, e)}
+                    className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition-colors"
+                  >
+                    <span>{sector}</span>
+                    <ChevronDown
+                      size={14}
+                      className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {isExpanded && (
+                    <div className="ml-1 space-y-0.5 mt-0.5 border-l border-slate-700 pl-0">
+                      {sectorTickers.map((t) => {
+                        const priceData = sidebarPrices[t]
+                        const isActive = t === ticker
+                        return (
+                          <Link
+                            key={t}
+                            href={`/stockv2/${t}`}
+                            className={`flex items-center justify-between gap-1 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                              isActive
+                                ? 'bg-blue-600 text-white font-semibold'
+                                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            }`}
+                          >
+                            <span className="flex flex-col min-w-0 flex-1">
+                              <span className="font-semibold leading-tight">{t}</span>
+                              {COMPANY_NAMES[t] && (
+                                <span
+                                  className={`truncate leading-tight text-[10px] ${
+                                    isActive ? 'text-blue-200' : 'text-slate-500'
+                                  }`}
+                                >
+                                  {COMPANY_NAMES[t]}
+                                </span>
+                              )}
+                            </span>
+
+                            {priceData ? (
+                              <span className="flex flex-col items-end shrink-0 tabular-nums">
+                                <span className="text-[10px] text-slate-300 leading-tight">
+                                  $
+                                  {priceData.price >= 1000
+                                    ? priceData.price.toLocaleString('en-US', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 0,
+                                      })
+                                    : priceData.price.toFixed(2)}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-medium leading-tight ${
+                                    priceData.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'
+                                  }`}
+                                >
+                                  {priceData.changePercent >= 0 ? '+' : ''}
+                                  {priceData.changePercent.toFixed(1)}%
+                                </span>
+                              </span>
+                            ) : null}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+        </nav>
+      </div>
+    </aside>
   )
 }

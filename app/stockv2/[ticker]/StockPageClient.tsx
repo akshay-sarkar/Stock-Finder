@@ -90,7 +90,7 @@ export function StockPageClient({
 
       <main className="px-4 py-4 space-y-4 bg-slate-50 flex-1">
         {(data || analyst) && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <LatestIndicatorsTable data={data} />
             {analyst && <AnalystWidget data={analyst} currentPrice={data.currentPrice} ticker={ticker} />}
           </div>
@@ -107,7 +107,7 @@ export function StockPageClient({
         )}
 
         {financials || earnings || financialsLoading ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {financials ? (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
                 <FinancialsWidget data={financials} ticker={ticker} />

@@ -212,7 +212,51 @@ export function ResultsTable({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          {/* ── Mobile card list ───────────────────────────────── */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {paginated.map(row => (
+              <div key={row.ticker} className="px-4 py-3 hover:bg-blue-50 transition-colors">
+                <div className="flex items-center justify-between mb-1">
+                  <Link
+                    href={`/stockv2/${row.ticker}`}
+                    className="font-bold text-blue-600 hover:text-blue-800 text-base"
+                  >
+                    {row.ticker}
+                  </Link>
+                  <div className="text-right">
+                    <span className="font-mono font-semibold text-gray-800">${formatPrice(row.price)}</span>
+                    <span className={`ml-2 text-sm font-mono ${changeColor(row.changePercent)}`}>
+                      {row.changePercent >= 0 ? '+' : ''}{row.changePercent.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+                {row.companyName && (
+                  <p className="text-xs text-gray-400 mb-1 truncate">{row.companyName}</p>
+                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-500">RSI <span className={rsiColor(row.rsi)}>{row.rsi}</span></span>
+                  <span className="text-xs text-gray-400">·</span>
+                  {row.macdCrossover === 'bullish' ? (
+                    <span className="badge-green text-xs">▲ Bull Cross</span>
+                  ) : row.macdCrossover === 'bearish' ? (
+                    <span className="badge-red text-xs">▼ Bear Cross</span>
+                  ) : row.macdHistogram > 0 ? (
+                    <span className="badge-blue text-xs">Above Signal</span>
+                  ) : (
+                    <span className="badge-gray text-xs">Below Signal</span>
+                  )}
+                  <span className="text-xs text-gray-400">·</span>
+                  <span className="text-xs text-gray-500">Vol {formatVol(row.volumeRatio)}</span>
+                  {row.signals.slice(0, 2).map(s => (
+                    <SignalBadge key={s} label={s} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Desktop table ──────────────────────────────────── */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>

@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import { X, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 
 interface MobileNavProps {
   onClose: () => void
@@ -11,14 +11,6 @@ interface MobileNavProps {
 export function MobileNav({ onClose }: MobileNavProps) {
   return (
     <div className="md:hidden border-t border-slate-700 bg-slate-900 px-4 py-3 space-y-1">
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-4 text-slate-400 hover:text-white md:hidden"
-        aria-label="Close menu"
-      >
-        <X size={20} />
-      </button>
-
       <p className="text-xs text-slate-500 uppercase tracking-wider px-2 pb-1">Tools</p>
       <Link href="/tradingview" onClick={onClose}
         className="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">

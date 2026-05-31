@@ -1,0 +1,150 @@
+<h2>Mobile Responsiveness Audit</h2>
+<p class="subtitle">Issues found across the StockFinder codebase — 6 problem areas</p>
+
+<div class="section" style="margin-bottom: 32px;">
+
+  <!-- Issue 1: Header Nav -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #ef4444;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#ef4444;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CRITICAL</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Header Navigation — No mobile menu</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">Header.tsx + StockHeader.tsx</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <div style="flex:1;">
+        <div style="background:#0f172a;border-radius:8px;padding:10px;font-size:11px;color:#94a3b8;margin-bottom:8px;">
+          <!-- Current: everything crammed in one row -->
+          <div style="display:flex;align-items:center;gap:4px;overflow:hidden;border:1px solid #334155;border-radius:6px;padding:6px 8px;background:#1e293b;">
+            <span style="color:#34d399;font-size:13px;">📈</span>
+            <span style="color:white;font-size:9px;font-weight:700;white-space:nowrap;">Stock Finder</span>
+            <div style="margin-left:auto;display:flex;gap:3px;flex-wrap:nowrap;overflow:hidden;">
+              <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;white-space:nowrap;color:#cbd5e1;">Tools ▾</span>
+              <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;white-space:nowrap;color:#cbd5e1;">Congress Trades ▾</span>
+              <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;white-space:nowrap;color:#cbd5e1;">Insider Trading ↗</span>
+              <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;white-space:nowrap;color:#cbd5e1;">News ▾</span>
+              <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;white-space:nowrap;color:#cbd5e1;">Go to ticker…</span>
+            </div>
+          </div>
+          <p style="margin:4px 0 0;color:#ef4444;font-size:10px;">↑ Overflows and wraps on 375px screens. No hamburger menu.</p>
+        </div>
+      </div>
+    </div>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Collapse all nav links behind a hamburger (☰) icon on screens &lt; md. Keep logo + search visible.</p>
+  </div>
+
+  <!-- Issue 2: Stock Header price row -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #ef4444;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#ef4444;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">CRITICAL</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Stock Header — Price row overflow</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">StockHeader.tsx</span>
+    </div>
+    <div style="background:#0f172a;border-radius:8px;padding:10px;font-size:11px;color:#94a3b8;margin-bottom:8px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:4px;white-space:nowrap;border:1px solid #334155;padding:6px 8px;border-radius:6px;background:#1e293b;">
+        <span style="color:white;font-size:10px;font-weight:700;">← AAPL</span>
+        <span style="color:white;font-size:10px;font-weight:700;">$213.49</span>
+        <span style="color:#34d399;font-size:9px;">+2.14 (+1.01%)</span>
+        <span style="color:#94a3b8;font-size:9px;">AH: $212.80 -0.69 (-0.32%)</span>
+        <span style="color:#60a5fa;font-size:8px;border:1px solid #1d4ed8;padding:1px 4px;border-radius:3px;">Google↗</span>
+        <span style="color:#a78bfa;font-size:8px;border:1px solid #6d28d9;padding:1px 4px;border-radius:3px;">Quiver↗</span>
+        <span style="margin-left:auto;display:flex;gap:3px;">
+          <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;color:#cbd5e1;">Tools ▾</span>
+          <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;color:#cbd5e1;">Congress ▾</span>
+          <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;color:#cbd5e1;">Insider ↗</span>
+          <span style="background:#334155;border-radius:4px;padding:2px 4px;font-size:8px;color:#cbd5e1;">News ▾</span>
+        </span>
+      </div>
+      <p style="margin:4px 0 0;color:#ef4444;font-size:10px;">↑ Way too wide for 375px. Clips and scrolls horizontally.</p>
+    </div>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Stack ticker + price on line 1, change/AH on line 2. Hamburger for nav on mobile.</p>
+  </div>
+
+  <!-- Issue 3: Stat Cards -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#f59e0b;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">HIGH</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Indicator Cards — Hard-coded grid-cols-3</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">IndicatorSummaryCards.tsx</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;">
+      <div style="background:#0f172a;border-radius:6px;padding:6px;text-align:center;"><p style="color:#94a3b8;font-size:9px;margin:0 0 2px;">RSI (14)</p><p style="color:white;font-size:14px;font-weight:700;margin:0;">42</p><p style="color:#94a3b8;font-size:9px;margin:0;">Neutral</p></div>
+      <div style="background:#0f172a;border-radius:6px;padding:6px;text-align:center;"><p style="color:#94a3b8;font-size:9px;margin:0 0 2px;">MACD Histogram</p><p style="color:#34d399;font-size:14px;font-weight:700;margin:0;">0.312</p><p style="color:#94a3b8;font-size:9px;margin:0;">Above signal</p></div>
+      <div style="background:#0f172a;border-radius:6px;padding:6px;text-align:center;"><p style="color:#94a3b8;font-size:9px;margin:0 0 2px;">Analyst Target</p><p style="color:white;font-size:12px;font-weight:700;margin:0;">$230</p><p style="color:#94a3b8;font-size:9px;margin:0;">Buy · 28 analysts</p></div>
+    </div>
+    <p style="color:#ef4444;font-size:10px;margin-bottom:8px;">↑ 3-column grid with no breakpoint — cards too narrow on phones</p>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Change to <code style="background:#0f172a;padding:1px 4px;border-radius:3px;">grid-cols-2 md:grid-cols-3</code> — analyst card spans 2 cols on mobile.</p>
+  </div>
+
+  <!-- Issue 4: Results Table -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#f59e0b;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">HIGH</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Screener Results Table — 12 columns on mobile</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">ResultsTable.tsx</span>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:8px;">
+      <table style="font-size:9px;color:#94a3b8;border-collapse:collapse;white-space:nowrap;">
+        <tr style="background:#0f172a;">
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Ticker</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Company</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">P/E</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Mkt Cap</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Div%</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Price</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Chg%</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">RSI</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">MACD</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">MA Status</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Vol Ratio</th>
+          <th style="padding:4px 6px;border:1px solid #334155;color:#e2e8f0;">Signals</th>
+        </tr>
+        <tr>
+          <td style="padding:4px 6px;border:1px solid #334155;color:#60a5fa;font-weight:700;">AAPL</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">Apple Inc.</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">28.4×</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">$3.28T</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">0.44%</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">$213.49</td>
+          <td style="padding:4px 6px;border:1px solid #334155;color:#34d399;">+1.01%</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">42</td>
+          <td style="padding:4px 6px;border:1px solid #334155;"><span style="background:#dcfce7;color:#166534;padding:1px 4px;border-radius:3px;font-size:8px;">▲ Bull Cross</span></td>
+          <td style="padding:4px 6px;border:1px solid #334155;">Above SMA50</td>
+          <td style="padding:4px 6px;border:1px solid #334155;">1.23×</td>
+          <td style="padding:4px 6px;border:1px solid #334155;"><span style="background:#dcfce7;color:#166534;padding:1px 4px;border-radius:3px;font-size:8px;">Oversold</span></td>
+        </tr>
+      </table>
+    </div>
+    <p style="color:#ef4444;font-size:10px;margin-bottom:8px;">↑ overflow-x-auto exists but table is unusable on mobile — tiny text, hard horizontal scroll</p>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Card view on mobile — each stock as a card showing Ticker, Price, Chg%, RSI, top signals. Table stays on md+.</p>
+  </div>
+
+  <!-- Issue 5: Congress table -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#f59e0b;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">HIGH</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Congress Page — Wide data table</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">congress/page.tsx</span>
+    </div>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Card layout on mobile showing Member, Trade type, Ticker, Amount. Table on md+.</p>
+  </div>
+
+  <!-- Issue 6: Filter card -->
+  <div style="background: #1e293b; border-radius: 12px; padding: 20px; border-left: 4px solid #3b82f6;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+      <span style="background:#3b82f6;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">MEDIUM</span>
+      <span style="color:#f1f5f9;font-weight:700;font-size:15px;">Filter Card — OK but action buttons need full-width on mobile</span>
+      <span style="color:#94a3b8;font-size:12px;margin-left:auto;">FilterCard.tsx</span>
+    </div>
+    <p style="color:#94a3b8;font-size:12px;margin:0;"><strong style="color:#f1f5f9;">Fix:</strong> Already uses <code style="background:#0f172a;padding:1px 4px;border-radius:3px;">grid-cols-2 md:grid-cols-4</code> — just make "Scan Stocks" button full-width on mobile.</p>
+  </div>
+
+</div>
+
+<div style="background:#0f172a;border-radius:12px;padding:16px;margin-top:8px;">
+  <p style="color:#94a3b8;font-size:12px;margin:0 0 8px;"><strong style="color:#e2e8f0;">Summary:</strong> 6 issues across 5 files</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:#ef4444;">🔴 2 critical (headers)</span>
+    <span style="font-size:12px;color:#f59e0b;">🟡 3 high (tables + stat cards)</span>
+    <span style="font-size:12px;color:#3b82f6;">🔵 1 medium (filter actions)</span>
+  </div>
+</div>

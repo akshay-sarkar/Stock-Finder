@@ -47,7 +47,50 @@ interface QuickStatsBarProps {
 
 export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: QuickStatsBarProps) {
   return (
-    <div className="px-4 pb-2.5 flex flex-wrap gap-x-5 gap-y-1 border-t border-slate-700/60 pt-2 justify-between">
+    <div className="px-3 md:px-4 pb-2.5 pt-2 border-t border-slate-700/60 bg-slate-900">
+      {/* Mobile: 2-column grid */}
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 md:hidden">
+        {fundamentals.trailingPE != null && (
+          <span className="text-xs text-blue-500">
+            P/E&nbsp;<span className="text-blue-400 font-semibold">{fundamentals.trailingPE.toFixed(1)}×</span>
+          </span>
+        )}
+        {fundamentals.dividendYield != null && fundamentals.dividendYield > 0 && (
+          <span className="text-xs text-amber-500">
+            Div&nbsp;<span className="text-amber-400 font-semibold">{(fundamentals.dividendYield * 100).toFixed(2)}%</span>
+          </span>
+        )}
+        {fundamentals.fiftyTwoWeekHigh != null && fundamentals.fiftyTwoWeekLow != null && (
+          <div className="col-span-2">
+            <RangeBar low={fundamentals.fiftyTwoWeekLow} high={fundamentals.fiftyTwoWeekHigh} current={currentPrice} />
+          </div>
+        )}
+        {fundamentals.shortPercentOfFloat != null && (
+          <span className={fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-500' : 'text-purple-500'} style={{fontSize:'11px'}}>
+            Short&nbsp;<span className={`font-semibold ${fundamentals.shortPercentOfFloat > 0.2 ? 'text-red-400' : 'text-purple-400'}`}>
+              {(fundamentals.shortPercentOfFloat * 100).toFixed(2)}%
+            </span>
+          </span>
+        )}
+        {fundamentals.shortRatio != null && (
+          <span className="text-pink-500" style={{fontSize:'11px'}}>
+            Ratio&nbsp;<span className="font-semibold text-pink-400">{fundamentals.shortRatio.toFixed(1)}×</span>
+          </span>
+        )}
+        {fundamentals.sharesShort != null && (
+          <span className="text-cyan-500" style={{fontSize:'11px'}}>
+            Short Shares&nbsp;<span className="font-semibold text-cyan-400">{fmtVol(fundamentals.sharesShort)}</span>
+          </span>
+        )}
+        {lastUpdated && (
+          <span className="col-span-2 text-[10px] text-slate-500 italic">
+            Updated {lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+      </div>
+
+      {/* Desktop: original single-row flex layout */}
+      <div className="hidden md:flex flex-wrap gap-x-5 gap-y-1 justify-between">
       <div className="flex flex-wrap gap-x-5 gap-y-1">
         {fundamentals.trailingPE != null && (
           <span className="text-xs text-blue-500">
@@ -95,11 +138,12 @@ export function QuickStatsBar({ fundamentals, currentPrice, lastUpdated }: Quick
           </div>
         )}
       </div>
-      {lastUpdated && (
-        <span className="text-xs text-slate-500 italic shrink-0">
-          Updated {lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-        </span>
-      )}
+        {lastUpdated && (
+          <span className="text-xs text-slate-500 italic shrink-0">
+            Updated {lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+      </div>
     </div>
   )
 }

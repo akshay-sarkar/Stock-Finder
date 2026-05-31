@@ -4,16 +4,22 @@ import { useRef, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DEFAULT_TICKERS, COMPANY_NAMES, SECTOR_MAP } from '@/lib/stockList'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 
 interface SidebarProps {
   ticker: string
   sidebarPrices: Record<string, { price: number; changePercent: number }>
+  /** Mobile-only: whether the drawer is open */
+  isOpen?: boolean
+  /** Mobile-only: called when the user dismisses the drawer */
+  onClose?: () => void
 }
 
 export function Sidebar({
   ticker,
   sidebarPrices,
+  isOpen = false,
+  onClose,
 }: SidebarProps) {
   const router = useRouter()
   const sidebarRef = useRef<HTMLElement>(null)
@@ -100,12 +106,30 @@ export function Sidebar({
       onScroll={handleSidebarScroll}
       onKeyDown={handleSidebarKeyDown}
       tabIndex={0}
-      className="w-[170px] shrink-0 bg-slate-900 border-r border-slate-700 sticky top-0 h-screen overflow-y-auto z-10 outline-none"
+      className={[
+        // Shared styles
+        'bg-slate-900 border-r border-slate-700 overflow-y-auto outline-none',
+        // Desktop: static in the flow, always visible
+        'md:w-[170px] md:shrink-0 md:sticky md:top-0 md:h-screen md:translate-x-0 md:z-10',
+        // Mobile: fixed overlay, slides in/out
+        'fixed inset-y-0 left-0 w-[230px] h-full z-[60] transition-transform duration-300 ease-in-out',
+        isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+      ].join(' ')}
     >
       <div className="px-3 py-4">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2 px-1">
-          Watchlist
-        </p>
+        {/* Mobile header row: title + close button */}
+        <div className="flex items-center justify-between mb-2 px-1 md:block">
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+            Watchlist
+          </p>
+          <button
+            onClick={onClose}
+            className="md:hidden text-slate-400 hover:text-white transition-colors p-1 -mr-1"
+            aria-label="Close watchlist"
+          >
+            <X size={18} />
+          </button>
+        </div>
         <div className="mb-2">
           <input
             type="text"

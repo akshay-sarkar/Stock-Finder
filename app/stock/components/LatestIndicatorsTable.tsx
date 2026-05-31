@@ -35,7 +35,7 @@ export const LatestIndicatorsTable = memo(function LatestIndicatorsTable({ data 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <h2 className="text-sm font-semibold text-gray-700 mb-2">Latest Indicator Values</h2>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-0 text-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0 text-sm">
         {(
           [
             { label: 'RSI(14)', value: ind.rsi, status: rsiStatus.label, statusColor: rsiStatus.color },

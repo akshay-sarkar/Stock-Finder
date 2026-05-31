@@ -76,9 +76,9 @@ export function FinancialsWidget({ data, ticker }: { data: FinancialsData; ticke
             </span>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+          {/* Table — horizontally scrollable on mobile */}
+          <div className="overflow-x-auto -mx-1">
+            <table className="min-w-full text-xs">
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="text-left text-gray-400 font-medium pb-1.5 pr-4 w-36">Metric</th>

@@ -45,7 +45,7 @@ export function AccordionSection({ title, storageKey, defaultOpen = true, childr
         />
       </button>
       {open && (
-        <div className="border border-t-0 border-gray-200 rounded-b-xl overflow-hidden">
+        <div className="border border-t-0 border-gray-200 rounded-b-xl overflow-x-auto">
           <div className="p-4 space-y-4 bg-slate-50">
             {children}
           </div>

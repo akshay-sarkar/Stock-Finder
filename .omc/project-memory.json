@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779041785981,
+  "lastScanned": 1780160759148,
   "projectRoot": "/Users/akshaysarkar/Documents/Claude/Projects/StockFinder",
   "techStack": {
     "languages": [
@@ -42,7 +42,7 @@
     "runtime": null
   },
   "build": {
-    "buildCommand": "npx tsc --noEmit",
+    "buildCommand": "npx tsc --noEmit 2>&1 | head -20",
     "testCommand": null,
     "lintCommand": "npm run lint",
     "devCommand": "npm run dev",
@@ -78,7 +78,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 5,
-      "lastAccessed": 1779041785972,
+      "lastAccessed": 1780160759115,
       "keyFiles": [
         "ScreenerClient.tsx",
         "error.tsx",
@@ -91,14 +91,14 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 0,
-      "lastAccessed": 1779041785974,
+      "lastAccessed": 1780160759115,
       "keyFiles": []
     },
     "lib": {
       "path": "lib",
       "purpose": "Library code",
-      "fileCount": 10,
-      "lastAccessed": 1779041785974,
+      "fileCount": 11,
+      "lastAccessed": 1780160759124,
       "keyFiles": [
         "cache.ts",
         "indicators.ts",
@@ -110,9 +110,10 @@
     "reports": {
       "path": "reports",
       "purpose": null,
-      "fileCount": 4,
-      "lastAccessed": 1779041785974,
+      "fileCount": 6,
+      "lastAccessed": 1780160759125,
       "keyFiles": [
+        "architecture-review.md",
         "pm-features-2026-04-18.md",
         "pm-features-2026-04-20.md",
         "pm-features-2026-04-25.md",
@@ -123,40 +124,76 @@
       "path": "app/api",
       "purpose": "API routes",
       "fileCount": 0,
-      "lastAccessed": 1779041785974,
+      "lastAccessed": 1780160759126,
       "keyFiles": []
     },
     "app/components": {
       "path": "app/components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1779041785975,
+      "lastAccessed": 1780160759126,
       "keyFiles": []
     }
   },
   "hotPaths": [
     {
       "path": "app/stock/[ticker]/page.tsx",
-      "accessCount": 174,
-      "lastAccessed": 1777863901073,
+      "accessCount": 189,
+      "lastAccessed": 1780163826237,
       "type": "file"
     },
     {
       "path": "app/page.tsx",
-      "accessCount": 81,
-      "lastAccessed": 1779041812955,
-      "type": "file"
-    },
-    {
-      "path": "lib/types.ts",
-      "accessCount": 29,
-      "lastAccessed": 1779042508296,
+      "accessCount": 84,
+      "lastAccessed": 1780163826647,
       "type": "file"
     },
     {
       "path": "lib/yahoo.ts",
-      "accessCount": 28,
-      "lastAccessed": 1779042508620,
+      "accessCount": 74,
+      "lastAccessed": 1779219021935,
+      "type": "file"
+    },
+    {
+      "path": "lib/types.ts",
+      "accessCount": 36,
+      "lastAccessed": 1779219022132,
+      "type": "file"
+    },
+    {
+      "path": "app/api/prices/route.ts",
+      "accessCount": 23,
+      "lastAccessed": 1779219030778,
+      "type": "file"
+    },
+    {
+      "path": "app/api/stock/[ticker]/route.ts",
+      "accessCount": 22,
+      "lastAccessed": 1779219021731,
+      "type": "file"
+    },
+    {
+      "path": "app/api/congressional-trades/route.ts",
+      "accessCount": 21,
+      "lastAccessed": 1779214764905,
+      "type": "file"
+    },
+    {
+      "path": "app/api/screener/route.ts",
+      "accessCount": 20,
+      "lastAccessed": 1779219022374,
+      "type": "file"
+    },
+    {
+      "path": "app/stock/components/Sidebar.tsx",
+      "accessCount": 20,
+      "lastAccessed": 1780163208141,
+      "type": "file"
+    },
+    {
+      "path": "app/congress/page.tsx",
+      "accessCount": 17,
+      "lastAccessed": 1780162893627,
       "type": "file"
     },
     {
@@ -166,27 +203,57 @@
       "type": "directory"
     },
     {
-      "path": "app/api/stock/[ticker]/route.ts",
-      "accessCount": 15,
-      "lastAccessed": 1779042509383,
+      "path": "app/api/financials/[ticker]/route.ts",
+      "accessCount": 12,
+      "lastAccessed": 1779085079614,
       "type": "file"
     },
     {
-      "path": "app/api/screener/route.ts",
-      "accessCount": 14,
-      "lastAccessed": 1779041811727,
-      "type": "file"
-    },
-    {
-      "path": "app/api/congressional-trades/route.ts",
+      "path": "app/api/news/[ticker]/route.ts",
       "accessCount": 11,
-      "lastAccessed": 1779041811387,
+      "lastAccessed": 1779214618252,
       "type": "file"
     },
     {
-      "path": "app/congress/page.tsx",
+      "path": "lib/cache.ts",
+      "accessCount": 11,
+      "lastAccessed": 1779214737381,
+      "type": "file"
+    },
+    {
+      "path": "app/api/analyst/[ticker]/route.ts",
       "accessCount": 10,
-      "lastAccessed": 1779041812772,
+      "lastAccessed": 1779085078133,
+      "type": "file"
+    },
+    {
+      "path": "app/api/earnings/[ticker]/route.ts",
+      "accessCount": 10,
+      "lastAccessed": 1779085079069,
+      "type": "file"
+    },
+    {
+      "path": "app/layout.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1780160899730,
+      "type": "file"
+    },
+    {
+      "path": "lib/indicators.ts",
+      "accessCount": 9,
+      "lastAccessed": 1779219022564,
+      "type": "file"
+    },
+    {
+      "path": "lib/screener.ts",
+      "accessCount": 9,
+      "lastAccessed": 1779219062839,
+      "type": "file"
+    },
+    {
+      "path": "app/globals.css",
+      "accessCount": 9,
+      "lastAccessed": 1780160903326,
       "type": "file"
     },
     {
@@ -196,39 +263,21 @@
       "type": "file"
     },
     {
-      "path": "app/api/news/[ticker]/route.ts",
+      "path": "app/api/watchlist-prices/route.ts",
       "accessCount": 8,
-      "lastAccessed": 1777604143054,
+      "lastAccessed": 1779125377280,
       "type": "file"
     },
     {
-      "path": "app/api/financials/[ticker]/route.ts",
+      "path": "next.config.js",
       "accessCount": 8,
-      "lastAccessed": 1777865629680,
+      "lastAccessed": 1779219031010,
       "type": "file"
     },
     {
-      "path": "app/layout.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1779041812721,
-      "type": "file"
-    },
-    {
-      "path": "app/api/analyst/[ticker]/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1779041822655,
-      "type": "file"
-    },
-    {
-      "path": "app/api/earnings/[ticker]/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1779041822984,
-      "type": "file"
-    },
-    {
-      "path": "lib/indicators.ts",
-      "accessCount": 6,
-      "lastAccessed": 1777481373114,
+      "path": "lib/validation.ts",
+      "accessCount": 7,
+      "lastAccessed": 1779130008873,
       "type": "file"
     },
     {
@@ -238,21 +287,15 @@
       "type": "file"
     },
     {
-      "path": "app/globals.css",
+      "path": "lib/rateLimit.ts",
       "accessCount": 5,
-      "lastAccessed": 1777481603189,
+      "lastAccessed": 1779085074078,
       "type": "file"
     },
     {
-      "path": "lib/screener.ts",
+      "path": "tailwind.config.ts",
       "accessCount": 5,
-      "lastAccessed": 1777533408881,
-      "type": "file"
-    },
-    {
-      "path": "lib/cache.ts",
-      "accessCount": 5,
-      "lastAccessed": 1779042520563,
+      "lastAccessed": 1779219020059,
       "type": "file"
     },
     {
@@ -262,33 +305,15 @@
       "type": "file"
     },
     {
-      "path": "tailwind.config.ts",
+      "path": "lib/stockList.ts",
       "accessCount": 4,
-      "lastAccessed": 1777481591145,
+      "lastAccessed": 1779082029276,
       "type": "file"
     },
     {
-      "path": "lib/validation.ts",
+      "path": "package.json",
       "accessCount": 4,
-      "lastAccessed": 1777862399228,
-      "type": "file"
-    },
-    {
-      "path": "app/api/prices/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1779041818416,
-      "type": "file"
-    },
-    {
-      "path": "next.config.js",
-      "accessCount": 3,
-      "lastAccessed": 1776543470263,
-      "type": "file"
-    },
-    {
-      "path": "lib/rateLimit.ts",
-      "accessCount": 3,
-      "lastAccessed": 1776545350907,
+      "lastAccessed": 1779219062673,
       "type": "file"
     },
     {
@@ -311,14 +336,8 @@
     },
     {
       "path": "tsconfig.json",
-      "accessCount": 2,
-      "lastAccessed": 1776179217469,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 2,
-      "lastAccessed": 1776542894056,
+      "accessCount": 3,
+      "lastAccessed": 1779219025681,
       "type": "file"
     },
     {
@@ -355,18 +374,6 @@
       "path": "reports/pm-features-2026-04-20.md",
       "accessCount": 2,
       "lastAccessed": 1777172422107,
-      "type": "file"
-    },
-    {
-      "path": "app/api/watchlist-prices/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1779041823829,
-      "type": "file"
-    },
-    {
-      "path": "lib/stockList.ts",
-      "accessCount": 1,
-      "lastAccessed": 1776542905297,
       "type": "file"
     },
     {
@@ -428,12 +435,6 @@
       "accessCount": 1,
       "lastAccessed": 1777481309872,
       "type": "directory"
-    },
-    {
-      "path": "app/stock/components/Sidebar.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1777491952589,
-      "type": "file"
     }
   ],
   "userDirectives": []

@@ -265,20 +265,82 @@ export async function getQuoteSummary(ticker: string): Promise<StockFundamentals
 }
 
 /**
- * Fetches recent news headlines for a ticker via yahoo-finance2 search.
- * Returns up to 8 items. Gracefully returns [] if unavailable.
+ * Fetches recent news headlines for a ticker.
+ *
+ * Strategy (two-tier):
+ *   1. yahoo-finance2 search() — fast when Yahoo's search API is healthy.
+ *   2. Yahoo Finance RSS feed — reliable fallback; no SDK dependency.
+ *
+ * Returns up to 8 items. Gracefully returns [] if both sources fail.
  */
 export async function getNews(ticker: string): Promise<NewsItem[]> {
-  const result: any = await withTimeout((yahooFinance as any).search(ticker, { newsCount: 8 }), 10_000).catch(() => null)
-  if (!result?.news?.length) return []
-  return result.news
-    .filter((n: any) => n.title && n.link)
-    .map((n: any): NewsItem => ({
-      title: n.title,
-      link: n.link,
-      publisher: n.publisher ?? '',
-      publishedAt: n.providerPublishTime ?? 0,
-    }))
+  // ── Tier 1: yahoo-finance2 search ────────────────────────────────────────
+  try {
+    const result: any = await withTimeout(
+      (yahooFinance as any).search(ticker, { newsCount: 8 }, { validateResult: false }),
+      8_000
+    )
+    const items = (result?.news ?? [])
+      .filter((n: any) => n.title && n.link)
+      .map((n: any): NewsItem => ({
+        title:       n.title,
+        link:        n.link,
+        publisher:   n.publisher ?? '',
+        publishedAt: n.providerPublishTime instanceof Date
+          ? Math.floor(n.providerPublishTime.getTime() / 1000)
+          : (n.providerPublishTime ?? 0),
+      }))
+    if (items.length > 0) return items
+  } catch {
+    // fall through to RSS
+  }
+
+  // ── Tier 2: Yahoo Finance RSS feed ────────────────────────────────────────
+  try {
+    const rssUrl = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(ticker)}&region=US&lang=en-US`
+    const res = await withTimeout(
+      fetch(rssUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; StockFinder/1.0; +https://github.com)',
+          'Accept': 'application/rss+xml, application/xml, text/xml',
+        },
+        // @ts-ignore — Next.js fetch extension
+        next: { revalidate: 900 },
+      }),
+      8_000
+    )
+    if (!res.ok) return []
+    const xml = await res.text()
+
+    // Parse <item> blocks from RSS XML without an external library
+    const items: NewsItem[] = []
+    const itemRegex = /<item[^>]*>([\s\S]*?)<\/item>/g
+    let match: RegExpExecArray | null
+    while ((match = itemRegex.exec(xml)) !== null && items.length < 8) {
+      const block = match[1]
+      const title     = stripCdata(extract(block, 'title'))
+      const link      = stripCdata(extract(block, 'link')) || stripCdata(extract(block, 'guid'))
+      const publisher = stripCdata(extract(block, 'source')) || 'Yahoo Finance'
+      const pubDate   = stripCdata(extract(block, 'pubDate'))
+      if (!title || !link) continue
+      const publishedAt = pubDate ? Math.floor(new Date(pubDate).getTime() / 1000) : 0
+      items.push({ title, link, publisher, publishedAt })
+    }
+    return items
+  } catch {
+    return []
+  }
+}
+
+/** Extract the text content of the first matching XML tag */
+function extract(xml: string, tag: string): string {
+  const m = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'))
+  return m ? m[1].trim() : ''
+}
+
+/** Strip CDATA wrapper if present */
+function stripCdata(s: string): string {
+  return s.replace(/^<!\[CDATA\[([\s\S]*?)]]>$/, '$1').trim()
 }
 
 /**

@@ -57,7 +57,13 @@ export async function GET(
       }))
       .sort((a: any, b: any) => a.time - b.time)
 
-    const payload = { bars }
+    const name: string =
+      result.meta?.longName ??
+      result.meta?.shortName ??
+      result.meta?.symbol ??
+      ticker
+
+    const payload = { bars, name }
     cacheSet(cacheKey, payload, cfg.ttl)
     return NextResponse.json(payload)
   } catch (err) {

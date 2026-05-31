@@ -7,14 +7,17 @@ interface Config {
   interval: string
   onHistoryLoaded: (bars: Bar[]) => void
   onBar: (bar: Bar) => void
+  onNameLoaded?: (name: string) => void
 }
 
-export function useStockData({ symbol, interval, onHistoryLoaded, onBar }: Config) {
+export function useStockData({ symbol, interval, onHistoryLoaded, onBar, onNameLoaded }: Config) {
   const onHistoryRef = useRef(onHistoryLoaded)
   const onBarRef = useRef(onBar)
+  const onNameRef = useRef(onNameLoaded)
   const lastBarsRef = useRef<Bar[]>([])
   useEffect(() => { onHistoryRef.current = onHistoryLoaded }, [onHistoryLoaded])
   useEffect(() => { onBarRef.current = onBar }, [onBar])
+  useEffect(() => { onNameRef.current = onNameLoaded }, [onNameLoaded])
 
   useEffect(() => {
     if (!symbol || symbol === '__skip__') return
@@ -23,10 +26,11 @@ export function useStockData({ symbol, interval, onHistoryLoaded, onBar }: Confi
 
     fetch(`/api/tradingview/stock/${symbol}?interval=${interval}`)
       .then(r => r.json())
-      .then((data: { bars?: Bar[]; error?: string }) => {
+      .then((data: { bars?: Bar[]; name?: string; error?: string }) => {
         if (cancelled || !data.bars) return
         lastBarsRef.current = data.bars
         onHistoryRef.current(data.bars)
+        if (data.name) onNameRef.current?.(data.name)
       })
       .catch(e => console.error('[stock history]', e))
 

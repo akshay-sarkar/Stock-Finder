@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback, useState } from 'react'
 import {
   createChart,
   CandlestickSeries,
@@ -18,6 +18,25 @@ import { FVGPrimitive } from '@/lib/tradingview/chartPrimitives'
 import { PaneControls, type PaneConfig } from './PaneControls'
 
 export type { PaneConfig }
+
+// ── Pane height persistence ────────────────────────────────────────────────
+const PANE_HEIGHT_KEYS = {
+  rsi:  'sf-tv-rsi-height',
+  macd: 'sf-tv-macd-height',
+  wr:   'sf-tv-wr-height',
+} as const
+
+function readPaneHeight(key: string, fallback: number): number {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const v = localStorage.getItem(key)
+    return v ? Math.max(60, parseInt(v, 10)) : fallback
+  } catch { return fallback }
+}
+
+function savePaneHeight(key: string, h: number) {
+  try { localStorage.setItem(key, String(h)) } catch {}
+}
 
 interface Props {
   config: PaneConfig
@@ -47,6 +66,8 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
   const chartRef = useRef<IChartApi | null>(null)
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const rsiRef = useRef<ISeriesApi<'Line'> | null>(null)
+  const rsiOversoldBandRef   = useRef<ISeriesApi<'Histogram'> | null>(null)
+  const rsiOverboughtBandRef = useRef<ISeriesApi<'Histogram'> | null>(null)
   const macdLineRef = useRef<ISeriesApi<'Line'> | null>(null)
   const macdSignalRef = useRef<ISeriesApi<'Line'> | null>(null)
   const macdHistRef = useRef<ISeriesApi<'Histogram'> | null>(null)
@@ -56,8 +77,17 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
   const bbLowerRef = useRef<ISeriesApi<'Line'> | null>(null)
   const fvgRef = useRef<FVGPrimitive | null>(null)
 
+  // Track which pane index each indicator occupies so we can poll their heights
+  const rsiPaneIdxRef  = useRef<number>(-1)
+  const macdPaneIdxRef = useRef<number>(-1)
+  const wrPaneIdxRef   = useRef<number>(-1)
+
+  // Company name returned by the API alongside bar data
+  const [companyName, setCompanyName] = useState('')
+
   // Persists across chart recreations (indicator toggles)
   const barsRef = useRef<Bar[]>([])
+
 
   // Chart recreated only when indicator layout or data source changes.
   // VP/FVG toggles don't add new panes so they don't need recreation.
@@ -73,10 +103,12 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
     if (!containerRef.current) return
 
     candleRef.current = null; rsiRef.current = null
+    rsiOversoldBandRef.current = null; rsiOverboughtBandRef.current = null
     macdLineRef.current = null; macdSignalRef.current = null; macdHistRef.current = null
     wrRef.current = null
     bbUpperRef.current = null; bbMiddleRef.current = null; bbLowerRef.current = null
     fvgRef.current = null
+    rsiPaneIdxRef.current = -1; macdPaneIdxRef.current = -1; wrPaneIdxRef.current = -1
 
     const chart = createChart(containerRef.current, { ...DARK_THEME, autoSize: true })
     chartRef.current = chart
@@ -106,8 +138,36 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
 
     if (config.showRSI) {
       const pane = nextPane++
-      rsiRef.current = chart.addSeries(LineSeries, { color: '#a78bfa', lineWidth: 1, priceLineVisible: false }, pane)
-      chart.panes()[pane]?.setHeight(80)
+
+      // ── Neutral zone fill: 30 → 70 ────────────────────────────────────────
+      // Drawn first so RSI line renders on top
+      rsiOversoldBandRef.current = chart.addSeries(HistogramSeries, {
+        color: 'rgba(148,163,184,0.15)', base: 30,
+        priceLineVisible: false, lastValueVisible: false,
+      }, pane)
+      // rsiOverboughtBandRef unused for now (neutral zone uses one series)
+      rsiOverboughtBandRef.current = null
+
+      // ── RSI line ────────────────────────────────────────────────────────────
+      rsiRef.current = chart.addSeries(LineSeries, {
+        color: '#a78bfa', lineWidth: 2, priceLineVisible: false,
+      }, pane)
+
+      // ── Reference lines at 30, 50, 70 ──────────────────────────────────────
+      rsiRef.current.createPriceLine({
+        price: 70, color: '#ef4444', lineWidth: 1,
+        lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '',
+      })
+      rsiRef.current.createPriceLine({
+        price: 50, color: '#334155', lineWidth: 1,
+        lineStyle: LineStyle.Dotted, axisLabelVisible: false, title: '',
+      })
+      rsiRef.current.createPriceLine({
+        price: 30, color: '#22c55e', lineWidth: 1,
+        lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: '',
+      })
+
+      rsiPaneIdxRef.current = pane
     }
 
     if (config.showMACD) {
@@ -115,13 +175,13 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
       macdLineRef.current = chart.addSeries(LineSeries, { color: '#60a5fa', lineWidth: 1, priceLineVisible: false }, pane)
       macdSignalRef.current = chart.addSeries(LineSeries, { color: '#fb923c', lineWidth: 1, priceLineVisible: false }, pane)
       macdHistRef.current = chart.addSeries(HistogramSeries, { color: '#34d399', priceLineVisible: false }, pane)
-      chart.panes()[pane]?.setHeight(80)
+      macdPaneIdxRef.current = pane
     }
 
     if (config.showWR) {
       const pane = nextPane++
       wrRef.current = chart.addSeries(LineSeries, { color: '#f472b6', lineWidth: 1, priceLineVisible: false }, pane)
-      chart.panes()[pane]?.setHeight(80)
+      wrPaneIdxRef.current = pane
     }
 
     if (config.showFVG && candleRef.current) {
@@ -137,7 +197,40 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
       applyIndicatorsRef.current(cached)
     }
 
-    return () => { chart.remove(); chartRef.current = null }
+    // ── Restore saved pane heights after chart has fully laid out ────────────
+    // A small delay is needed because lightweight-charts re-calculates layout
+    // after series data is set, which can override heights set during init.
+    const restoreTimer = setTimeout(() => {
+      const panes = chart.panes()
+      const rsiIdx  = rsiPaneIdxRef.current
+      const macdIdx = macdPaneIdxRef.current
+      const wrIdx   = wrPaneIdxRef.current
+      if (rsiIdx  >= 0 && panes[rsiIdx])  panes[rsiIdx].setHeight(readPaneHeight(PANE_HEIGHT_KEYS.rsi,  110))
+      if (macdIdx >= 0 && panes[macdIdx]) panes[macdIdx].setHeight(readPaneHeight(PANE_HEIGHT_KEYS.macd, 80))
+      if (wrIdx   >= 0 && panes[wrIdx])   panes[wrIdx].setHeight(readPaneHeight(PANE_HEIGHT_KEYS.wr,   80))
+    }, 150)
+
+    // ── Save heights on mouseup (fires after user drags a pane separator) ────
+    // More accurate than polling — only saves when a drag interaction ends.
+    function snapshotHeights() {
+      const panes = chart.panes()
+      const rsiIdx  = rsiPaneIdxRef.current
+      const macdIdx = macdPaneIdxRef.current
+      const wrIdx   = wrPaneIdxRef.current
+      if (rsiIdx  >= 0 && panes[rsiIdx])  savePaneHeight(PANE_HEIGHT_KEYS.rsi,  panes[rsiIdx].getHeight())
+      if (macdIdx >= 0 && panes[macdIdx]) savePaneHeight(PANE_HEIGHT_KEYS.macd, panes[macdIdx].getHeight())
+      if (wrIdx   >= 0 && panes[wrIdx])   savePaneHeight(PANE_HEIGHT_KEYS.wr,   panes[wrIdx].getHeight())
+    }
+    const el = containerRef.current
+    el?.addEventListener('mouseup', snapshotHeights)
+
+    return () => {
+      clearTimeout(restoreTimer)
+      el?.removeEventListener('mouseup', snapshotHeights)
+      snapshotHeights()   // save final heights before chart is destroyed
+      chart.remove()
+      chartRef.current = null
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartKey])
 
@@ -147,6 +240,10 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
     if (rsiRef.current) {
       const data = computeRSI(bars)
       rsiRef.current.setData(data.map(d => ({ time: t(d.time), value: d.value })))
+      // Neutral zone fill: base=30, value=70 → fills 30 → 70
+      rsiOversoldBandRef.current?.setData(
+        data.map(d => ({ time: t(d.time), value: 70 }))
+      )
     }
 
     if (macdLineRef.current && macdSignalRef.current && macdHistRef.current) {
@@ -201,12 +298,16 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
     if (tickerBarRef.current) flashTickerBar(tickerBarRef.current, bar)
   }, [])
 
+  // Clear name whenever the symbol changes so stale name doesn't flash
+  useEffect(() => { setCompanyName('') }, [config.symbol, config.source])
+
   useMarketData({
     source: config.source,
     symbol: config.symbol,
     interval: config.interval,
     onHistoryLoaded: handleHistoryLoaded,
     onBar: handleBar,
+    onNameLoaded: setCompanyName,
   })
 
   const handleChange = useCallback((patch: Partial<PaneConfig>) => {
@@ -221,8 +322,11 @@ export const ChartPane = React.memo(function ChartPane({ config, onConfigChange 
         className="flex items-center gap-2 px-2 py-0.5 bg-slate-900 text-xs select-none"
       >
         <span className="font-bold text-white">{config.symbol}</span>
-        <span className="text-slate-500">{config.interval}</span>
-        <span className="text-slate-600 text-xs">{config.source}</span>
+        {companyName && (
+          <span className="text-slate-400 truncate max-w-[200px]">{companyName}</span>
+        )}
+        <span className="text-slate-600">{config.interval}</span>
+        <span className="text-slate-700 text-xs">{config.source}</span>
       </div>
       <div ref={containerRef} className="flex-1 min-h-0" />
     </div>
